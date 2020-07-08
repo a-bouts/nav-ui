@@ -1,28 +1,50 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <Nav></Nav>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Nav from './components/Nav.vue'
+
+import VConsole from 'vconsole'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
+    Nav
+  },
+  created: function() {
+    let uri = window.location.href.split('?');
+    if (uri.length == 2)
+    {
+      let vars = uri[1].split('&');
+      vars.forEach(function(v){
+        if(v == 'debug') {
+          new VConsole()
+        }
+      });
+    }
+
+    if (Notification.permission === 'granted') {
+      // show notification here
+    } else {
+      // request permission from user
+      Notification.requestPermission().then(function(p) {
+       if(p === 'granted') {
+           // show notification here
+       } else {
+           console.log('User blocked notifications.');
+       }
+      }).catch(function(err) {
+          console.error(err);
+      });
+    }
+  },
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+
+body {
+    margin: 0px;
 }
 </style>
