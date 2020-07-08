@@ -15,7 +15,8 @@ export default {
   },
   data: function() {
     return {
-      raceLayer: null
+      raceLayer: null,
+      validated: []
     }
   },
   mounted: function() {
@@ -23,6 +24,10 @@ export default {
   },
   watch: {
     current: function() {
+      var it = this
+
+      this.validated = JSON.parse(localStorage.getItem("_validated_" + this.current.id))
+
       this.raceLayer.clearLayers()
 
       var startMarkerIcon = L.ExtraMarkers.icon({shape: 'circle', markerColor: 'green' , prefix: 'fa'})
@@ -45,21 +50,22 @@ export default {
           continue;
         }
 
-        // if(this.current_race.validated.indexOf(door.name) >= 0) {
-        //     door.validated = true;
-        // }
+        if(this.validated && this.validated.indexOf(door.name) >= 0) {
+            door.validated = true;
+        }
         var markerIcon = L.ExtraMarkers.icon({icon: 'fa-number', number: door.name, shape: 'penta', markerColor: door.validated === true ? 'green-light' : 'yellow'});
 
         L.marker([door.latlons[0].lat, door.latlons[0].lon], {door: door, icon: markerIcon}).on('click', function() {
             this.options.door.validated = !this.options.door.validated;
             this.setIcon(L.ExtraMarkers.icon({icon: 'fa-number', number: this.options.door.name, shape: 'penta', markerColor: this.options.door.validated === true ? 'green-light' : 'yellow'}));
 
-            // if(this.options.door.validated === true) {
-            //     this.current_race.validated.push(this.options.door.name);
-            // } else {
-            //     this.current_race.validated.splice(this.current_race.validated.indexOf(this.options.door.name), 1);
-            // }
-            // saveRace();
+            if(this.options.door.validated === true) {
+              if(!it.validated) it.validated = []
+              it.validated.push(this.options.door.name);
+            } else {
+              it.validated.splice(it.validated.indexOf(this.options.door.name), 1);
+            }
+            localStorage.setItem("_validated_" + it.current.id, JSON.stringify(it.validated))
 
         }).addTo(this.raceLayer);
       }

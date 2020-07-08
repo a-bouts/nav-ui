@@ -24,3 +24,4 @@ jobs:
           --output "type=image,push=false" \
           --tag stoub/nav-ui:latest \
           --file ./Dockerfile ./
+    - run: docker push stoub/nav-ui:latest
