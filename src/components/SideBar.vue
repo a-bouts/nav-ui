@@ -28,7 +28,7 @@
           <div class="field is-grouped">
             <div class="control has-icons-left">
               <div class="select is-small">
-                <select v-model="current.id" @change="selectRace(current.id)">
+                <select v-model="current.id" @change="selectRace(current.id, true)">
                   <option v-for="(race, id) in races" :key="id" v-bind:value="id">
                     {{ race.name }}
                   </option>
@@ -340,7 +340,7 @@ export default {
         s :(0|D*60%1*6000)/100
       };
     },
-    selectRace: function(race) {
+    selectRace: function(race, pan) {
       try {
         var current = JSON.parse(localStorage.getItem(race))
         if(current) {
@@ -366,7 +366,7 @@ export default {
 
         localStorage.setItem('current_race', this.current.id)
 
-        this.pan()
+        if(pan) this.pan()
         this.$nextTick(() => {
           this.$emit('configure', this.current)
         });
@@ -479,7 +479,7 @@ export default {
   watch: {
     races: function() {
       var race = localStorage.getItem('current_race')
-      this.selectRace(race)
+      this.selectRace(race, false)
     },
     position: function() {
       this.current.position = this.position
