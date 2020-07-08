@@ -3,14 +3,12 @@ jobs:
   build:
     docker:
     - image: docker:stable
+    environment:
+      DOCKER_CLI_EXPERIMENTAL: enabled
     steps:
     - checkout
     - setup_remote_docker:
-        version: 18.09.3
-    - run: apk add make curl
-    - run: mkdir -vp ~/.docker/cli-plugins/
-    - run: curl --silent -L --output ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.4.1/buildx-v0.4.1.linux-amd64
-    - run: chmod a+x ~/.docker/cli-plugins/docker-buildx
+        version: 19.03.12
     - run: docker buildx ls
     - run: docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
     - run: |
