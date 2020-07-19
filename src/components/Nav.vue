@@ -92,6 +92,7 @@ export default {
       return {
         'is-danger': this.notification.level == "error",
         'is-info': this.notification.level == "info",
+        'is-warning': this.notification.level == "warning",
       }
     }
   },

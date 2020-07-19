@@ -247,7 +247,7 @@ export default {
       }
 
       this.$emit('error', {
-          level: "info",
+          level: sumup.success ? "info" : "warning",
           duration: 60000,
           message: title + ' --- ' + message
       })
