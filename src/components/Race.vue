@@ -67,7 +67,23 @@ export default {
             }
             localStorage.setItem("_validated_" + it.current.id, JSON.stringify(it.validated))
 
+            for(var i in it.races[it.current.id].waypoints) {
+              var door = it.races[it.current.id].waypoints[i];
+              if(!door.validated) {
+                it.$emit('nextdoor', door)
+                break
+              }
+            }
+
         }).addTo(this.raceLayer);
+      }
+
+      for(var j in it.races[it.current.id].waypoints) {
+        var d = it.races[it.current.id].waypoints[j];
+        if(!d.validated) {
+          it.$emit('nextdoor', d)
+          break
+        }
       }
     }
   }

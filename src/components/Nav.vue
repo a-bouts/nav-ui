@@ -8,7 +8,8 @@
       <SideBar v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:showTooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
-    <Race v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:current="current"></Race>
+    <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:to="nextDoor" v-bind:map="map"></Geodesic>
+    <Race v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:current="current"  v-on:nextdoor="onNextDoor"></Race>
     <Route ref="route" v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error"></Route>
   </div>
 </template>
@@ -21,6 +22,7 @@ import 'leaflet-extra-markers'
 import WindControl from './WindControl.vue'
 import SideBar from './SideBar.vue'
 import Graticule from './Graticule.vue'
+import Geodesic from './Geodesic.vue'
 import Race from './Race.vue'
 import Route from './Route.vue'
 
@@ -30,6 +32,7 @@ export default {
   components: {
     SideBar,
     Graticule,
+    Geodesic,
     Race,
     Route
   },
@@ -48,6 +51,7 @@ export default {
       layers: [],
       races: null,
       current: {},
+      nextDoor: null
     }
   },
   created: function() {
@@ -151,12 +155,18 @@ export default {
       this.boatLayer.clearLayers()
 
       this.current = current
+      this.current.position = {
+        lat: current.position.lat,
+        lng: current.position.lng
+      }
 
       var pan = [
         this.convertDMSToDD(current.position.lat.p, current.position.lat.d, current.position.lat.m, current.position.lat.s),
         this.convertDMSToDD(current.position.lng.p, current.position.lng.d, current.position.lng.m, current.position.lng.s)]
 
       var boatMarker = L.ExtraMarkers.icon({ icon: 'fa-anchor', markerColor: 'red', shape: 'square', prefix: 'fa' })
+
+      this.$refs.geodesic.setGeodesic()
 
       const it = this
       L.marker(pan,
@@ -191,6 +201,9 @@ export default {
       }
 
       setTimeout(() => {it.notification.active = false}, notification.duration)
+    },
+    onNextDoor: function(door) {
+      this.nextDoor = door
     }
   }
 }
