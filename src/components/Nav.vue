@@ -10,7 +10,7 @@
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
     <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:to="nextDoor" v-bind:map="map"></Geodesic>
     <Race v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:current="current"  v-on:nextdoor="onNextDoor"></Race>
-    <Route ref="route" v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error"></Route>
+    <Route ref="route" v-if="map != null" v-bind:experiment="experiment" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error"></Route>
   </div>
 </template>
 
@@ -28,7 +28,9 @@ import Route from './Route.vue'
 
 export default {
   name: 'Nav',
-  props: {},
+  props: {
+    experiment: Boolean
+  },
   components: {
     SideBar,
     Graticule,

@@ -1,5 +1,5 @@
 <template>
-  <Nav></Nav>
+  <Nav v-bind:experiment="experiment"></Nav>
 </template>
 
 <script>
@@ -12,14 +12,23 @@ export default {
   components: {
     Nav
   },
+  data : function() {
+    return {
+      experiment: false
+    }
+  },
   created: function() {
+    var it = this
     let uri = window.location.href.split('?');
     if (uri.length == 2)
     {
+      console.log(uri)
       let vars = uri[1].split('&');
       vars.forEach(function(v){
         if(v == 'debug') {
           new VConsole()
+        } else if(v == 'experiment') {
+          it.experiment = true
         }
       });
     }
