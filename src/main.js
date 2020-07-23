@@ -7,6 +7,7 @@ import 'bulma/css/bulma.css';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-sidebar-v2/css/leaflet-sidebar.css';
 import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css';
+import 'leaflet-velocity/dist/leaflet-velocity.css';
 
 import '@fortawesome/fontawesome-free/css/all.css'
 import '@fortawesome/fontawesome-free/js/all.js'

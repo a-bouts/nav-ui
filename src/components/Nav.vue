@@ -11,6 +11,7 @@
     <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:to="nextDoor" v-bind:map="map"></Geodesic>
     <Race v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:current="current"  v-on:nextdoor="onNextDoor"></Race>
     <Route ref="route" v-if="map != null" v-bind:experiment="experiment" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error"></Route>
+    <BoatLines ref="boatlines" v-if="map != null" v-bind:experiment="experiment" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current"></BoatLines>
   </div>
 </template>
 
@@ -25,6 +26,7 @@ import Graticule from './Graticule.vue'
 import Geodesic from './Geodesic.vue'
 import Race from './Race.vue'
 import Route from './Route.vue'
+import BoatLines from './BoatLines.vue'
 
 export default {
   name: 'Nav',
@@ -36,7 +38,8 @@ export default {
     Graticule,
     Geodesic,
     Race,
-    Route
+    Route,
+    BoatLines
   },
   data: function() {
     return {
@@ -49,11 +52,13 @@ export default {
       map: null,
       tileLayer: null,
       boatLayer: null,
+      boatLineLayer: null,
       layerControl: null,
       layers: [],
       races: null,
       current: {},
-      nextDoor: null
+      nextDoor: null,
+      boatLines: null
     }
   },
   created: function() {
@@ -77,6 +82,7 @@ export default {
     this.layerControl = L.control.layers(baseLayers).addTo(this.map)
 
     this.boatLayer = L.layerGroup().addTo(this.map)
+    this.boatLineLayer = L.layerGroup().addTo(this.map)
 
     var zoom;
     var pan;
@@ -161,6 +167,7 @@ export default {
         lat: current.position.lat,
         lng: current.position.lng
       }
+      this.$refs.boatlines.go()
 
       var pan = [
         this.convertDMSToDD(current.position.lat.p, current.position.lat.d, current.position.lat.m, current.position.lat.s),
@@ -180,6 +187,7 @@ export default {
           lat: it.convertDDToDMS(position.lat),
           lng: it.convertDDToDMS(position.lng)
         }
+        it.$refs.boatlines.go()
       });
     },
     center: function() {
@@ -206,7 +214,7 @@ export default {
     },
     onNextDoor: function(door) {
       this.nextDoor = door
-    }
+    },
   }
 }
 </script>
@@ -233,6 +241,18 @@ export default {
 .leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.night-changed {
     background: orange;
     color: "#ff0000";
+    border-radius: 50%;
+}
+
+.leaflet-div-icon.leaflet-bearingline-icon.leaflet-touch-icon {
+    background: #3bdbd5;
+    color: #3bdbd5;
+    border-radius: 50%;
+}
+
+.leaflet-div-icon.leaflet-twaline-icon.leaflet-touch-icon {
+    background: #ef1780;
+    color: #ef1780;
     border-radius: 50%;
 }
 

@@ -22,7 +22,6 @@ export default {
     let uri = window.location.href.split('?');
     if (uri.length == 2)
     {
-      console.log(uri)
       let vars = uri[1].split('&');
       vars.forEach(function(v){
         if(v == 'debug') {
