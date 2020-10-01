@@ -76,6 +76,11 @@ export default {
             }
 
         }).addTo(this.raceLayer);
+
+        if(len(door.latlons) > 1) {
+          var markerIconTribord = L.ExtraMarkers.icon({icon: 'fa-number', number: door.name, shape: 'star', markerColor: door.validated === true ? 'green-light' : 'yellow'});
+          L.marker([door.latlons[1].lat, door.latlons[1].lon], {door: door, icon: markerIconTribord}).addTo(this.raceLayer)
+        }
       }
 
       for(var j in it.races[it.current.id].waypoints) {
