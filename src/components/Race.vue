@@ -77,7 +77,7 @@ export default {
 
         }).addTo(this.raceLayer);
 
-        if(len(door.latlons) > 1) {
+        if(door.latlons.length > 1) {
           var markerIconTribord = L.ExtraMarkers.icon({icon: 'fa-number', number: door.name, shape: 'star', markerColor: door.validated === true ? 'green-light' : 'yellow'});
           L.marker([door.latlons[1].lat, door.latlons[1].lon], {door: door, icon: markerIconTribord}).addTo(this.raceLayer)
         }
