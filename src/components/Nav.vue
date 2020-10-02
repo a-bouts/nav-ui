@@ -3,9 +3,9 @@
     <div v-show="notification.active" class="notification" v-bind:class="level" style="display: block; position: fixed; z-index: 5000; left: 70px; right: 70px; top: 20px">
       <button class="delete" @click="notification.active = false"></button>
       {{ notification.message }}
-    </div>
+    </div>x
     <div style="height:100%" id="map" width="100%" height="100%">
-      <SideBar v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:showTooltip="showTooltip" v-on:error="error"></SideBar>
+      <SideBar v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
     <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:to="nextDoor" v-bind:map="map"></Geodesic>

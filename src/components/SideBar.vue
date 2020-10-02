@@ -421,7 +421,7 @@ export default {
       this.$emit('run')
     },
     showTooltip: function() {
-      this.$emit('showTooltip')
+      this.$emit('show-tooltip')
     },
     refreshPolars: function() {
       this.polarsLoading = true
