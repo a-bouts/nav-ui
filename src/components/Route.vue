@@ -20,6 +20,7 @@ export default {
     const roundSize = 9
     const _editIcon = new L.DivIcon({
                     iconSize: new L.Point(squareSize, squareSize),
+                    shadowSize: new L.Point(squareSize + 4, squareSize + 4),
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon'
     })
     const _changedIcon = new L.DivIcon({
@@ -169,10 +170,16 @@ export default {
         d += m + "m"
       }
 
+      var hrs = date.getHours();
+      var min = date.getMinutes();
+      if (min < 10) {
+        min = "0" + min;
+      }
+
       const primary = "<i class='fa fa-compass'></i> " + wl.bearing + "° <i class='fa fa-location-arrow'></i> " + wl.twa + "° <span class='sail'>" + sails[wl.sail] + "</span>";
       const secondary = "<i class='fa fa-wind'></i> " + wl.wind + "° " + wl.windSpeed.toFixed(1) + "kt <i class='fa fa-ship'></i> " + wl.boatSpeed.toFixed(1) + "kt";
 
-      var res = '<div class="date">' + d + '</div><div class="primary">' + primary + '</div>';
+      var res = '<div class="date"><span>' + d + '</span><span class="hour">' + hrs + ":" + min + '</span></div><div class="primary">' + primary + '</div>';
       if(secondary)
           res += '<div class="secondary">' + secondary + '</div>';
 

@@ -261,6 +261,10 @@ export default {
   font-weight: bold;
 }
 
+.leaflet-tooltip.draw-tooltip .date .hour {
+  float: right
+}
+
 .leaflet-tooltip.draw-tooltip .primary {
   color: #ffffff;
 }
