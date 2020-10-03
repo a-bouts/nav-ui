@@ -262,7 +262,7 @@ export default {
 }
 
 .leaflet-tooltip.draw-tooltip .date .hour {
-  float: right
+  float: right;
 }
 
 .leaflet-tooltip.draw-tooltip .primary {
@@ -271,6 +271,10 @@ export default {
 
 .leaflet-tooltip.draw-tooltip .primary .sail {
   font-weight: bold;
+}
+
+.leaflet-tooltip.draw-tooltip .primary .foil {
+  float: right;
 }
 
 .leaflet-tooltip.draw-tooltip .secondary {
