@@ -177,8 +177,8 @@ export default {
       }
 
       var primary = "<i class='fa fa-compass'></i> " + wl.bearing + "° <i class='fa fa-location-arrow'></i> " + wl.twa + "° <span class='sail'>" + sails[wl.sail] + "</span>";
-      if(wl.foil) {
-        primary += "<span class='foil'><i class='fa fa-fighter-jet'></i></span>"
+      if(wl.foil > 0) {
+        primary += "<span class='foil' style='opacity: " + ws.foil + "%;'><i class='fa fa-fighter-jet'></i></span>"
       }
       const secondary = "<i class='fa fa-wind'></i> " + wl.wind + "° " + wl.windSpeed.toFixed(1) + "kt <i class='fa fa-ship'></i> " + wl.boatSpeed.toFixed(1) + "kt";
 
