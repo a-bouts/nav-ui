@@ -12,7 +12,8 @@
       </ul>
 
       <ul role="tablist"> <!-- bottom aligned tabs -->
-        <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
+        <li><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
+        <li><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
       </ul>
     </div>
 
@@ -229,6 +230,9 @@
         </div>
         </section>
       </div>
+      <div class="leaflet-sidebar-pane polars" id="polars">
+        <Polar></Polar>
+      </div>
     </div>
   </div>
 </template>
@@ -237,6 +241,7 @@
 <script>
 import L from 'leaflet'
 import 'leaflet-sidebar-v2'
+import Polar from './Polar.vue'
 
 export default {
   name: 'SideBar',
@@ -245,6 +250,9 @@ export default {
     races: Object,
     position: Object,
     loading: Boolean
+  },
+  components: {
+    Polar
   },
   data: function() {
     return {
@@ -499,6 +507,13 @@ export default {
 .leaflet-sidebar-pane .section {
   padding-left: 0px;
   padding-top: 10px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+}
+
+.leaflet-sidebar-pane.polars {
+  padding-left: 5px;
+  padding-top: 5px;
   padding-right: 0px;
   padding-bottom: 0px;
 }

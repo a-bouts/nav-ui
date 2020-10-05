@@ -10,7 +10,9 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.0",
     "bulma": "^0.9.1",
+    "bulma-slider": "^2.0.4",
     "core-js": "^3.6.5",
+    "d3": "^6.2.0",
     "dateformat": "^3.0.3",
     "esri-leaflet": "^2.4.1",
     "leaflet": "^1.6.0",
