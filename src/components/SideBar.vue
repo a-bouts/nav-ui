@@ -249,7 +249,7 @@ export default {
     map: Object,
     races: Object,
     position: Object,
-    loading: Boolean
+    loading: Boolean,
   },
   components: {
     Polar
@@ -489,6 +489,9 @@ export default {
 
       event.preventDefault()
       this.enablePaste = false
+    },
+    selectPoint(point) {
+      this.$refs.polars.selectPoint(point)
     }
   },
   watch: {
@@ -499,7 +502,7 @@ export default {
     position: function() {
       this.current.position = this.position
       localStorage.setItem(this.current.id, JSON.stringify(this.current))
-    }
+    },
   }
 }
 </script>

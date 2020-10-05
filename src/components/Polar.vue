@@ -26,7 +26,7 @@ export default {
       }),
     },
     races: Object,
-    current: Object
+    current: Object,
   },
   data: function() {
     return {
@@ -34,7 +34,7 @@ export default {
       height: 0,
       ws: 20,
       polar: undefined,
-      radialLineGenerator: d3.radialLine()
+      radialLineGenerator: d3.radialLine(),
     }
   },
   mounted: function() {
@@ -73,7 +73,7 @@ export default {
       }, () => {
         console.log("Error loading polars")
       })
-    }
+    },
   },
   methods: {
     onResize() {
@@ -284,6 +284,9 @@ export default {
       }
 
       return {i0: 0, i1: 0, p0: 0}
+    },
+    selectPoint(point) {
+      this.ws = point.windSpeed.toFixed(1)
     }
   }
 }
