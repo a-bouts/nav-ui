@@ -338,7 +338,7 @@ export default {
     }).addTo(this.map);
     this.sidebar.on('content', function(e) {
       if(e.id == "polars") {
-        setTimeout(it.$refs.polars.onResize, 300)
+        setTimeout(it.$refs.polars.onResize, 500)
         it.sidebar.off('content')
       }
     })

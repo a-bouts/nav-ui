@@ -309,4 +309,15 @@ export default {
     position: absolute;
     top: 22px;
 }
+
+svg text {
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+svg text::selection {
+    background: none;
+}
+
 </style>

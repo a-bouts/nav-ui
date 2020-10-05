@@ -1,7 +1,7 @@
 <template>
   <div class="leaflet-control-layers leaflet-control forecast-times">
     <div v-for="forecast in forecasts" :key="forecast.hour" id="" v-bind:class="{ last: forecast.stamp == lastStamp, selected: forecast.forecast == selectedForecast }" @click="loadWind(forecast.forecast)">
-      <div class="days"><span v-if="forecast.hour > 24 && forecast.hour % 24 < 3">{{ Math.floor(forecast.hour/24) }}j</span></div>
+      <div class="days"><span v-if="forecast.hour >= 24 && forecast.hour % 24 < 3">{{ Math.floor(forecast.hour/24) }}j</span></div>
       <div class="hours">{{ forecast.hour%24 }}h</div>
       <span class="forecast-date"></span>
     </div>
