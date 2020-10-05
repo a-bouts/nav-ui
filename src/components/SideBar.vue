@@ -231,7 +231,7 @@
         </section>
       </div>
       <div class="leaflet-sidebar-pane polars" id="polars">
-        <Polar></Polar>
+        <Polar ref="polars" v-bind:races="races" v-bind:current="current"></Polar>
       </div>
     </div>
   </div>
@@ -326,6 +326,7 @@ export default {
     },
   },
   mounted: function() {
+    const it = this
 
     //this.handlePermission()
 
@@ -335,6 +336,12 @@ export default {
         container: 'sidebar', // the DOM container or #ID of a predefined sidebar container that should be used
         position: 'left',     // left or right
     }).addTo(this.map);
+    this.sidebar.on('content', function(e) {
+      if(e.id == "polars") {
+        setTimeout(it.$refs.polars.onResize, 300)
+        it.sidebar.off('content')
+      }
+    })
   },
   methods: {
     convertDMSToDD: function(p, d, m, s) {

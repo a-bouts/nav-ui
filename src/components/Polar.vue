@@ -25,13 +25,15 @@ export default {
         bottom: 10,
       }),
     },
+    races: Object,
+    current: Object
   },
   data: function() {
     return {
       width: 0,
       height: 0,
       ws: 20,
-      polar: {},
+      polar: undefined,
       radialLineGenerator: d3.radialLine()
     }
   },
@@ -39,14 +41,6 @@ export default {
     window.addEventListener('resize', this.onResize);
     this.onResize()
     bulmaSlider.attach();
-  },
-  created: function() {
-    this.$http.get('polars/arctic.json').then(response => {
-      this.polar = response.body
-      this.onResize()
-    }, () => {
-      console.log("Error loading polars")
-    })
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize);
@@ -57,6 +51,28 @@ export default {
     },
     ws: function () {
       this.update()
+    },
+    current: function () {
+      if(!this.races) {
+        return
+      }
+      this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
+        this.polar = response.body
+        this.onResize()
+      }, () => {
+        console.log("Error loading polars")
+      })
+    },
+    races: function () {
+      if(!this.current) {
+        return
+      }
+      this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
+        this.polar = response.body
+        this.onResize()
+      }, () => {
+        console.log("Error loading polars")
+      })
     }
   },
   methods: {
@@ -66,10 +82,11 @@ export default {
       this.update()
     },
     update() {
+      if(!this.polar) {
+        return
+      }
 
       const it = this
-
-      console.log("update")
 
       const size = Math.min(this.height / 2 - 50, this.width - 50)
 
@@ -243,7 +260,6 @@ export default {
     },
     drawSailPath(polar, points, sail) {
       const colors = ["red", "pink", "blue", "green", "yellow", "orange", "black"]
-      console.log(sail)
       polar.append("path")
         .attr("transform", "translate(25," + this.height / 2 + ")")
         .attr('d', this.radialLineGenerator(points))
