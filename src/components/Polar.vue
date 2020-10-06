@@ -58,16 +58,19 @@ export default {
     ws: function () {
       this.update()
     },
-    current: function () {
-      if(!this.races) {
-        return
+    current: {
+      deep: true,
+      handler() {
+        if(!this.races) {
+          return
+        }
+        this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
+          this.polar = response.body
+          this.onResize()
+        }, () => {
+          console.log("Error loading polars")
+        })
       }
-      this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
-        this.polar = response.body
-        this.onResize()
-      }, () => {
-        console.log("Error loading polars")
-      })
     },
     races: function () {
       if(!this.current) {
@@ -168,6 +171,9 @@ export default {
         var foil = this.foil(a)
         if(this.current.foil) {
           maxBs *= foil
+        }
+        if(this.current.hull) {
+          maxBs *= this.polar.hull.speedRatio
         }
 
         const vmg = maxBs * Math.cos(a * Math.PI/180)
@@ -465,8 +471,8 @@ export default {
         cv = (this.ws - (this.polar.foil.twsMin - this.polar.foil.twsMerge)) / this.polar.foil.twsMerge
       } else if (this.ws < this.polar.foil.twsMax) {
         cv = 1
-      } else if (this.ws < this.polar.foil.twsMax+this.polar.foil.twaMerge) {
-        cv = (this.polar.foil.twsMax + this.polar.foil.twaMerge - this.ws) / this.polar.foil.twaMerge
+      } else if (this.ws < this.polar.foil.twsMax+this.polar.foil.twsMerge) {
+        cv = (this.polar.foil.twsMax + this.polar.foil.twsMerge - this.ws) / this.polar.foil.twsMerge
       } else {
         return 1.0
       }
