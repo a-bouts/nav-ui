@@ -5,6 +5,7 @@
       <g id="speed"></g>
       <g id="path"></g>
       <g id="vmg"></g>
+      <g id="foil"></g>
       <g id="current"></g>
     </svg>
     <input id="windSpeed" class="slider has-output is-fullwidth" step="0.1" min="0" max="70" v-model="ws" type="range">
@@ -164,6 +165,11 @@ export default {
           }
         });
 
+        var foil = this.foil(a)
+        if(this.current.foil) {
+          maxBs *= foil
+        }
+
         const vmg = maxBs * Math.cos(a * Math.PI/180)
 
         if(vmg > upwindVmg) {
@@ -276,6 +282,7 @@ export default {
         .attr("font-size", "12px")
         .attr("fill", "red")
 
+      this.drawFoil()
 
       polar.select("#path").selectAll("*").remove()
 
@@ -289,17 +296,73 @@ export default {
 
       this.drawCurrent()
     },
+    drawFoil() {
+      const size = Math.min(this.height / 2 - 50, this.width - 80)
+
+      var opacity = 1
+      const minRadius = size - 2
+      const maxRadius = size + 2
+
+      const polar = d3.select("#polar")
+
+      if(this.ws <= this.polar.foil.twsMin - this.polar.foil.twsMerge || this.ws >= this.polar.foil.twsMax + this.polar.foil.twsMerge) {
+        polar.select("#foil").selectAll("*").remove()
+        return
+      }
+
+      const foil = this.foil(this.polar.foil.twaMin + 1)
+      opacity = opacity * (foil - 1) / (this.polar.foil.speedRatio - 1)
+
+      polar.select("#foil").selectAll("*").remove()
+
+      const step = 0.3
+      for(var i = 0 ; i < this.polar.foil.twaMerge ; i += step) {
+        polar.select("#foil").append("path")
+          .attr("transform", "translate(25," + this.height / 2 + ")")
+          .attr("d", d3.arc()
+            .innerRadius( minRadius )
+            .outerRadius( maxRadius )
+            .startAngle( (this.polar.foil.twaMin - i) * Math.PI / 180 )     // It's in radian, so Pi = 3.14 = bottom.
+            .endAngle( (this.polar.foil.twaMin - i - step) * Math.PI / 180 )       // 2*Pi = 6.28 = top
+            )
+          .style("stroke-width", 0)
+          .attr('fill', 'black')
+          .style("opacity", opacity * ((10 - i) / 10))
+        polar.select("#foil").append("path")
+          .attr("transform", "translate(25," + this.height / 2 + ")")
+          .attr("d", d3.arc()
+            .innerRadius( minRadius )
+            .outerRadius( maxRadius )
+            .startAngle( (this.polar.foil.twaMax + i) * Math.PI / 180 )     // It's in radian, so Pi = 3.14 = bottom.
+            .endAngle( (this.polar.foil.twaMax + i + step) * Math.PI / 180 )       // 2*Pi = 6.28 = top
+            )
+          .style("stroke-width", 0)
+          .attr('fill', 'black')
+          .style("opacity", opacity * ((10 - i) / 10))
+      }
+      polar.select("#foil").append("path")
+        .attr("transform", "translate(25," + this.height / 2 + ")")
+        .attr("d", d3.arc()
+          .innerRadius( minRadius )
+          .outerRadius( maxRadius )
+          .startAngle( (this.polar.foil.twaMin) * Math.PI / 180 )     // It's in radian, so Pi = 3.14 = bottom.
+          .endAngle( (this.polar.foil.twaMax) * Math.PI / 180 )       // 2*Pi = 6.28 = top
+          )
+        .style("stroke-width", 0)
+        .attr('fill', 'black')
+        .style("opacity", opacity)
+    },
     drawSailPath(polar, points, sail) {
       if(!sail) return
 
       const colors = {
-        "JIB"			: "#cd0342",
-        "SPI"			: "#00ff00",
-        "STAYSAIL"		: "#0000ff",
-        "LIGHT_JIB"		: "#f67876",
-        "CODE_0"		: "#00a000",
-        "HEAVY_GNK"		: "#b00000",
-        "LIGHT_GNK"		: "#d77900"
+        "JIB"      : "#cd0342",
+        "SPI"      : "#00ff00",
+        "STAYSAIL"    : "#0000ff",
+        "LIGHT_JIB"    : "#f67876",
+        "CODE_0"    : "#00a000",
+        "HEAVY_GNK"    : "#b00000",
+        "LIGHT_GNK"    : "#d77900"
       }
 
       polar.append("path")
@@ -381,6 +444,33 @@ export default {
     stopDragTwa(e) {
       e.stopPropagation()
       this.dragStart = null
+    },
+    foil(twa) {
+      var ct = 0.0
+      var cv = 0.0
+      if (twa <= this.polar.foil.twaMin-this.polar.foil.twaMerge) {
+        return 1.0
+      } else if (twa < this.polar.foil.twaMin) {
+        ct = (twa-(this.polar.foil.twaMin-this.polar.foil.twaMerge)) / this.polar.foil.twaMerge
+      } else if (twa < this.polar.foil.twaMax) {
+        ct = 1
+      } else if (twa < this.polar.foil.twaMax+this.polar.foil.twaMerge) {
+        ct = (this.polar.foil.twaMax+this.polar.foil.twaMerge-twa) / this.polar.foil.twaMerge
+      } else {
+        return 1.0
+      }
+      if (this.ws <= this.polar.foil.twsMin-this.polar.foil.twsMerge) {
+        return 1.0
+      } else if (this.ws < this.polar.foil.twsMin) {
+        cv = (this.ws - (this.polar.foil.twsMin - this.polar.foil.twsMerge)) / this.polar.foil.twsMerge
+      } else if (this.ws < this.polar.foil.twsMax) {
+        cv = 1
+      } else if (this.ws < this.polar.foil.twsMax+this.polar.foil.twaMerge) {
+        cv = (this.polar.foil.twsMax + this.polar.foil.twaMerge - this.ws) / this.polar.foil.twaMerge
+      } else {
+        return 1.0
+      }
+      return 1.0 + (this.polar.foil.speedRatio-1)*ct*cv
     }
   }
 }
