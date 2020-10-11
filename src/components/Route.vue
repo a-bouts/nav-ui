@@ -5,6 +5,7 @@
 <script>
 import L from 'leaflet'
 import dateFormat from 'dateformat'
+import {EventBus} from '../event-bus.js';
 
 export default {
   name: 'Route',
@@ -42,11 +43,13 @@ export default {
       editIcon: _editIcon,
       changedIcon: _changedIcon,
       nightIcon: _nightIcon,
-      nightChangedIcon: _nightChangedIcon
+      nightChangedIcon: _nightChangedIcon,
+      routeBuoys: null
     }
   },
   mounted: function() {
     this.isoLayer = L.layerGroup().addTo(this.map)
+    EventBus.$on('buoys', (buoys) => {this.routeBuoys = buoys})
   },
   watch: {
     current: function() {
@@ -95,6 +98,10 @@ export default {
           winch: this.current.winch,
           malus: 1.0,
           stop: this.current.stop
+      }
+
+      if(this.routeBuoys) {
+        params.race.waypoints = this.routeBuoys
       }
 
       this.$emit('loading', true)
