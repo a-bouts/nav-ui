@@ -103,7 +103,7 @@ export default {
       console.log(params.race)
 
       if(this.routeBuoys) {
-        params.race.waypoints = this.routeBuoys
+        params.race.waypoints = this.routeBuoys.slice(1, this.routeBuoys.length)
       }
       console.log(params.race.waypoints)
 
