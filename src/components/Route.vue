@@ -88,7 +88,7 @@ export default {
           },
           bearing: this.current.bearing,
           currentSail: this.current.sail,
-          race: this.races[this.current.id],
+          race: {...this.races[this.current.id]},
           delta: this.current.delta,
           maxDuration: 480.0,
           delay: this.current.delay,
@@ -100,9 +100,12 @@ export default {
           stop: this.current.stop
       }
 
+      console.log(params.race)
+
       if(this.routeBuoys) {
         params.race.waypoints = this.routeBuoys
       }
+      console.log(params.race.waypoints)
 
       this.$emit('loading', true)
       this.$http.post('/debug/nav/run', params).then(response => {
