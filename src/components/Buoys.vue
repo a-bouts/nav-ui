@@ -13,10 +13,26 @@
       </thead>
       <tr v-for="(buoy, index) in buoys" :key="index">
         <td>{{ index }}</td>
-        <td>{{ buoy.name }}</td>
-        <td>{{ buoy.type }}</td>
+        <td v-if="buoy.id == edit">
+          <input v-model="buoy.name" @change="onEdit(buoy)" class="input is-small" type="text">
+        </td>
+        <td v-else @click="editBuoy(buoy)">
+          {{ buoy.name }}
+        </td>
+        <td v-if="buoy.id == edit">
+          <div class="select is-small">
+            <select v-model="buoy.type" @change="onEdit(buoy)">
+              <option value="DOOR">DOOR</option>
+              <option value="WAYPOINT">WAYPOINT</option>
+            </select>
+          </div>
+        </td>
+        <td v-else @click="editBuoy(buoy)">
+          {{ buoy.type }}
+        </td>
         <td><div class="has-text-centered" v-if="buoy.custom && index > 1" @click="up(index)"><i class="fas fa-caret-up"></i></div></td>
         <td><div class="has-text-centered" v-if="buoy.custom && index < buoys.length - 2" @click="down(index)"><i class="fas fa-caret-down"></i></div></td>
+        <td><div class="has-text-centered" v-if="buoy.custom" @click="editBuoy(buoy)"><i class="fas fa-edit"></i></div></td>
         <td><div class="has-text-centered" v-if="buoy.custom" @click="remove(index)"><i class="fas fa-trash"></i></div></td>
       </tr>
     </table>
@@ -37,6 +53,7 @@ export default {
   },
   data: function() {
     return {
+      edit: null,
       buoys: []
     }
   },
@@ -59,11 +76,21 @@ export default {
     remove(index) {
       EventBus.$emit('remove-buoy', index)
     },
+    onEdit(buoy) {
+      EventBus.$emit('edit-buoy', buoy)
+    },
     save() {
       this.$emit('buoys', this.buoys)
     },
     setBuoy(index, buoy) {
       this.customBuoys[index] = buoy
+    },
+    editBuoy(buoy) {
+      if(this.edit == buoy.id) {
+        this.edit = null
+      } else {
+        this.edit = buoy.id
+      }
     }
   }
 }

@@ -27,6 +27,12 @@ export default {
     });
   },
   watch: {
+    buoy: {
+      deep: true,
+      handler() {
+        this.redraw()
+      }
+    },
     validated() {
       this.markers.forEach(item => {
         this.raceLayer.removeLayer(item)
@@ -35,6 +41,12 @@ export default {
     }
   },
   methods: {
+    redraw() {
+      this.markers.forEach(item => {
+        this.raceLayer.removeLayer(item)
+      })
+      this.drawBuoy()
+    },
     drawBuoy: function() {
       const it = this
 
@@ -69,16 +81,20 @@ export default {
         var position = this.getLatLng();
 
         it.$emit("move-buoy", {index: 0, position: position})
-        // it.buoy.latlons[0].lat = position.lat
-        // it.buoy.latlons[0].lon = position.lng
+        it.redraw()
       })
       this.markers.push(m1)
 
-      if(this.buoy.latlons.length > 1) {
+      if(this.buoy.type == "DOOR") {
         var markerIconTribord = L.ExtraMarkers.icon({icon: 'fa-number', number: this.buoy.name, shape: 'penta', markerColor: this.validated === true ? 'green-light' : 'orange'});
-        var m2 = L.marker([this.buoy.latlons[1].lat, this.buoy.latlons[1].lon], {buoy: this.buoy, icon: markerIconTribord}).on('click', function() {
+        var m2 = L.marker([this.buoy.latlons[1].lat, this.buoy.latlons[1].lon], {buoy: this.buoy, icon: markerIconTribord, draggable: this.editable, zIndexOffset: 5000}).on('click', function() {
           it.$emit("validate", !it.validated)
-        }).addTo(this.raceLayer)
+        }).addTo(this.raceLayer).on('dragend', function() {
+          var position = this.getLatLng();
+
+          it.$emit("move-buoy", {index: 1, position: position})
+          it.redraw()
+        })
         var line = L.polyline([[this.buoy.latlons[0].lat, this.buoy.latlons[0].lon], [this.buoy.latlons[1].lat, this.buoy.latlons[1].lon]], {color: 'red', dashArray: '4, 8', dashOffset: '0', weight: 1}).addTo(this.raceLayer);
         this.markers.push(m2)
         this.markers.push(line)

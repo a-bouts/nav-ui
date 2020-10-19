@@ -34,6 +34,7 @@ export default {
     EventBus.$on('up-buoy', this.onUpBuoy)
     EventBus.$on('down-buoy', this.onDownBuoy)
     EventBus.$on('remove-buoy', this.onRemoveBuoy)
+    EventBus.$on('edit-buoy', this.onEditBuoy)
   },
   computed: {
     buoys: function() {
@@ -168,8 +169,8 @@ export default {
         name: "",
         type: "WAYPOINT",
         latlons: [{
-          lat: "0",
-          lon: "0"
+          lat: this.map.getCenter().lat,
+          lon: this.map.getCenter().lng
         }],
         custom: true
       })
@@ -217,6 +218,25 @@ export default {
       buoy.validated = validated
       localStorage.setItem("_validated_" + this.current.id, JSON.stringify(this.validated))
       EventBus.$emit('buoys', this.buoys)
+    },
+    onEditBuoy(buoy) {
+      const it = this
+      console.log(buoy)
+      this.customBuoys.forEach(b => {
+        if(b.id == buoy.id) {
+          b.name = buoy.name
+          if(buoy.type === "DOOR" && b.latlons.length < 2) {
+            b.latlons.push({
+              lat: it.map.getCenter().lat,
+              lon: it.map.getCenter().lng
+            })
+          } else if(buoy.type === "WAYPOINT" && b.latlons.length == 2) {
+            b.latlons.pop()
+          }
+          b.type = buoy.type
+        }
+      });
+      this.saveBuoys()
     }
   }
 }
