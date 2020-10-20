@@ -69,7 +69,7 @@ export default {
     })
   },
   mounted: function() {
-    this.map = L.map('map', {zoomControl: false}).setView([51.505, -0.09], 13)
+    this.map = L.map('map', {zoomControl: false, worldCopyJump: true}).setView([51.505, -0.09], 13)
 
     var imagery = esri.basemapLayer('Imagery').addTo(this.map)
     var darkGray = esri.basemapLayer('DarkGray')
