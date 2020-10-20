@@ -51,7 +51,7 @@ export default {
       }
 
       var buoys = []
-      buoys.push({id: "start", name: "start", type: "START", latlons: [this.races[this.current.id].start], custom: false})
+      buoys.push({id: "start", name: "start", type: "START", wrap: 0, latlons: [this.races[this.current.id].start], custom: false})
 
       this.races[this.current.id].waypoints.forEach(w => {
         var type = "WAYPOINT"
@@ -59,7 +59,7 @@ export default {
           type = "DOOR"
         if (w.name == "end")
           type = "END"
-        buoys.push({id: w.name, name: w.name, type: type, latlons: w.latlons, custom: false, validated: it.isValidated(w.name)})
+        buoys.push({id: w.name, name: w.name, type: type, wrap: w.wrap, latlons: w.latlons, custom: false, validated: it.isValidated(w.name)})
       });
 
       console.log(buoys.length)
