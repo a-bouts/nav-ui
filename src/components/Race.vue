@@ -24,17 +24,20 @@ export default {
   data: function() {
     return {
       raceLayer: null,
+      iceLimitsLayer: null,
       customBuoys: [],
       validated: []
     }
   },
   mounted: function() {
     this.raceLayer = L.layerGroup().addTo(this.map)
+    this.iceLimitsLayer = L.layerGroup().addTo(this.raceLayer)
     EventBus.$on('add-buoy', this.onAddBuoy)
     EventBus.$on('up-buoy', this.onUpBuoy)
     EventBus.$on('down-buoy', this.onDownBuoy)
     EventBus.$on('remove-buoy', this.onRemoveBuoy)
     EventBus.$on('edit-buoy', this.onEditBuoy)
+
   },
   computed: {
     buoys: function() {
@@ -73,6 +76,7 @@ export default {
       this.validated = JSON.parse(localStorage.getItem("_validated_" + this.current.id))
       EventBus.$emit('buoys', this.buoys)
       this.drawRace()
+      this.drawIceLimits()
     }
   },
   methods: {
@@ -81,6 +85,38 @@ export default {
         return true
       }
       return false
+    },
+    drawIceLimits() {
+      this.iceLimitsLayer.clearLayers()
+
+      var latlngs = []
+      for(var n = -1 ; n <= 1 ; n++) {
+        this.races[this.current.id].ice_limits.south.forEach((item, i) => {
+          if (n == -1 && i == 0) {
+            latlngs.push([-90, item.lon + n * 360])
+          }
+          latlngs.push([item.lat, item.lon + n * 360])
+          if (n == 1 && i == this.races[this.current.id].ice_limits.south.length - 1) {
+            latlngs.push([-90, item.lon + n * 360])
+          }
+        })
+      }
+      L.polygon(latlngs, {color: 'white', weight: 2, opacity: 0.7}).addTo(this.iceLimitsLayer);
+
+      latlngs = []
+      for(n = -1 ; n <= 1 ; n++) {
+        this.races[this.current.id].ice_limits.north.forEach((item, i) => {
+          if (n == -1 && i == 0) {
+            latlngs.push([90, item.lon + n * 360])
+          }
+          latlngs.push([item.lat, item.lon + n * 360])
+          if (n == 1 && i == this.races[this.current.id].ice_limits.north.length - 1) {
+            latlngs.push([90, item.lon + n * 360])
+          }
+        })
+      }
+      L.polygon(latlngs, {color: 'white', weight: 2, opacity: 0.7}).addTo(this.iceLimitsLayer);
+
     },
     drawRace() {
       //var it = this

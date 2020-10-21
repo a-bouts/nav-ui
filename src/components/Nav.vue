@@ -5,7 +5,7 @@
       {{ notification.message }}
     </div>
     <div style="height:100%" id="map" width="100%" height="100%">
-      <SideBar ref="sidebar" v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
+      <SideBar ref="sidebar" v-if="map != null" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
     <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:to="nextDoor" v-bind:map="map"></Geodesic>
@@ -31,7 +31,8 @@ import BoatLines from './BoatLines.vue'
 export default {
   name: 'Nav',
   props: {
-    experiment: Boolean
+    experiment: Boolean,
+    debug: Boolean
   },
   components: {
     SideBar,
@@ -231,6 +232,12 @@ export default {
     background-color: #333;
 }
 
+.leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.standard {
+    background: white;
+    border-radius: 50%;
+    color: "#ffffff";
+}
+
 .leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.night {
     background: red;
     color: "#ff0000";
@@ -277,6 +284,10 @@ export default {
 }
 
 .leaflet-tooltip.draw-tooltip .primary .foil {
+  float: right;
+}
+
+.leaflet-tooltip.draw-tooltip .primary .ice {
   float: right;
 }
 

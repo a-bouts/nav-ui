@@ -1,5 +1,5 @@
 <template>
-  <Nav v-bind:experiment="experiment"></Nav>
+  <Nav v-bind:experiment="experiment" v-bind:debug="debug"></Nav>
 </template>
 
 <script>
@@ -14,7 +14,8 @@ export default {
   },
   data : function() {
     return {
-      experiment: false
+      experiment: false,
+      debug: false
     }
   },
   created: function() {
@@ -26,6 +27,7 @@ export default {
       vars.forEach(function(v){
         if(v == 'debug') {
           new VConsole()
+          it.debug = true
         } else if(v == 'experiment') {
           it.experiment = true
         }

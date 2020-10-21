@@ -14,7 +14,7 @@
       <ul role="tablist"> <!-- bottom aligned tabs -->
         <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
         <li><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
-        <li><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
+        <li v-if="debug"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
       </ul>
     </div>
 
@@ -237,6 +237,9 @@
       <div class="leaflet-sidebar-pane polars" id="polars">
         <Polar ref="polars" v-bind:races="races" v-bind:current="current"></Polar>
       </div>
+      <div class="leaflet-sidebar-pane" id="settings">
+        <Expes v-bind:debug="debug"></Expes>
+      </div>
     </div>
   </div>
 </template>
@@ -247,6 +250,7 @@ import L from 'leaflet'
 import 'leaflet-sidebar-v2'
 import Polar from './Polar.vue'
 import Buoys from './Buoys.vue'
+import Expes from './Expes.vue'
 
 export default {
   name: 'SideBar',
@@ -255,10 +259,12 @@ export default {
     races: Object,
     position: Object,
     loading: Boolean,
+    debug: Boolean
   },
   components: {
     Polar,
-    Buoys
+    Buoys,
+    Expes
   },
   data: function() {
     return {

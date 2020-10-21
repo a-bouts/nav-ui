@@ -36,6 +36,10 @@ export default {
                     iconSize: new L.Point(roundSize, roundSize),
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon night-changed'
     })
+    const _icon = new L.DivIcon({
+                    iconSize: new L.Point(7, 7),
+                    className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon standard'
+    })
     return {
       last: null,
       isoLayer: null,
@@ -44,12 +48,15 @@ export default {
       changedIcon: _changedIcon,
       nightIcon: _nightIcon,
       nightChangedIcon: _nightChangedIcon,
-      routeBuoys: null
+      icon: _icon,
+      routeBuoys: null,
+      expes: {}
     }
   },
   mounted: function() {
     this.isoLayer = L.layerGroup().addTo(this.map)
     EventBus.$on('buoys', (buoys) => {this.routeBuoys = buoys})
+    EventBus.$on('expes', (expes) => {this.expes = expes})
   },
   watch: {
     current: function() {
@@ -80,8 +87,10 @@ export default {
     },
     go: function() {
 
+      const it = this
+
       const params = {
-          experiment: this.experiment,
+          expes: this.expes,
           start: {
             lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
             lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
@@ -100,12 +109,9 @@ export default {
           stop: this.current.stop
       }
 
-      console.log(params.race)
-
       if(this.routeBuoys) {
         params.race.waypoints = this.routeBuoys.slice(1, this.routeBuoys.length)
       }
-      console.log(params.race.waypoints)
 
       this.$emit('loading', true)
       this.$http.post('/debug/nav/run', params).then(response => {
@@ -135,7 +141,11 @@ export default {
                            var pt = new L.LatLng(navs[d].isochrones[iso].paths[i][j].latlon.lat, navs[d].isochrones[iso].paths[i][j].latlon.lon);
                            path.push(pt);
                       }
-                      L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 1, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
+                      L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 1, smoothFactor: 2, lineJoin: 'round'}).on('click', function() {
+                        this._latlngs.forEach(p => {
+                          L.marker([p.lat, p.lng], {icon: it.icon}).addTo(layer)
+                        });
+                      }).addTo(layer);
                   // }
               }
           }
@@ -190,6 +200,9 @@ export default {
       if(wl.foil > 0) {
         //primary += "<span class='foil' style='color:rgb(255," + 255 * (wl.foil / 100) + "," + 255 * (wl.foil / 100) + ");'><i class='fa fa-fighter-jet'></i></span>"
         primary += "<span class='foil' style='opacity:" + (wl.foil) + "%;'><i class='fa fa-fighter-jet'></i></span>"
+      }
+      if(wl.ice) {
+        primary += "<span class='ice'><i class='fas fa-igloo'></i></span>"
       }
       const secondary = "<i class='fa fa-wind'></i> " + wl.wind + "° " + wl.windSpeed.toFixed(1) + "kt <i class='fa fa-ship'></i> " + wl.boatSpeed.toFixed(1) + "kt";
 
