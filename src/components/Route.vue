@@ -99,7 +99,7 @@ export default {
           currentSail: this.current.sail,
           race: {...this.races[this.current.id]},
           delta: this.current.delta,
-          maxDuration: 1480.0,
+          maxDuration: 1728.0,
           delay: this.current.delay,
           sail: this.current.sails,
           foil: this.current.foil,
