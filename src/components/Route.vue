@@ -141,9 +141,10 @@ export default {
                            var pt = new L.LatLng(navs[d].isochrones[iso].paths[i][j].latlon.lat, navs[d].isochrones[iso].paths[i][j].latlon.lon);
                            path.push(pt);
                       }
+                      const myLayer = layer
                       L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 1, smoothFactor: 2, lineJoin: 'round'}).on('click', function() {
                         this._latlngs.forEach(p => {
-                          L.marker([p.lat, p.lng], {icon: it.icon}).addTo(layer)
+                          L.marker([p.lat, p.lng], {icon: it.icon}).addTo(myLayer)
                         });
                       }).addTo(layer);
                   // }

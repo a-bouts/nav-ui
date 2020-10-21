@@ -452,7 +452,7 @@ export default {
     },
     refreshPolars: function() {
       this.polarsLoading = true
-      this.$http.get('/polars/' + this.current.id).then(() => {
+      this.$http.get('/polars/' + this.races[this.current.id].polars).then(() => {
         this.polarsLoading = false
       }, () => {
         this.polarsLoading = false
