@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid'
 export default {
   name: 'Race',
   props: {
+    boat: String,
     map: Object,
     current: Object,
     races: Object
@@ -73,7 +74,7 @@ export default {
     current: function() {
       //this.raceLayer.clearLayers()
       this.customBuoys = JSON.parse(localStorage.getItem("_buoys_" + this.current.id))
-      this.validated = JSON.parse(localStorage.getItem("_validated_" + this.current.id))
+      this.validated = JSON.parse(localStorage.getItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id))
       EventBus.$emit('buoys', this.buoys)
       this.drawRace()
       this.drawIceLimits()
@@ -183,7 +184,7 @@ export default {
       } else {
         this.validated.splice(this.validated.indexOf(marker.options.door.name), 1);
       }
-      localStorage.setItem("_validated_" + this.current.id, JSON.stringify(this.validated))
+      localStorage.setItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.validated))
 
       for(var i in this.races[this.current.id].waypoints) {
         var door = this.races[this.current.id].waypoints[i];
@@ -252,7 +253,7 @@ export default {
         this.validated.splice(this.validated.indexOf(buoy.id), 1);
       }
       buoy.validated = validated
-      localStorage.setItem("_validated_" + this.current.id, JSON.stringify(this.validated))
+      localStorage.setItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.validated))
       EventBus.$emit('buoys', this.buoys)
     },
     onEditBuoy(buoy) {

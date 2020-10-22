@@ -1,5 +1,5 @@
 <template>
-  <Nav v-bind:debug="debug"></Nav>
+  <Nav v-bind:debug="debug" v-bind:hash="boat"></Nav>
 </template>
 
 <script>
@@ -14,12 +14,18 @@ export default {
   },
   data : function() {
     return {
+      boat: null,
       debug: false
     }
   },
   created: function() {
     var it = this
-    let uri = window.location.href.split('?');
+    let hash = window.location.href.split('#')
+    if (hash.length == 2) {
+      it.boat = hash[1]
+    }
+
+    let uri = hash[0].split('?');
     if (uri.length == 2)
     {
       let vars = uri[1].split('&');

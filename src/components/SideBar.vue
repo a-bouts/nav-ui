@@ -12,6 +12,7 @@
       </ul>
 
       <ul role="tablist"> <!-- bottom aligned tabs -->
+        <li><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
         <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
         <li><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
         <li v-if="debug"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
@@ -231,11 +232,14 @@
         </div>
         </section>
       </div>
-      <div class="leaflet-sidebar-pane" id="buoys">
-        <Buoys v-bind:races="races" v-bind:current="current"></Buoys>
+      <div class="leaflet-sidebar-pane" id="boats">
+        <Boats></Boats>
       </div>
       <div class="leaflet-sidebar-pane polars" id="polars">
         <Polar ref="polars" v-bind:races="races" v-bind:current="current"></Polar>
+      </div>
+      <div class="leaflet-sidebar-pane" id="buoys">
+        <Buoys v-bind:races="races" v-bind:current="current"></Buoys>
       </div>
       <div class="leaflet-sidebar-pane" id="settings">
         <Expes v-bind:debug="debug"></Expes>
@@ -251,10 +255,12 @@ import 'leaflet-sidebar-v2'
 import Polar from './Polar.vue'
 import Buoys from './Buoys.vue'
 import Expes from './Expes.vue'
+import Boats from './Boats.vue'
 
 export default {
   name: 'SideBar',
   props: {
+    boat: String,
     map: Object,
     races: Object,
     position: Object,
@@ -264,6 +270,7 @@ export default {
   components: {
     Polar,
     Buoys,
+    Boats,
     Expes
   },
   data: function() {
@@ -369,7 +376,7 @@ export default {
     },
     selectRace: function(race, pan) {
       try {
-        var current = JSON.parse(localStorage.getItem(race))
+        var current = JSON.parse(localStorage.getItem((this.boat ? this.boat + "_" : "") + race))
         if(current) {
           this.current = current
         } else {
@@ -404,7 +411,7 @@ export default {
     submit: function() {
       this.sidebar.close();
 
-      localStorage.setItem(this.current.id, JSON.stringify(this.current))
+      localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
 
       this.$emit('configure', this.current)
     },
@@ -515,7 +522,7 @@ export default {
     },
     position: function() {
       this.current.position = this.position
-      localStorage.setItem(this.current.id, JSON.stringify(this.current))
+      localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
     },
   }
 }

@@ -1,16 +1,32 @@
 <template>
   <div>
+    <div class="modal" v-bind:class="{'is-active': !boat && boats && boats.length > 1}" style="z-index:4000">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Choose your boat</p>
+        </header>
+        <section class="modal-card-body">
+          <div class="tile is-vertical">
+            <a class="tile is-child notification" v-for="b in boats" :key="b.name" :href="'#' + b.name" @click="boat = b.name">
+              <p class="title">{{b.name}}</p>
+            </a>
+          </div>
+        </section>
+      </div>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
     <div v-show="notification.active" class="notification" v-bind:class="level" style="display: block; position: fixed; z-index: 5000; left: 70px; right: 70px; top: 20px">
       <button class="delete" @click="notification.active = false"></button>
       {{ notification.message }}
     </div>
     <div style="height:100%" id="map" width="100%" height="100%">
-      <SideBar ref="sidebar" v-if="map != null" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
+      <SideBar ref="sidebar" v-if="map != null" v-bind:boat="boat" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
     <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:to="nextDoor" v-bind:map="map"></Geodesic>
-    <Race v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:current="current" v-on:nextdoor="onNextDoor"></Race>
-    <Route ref="route" v-if="map != null" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
+    <Race v-if="map != null" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:current="current" v-on:nextdoor="onNextDoor"></Race>
+    <Route ref="route" v-if="map != null" v-bind:debug="debug" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
     <BoatLines ref="boatlines" v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current"></BoatLines>
   </div>
 </template>
@@ -31,6 +47,7 @@ import BoatLines from './BoatLines.vue'
 export default {
   name: 'Nav',
   props: {
+    hash: String,
     debug: Boolean
   },
   components: {
@@ -43,6 +60,8 @@ export default {
   },
   data: function() {
     return {
+      boats: null,
+      boat: null,
       notification: {
         active: false,
         message: "",
@@ -62,6 +81,9 @@ export default {
     }
   },
   created: function() {
+    this.boats = JSON.parse(localStorage.getItem("_boats_"))
+    this.boat = this.hash
+
     this.$http.get('races/races.json').then(response => {
       this.races = response.body
     }, () => {
@@ -157,7 +179,7 @@ export default {
       L.control.windcontrol({ position: 'topright' }).addTo(map);
     },
     save: function() {
-      localStorage.setItem(this.current.id, JSON.stringify(this.current))
+      localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
     },
     configure: function(current) {
       this.boatLayer.clearLayers()

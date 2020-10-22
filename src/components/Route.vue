@@ -11,6 +11,7 @@ export default {
   name: 'Route',
   props: {
     debug: Boolean,
+    boat: String,
     map: Object,
     layerControl: Object,
     current: Object,
@@ -65,7 +66,7 @@ export default {
       })
       this.isoLayer.clearLayers()
 
-      this.last = JSON.parse(localStorage.getItem("_last_" + this.current.id))
+      this.last = JSON.parse(localStorage.getItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id))
 
       if(this.last) {
         this.last.date = new Date(this.last.date)
@@ -263,7 +264,7 @@ export default {
       }
     },
     saveRoute: function() {
-      localStorage.setItem("_last_" + this.current.id, JSON.stringify(this.last))
+      localStorage.setItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.last))
     },
     displayNotification: function(sumup) {
 
