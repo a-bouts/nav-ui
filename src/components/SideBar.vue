@@ -416,10 +416,10 @@ export default {
     },
     pan: function() {
       if(this.current) {
-        var min_lat = 180
-        var max_lat = -180
-        var min_lon = 360
-        var max_lon = 0
+        var min_lat = this.races[this.current.id].start.lat
+        var max_lat = this.races[this.current.id].start.lat
+        var min_lon = this.races[this.current.id].start.lon
+        var max_lon = this.races[this.current.id].start.lon
 
         // if(this.current.last) {
         //   for(var w in this.current.last) {
@@ -433,11 +433,13 @@ export default {
         for(var d in this.races[this.current.id].waypoints) {
           var door = this.races[this.current.id].waypoints[d];
           for(var ll in door.latlons) {
+            var w = door.wrap ? door.wrap * 360 : 0
             var latlon = door.latlons[ll]
             min_lat = min_lat < latlon.lat ? min_lat : latlon.lat
             max_lat = max_lat > latlon.lat ? max_lat : latlon.lat
-            min_lon = min_lon < latlon.lon ? min_lon : latlon.lon
-            max_lon = max_lon > latlon.lon ? max_lon : latlon.lon
+            min_lon = min_lon < latlon.lon + w ? min_lon : latlon.lon + w
+            max_lon = max_lon > latlon.lon + w ? max_lon : latlon.lon + w
+            console.log(min_lat, min_lon, max_lat, max_lon, latlon, w)
           }
         }
         this.map.flyToBounds([[min_lat, min_lon], [max_lat, max_lon]])
