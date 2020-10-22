@@ -1,5 +1,5 @@
 <template>
-  <Nav v-bind:experiment="experiment" v-bind:debug="debug"></Nav>
+  <Nav v-bind:debug="debug"></Nav>
 </template>
 
 <script>
@@ -14,7 +14,6 @@ export default {
   },
   data : function() {
     return {
-      experiment: false,
       debug: false
     }
   },
@@ -28,8 +27,6 @@ export default {
         if(v == 'debug') {
           new VConsole()
           it.debug = true
-        } else if(v == 'experiment') {
-          it.experiment = true
         }
       });
     }

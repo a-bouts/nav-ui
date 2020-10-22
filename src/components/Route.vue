@@ -10,7 +10,7 @@ import {EventBus} from '../event-bus.js';
 export default {
   name: 'Route',
   props: {
-    experiment: Boolean,
+    debug: Boolean,
     map: Object,
     layerControl: Object,
     current: Object,
@@ -142,11 +142,14 @@ export default {
                            path.push(pt);
                       }
                       const myLayer = layer
-                      L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 1, smoothFactor: 2, lineJoin: 'round'}).on('click', function() {
-                        this._latlngs.forEach(p => {
-                          L.marker([p.lat, p.lng], {icon: it.icon}).addTo(myLayer)
-                        });
-                      }).addTo(layer);
+                      var poly = L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 1, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
+                      if (this.debug) {
+                        poly.on('click', function() {
+                          this._latlngs.forEach(p => {
+                            L.marker([p.lat, p.lng], {icon: it.icon}).addTo(myLayer)
+                          })
+                        })
+                      }
                   // }
               }
           }
@@ -174,9 +177,17 @@ export default {
 
       const delta = Math.abs(date - new Date()) / 36e5;
 
-      const j = Math.floor(delta / 24)
-      const h = Math.floor(delta % 24)
-      const m = Math.floor(60 * (delta - j * 24 - h))
+      var j = Math.floor(delta / 24)
+      var h = Math.floor(delta % 24)
+      var m = Math.round(60 * (delta - j * 24 - h))
+      if (m == 60) {
+        m = 0
+        h ++
+      }
+      if (h == 24) {
+        h = 0
+        j ++
+      }
 
       var d = date > new Date()?"+":"-"
       if(j > 0) {

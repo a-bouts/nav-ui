@@ -8,7 +8,6 @@ import L from 'leaflet'
 export default {
   name: 'BoatLines',
   props: {
-    experiment: Boolean,
     map: Object,
     layerControl: Object,
     current: Object,
@@ -139,7 +138,6 @@ export default {
         return
 
       const params = {
-          experiment: this.experiment,
           start: {
             lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
             lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
