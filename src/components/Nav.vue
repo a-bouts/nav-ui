@@ -331,4 +331,28 @@ svg text::selection {
     background: none;
 }
 
+.leaflet-control-velocity {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+	background: #fff !important;
+	border-radius: 5px !important;
+  font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif !important;
+}
+
+.leaflet-touch .leaflet-control-velocity {
+	box-shadow: none  !important;
+}
+.leaflet-touch .leaflet-control-velocity {
+	border: 2px solid rgba(0,0,0,0.2) !important;
+	background-clip: padding-box !important;
+}
+.leaflet-left .leaflet-control-velocity {
+	margin-left: 10px !important;
+}
+.leaflet-top .leaflet-control-velocity {
+	margin-top: 10px !important;
+}
+.leaflet-bottom .leaflet-control-velocity {
+  margin-bottom: 10px !important;
+}
+
 </style>

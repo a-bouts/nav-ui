@@ -36,6 +36,7 @@ export default {
             displayValues: true,
             displayOptions: {
                     velocityType: 'Global Wind',
+                    position: 'bottomleft',
                     displayPosition: 'bottomleft',
                     displayEmptyString: 'No wind data',
                     angleConvention: 'meteoCW',
