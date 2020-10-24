@@ -120,7 +120,7 @@ export default {
 
     },
     drawRace() {
-      //var it = this
+      var it = this
 
 
       //this.raceLayer.clearLayers()
@@ -163,13 +163,13 @@ export default {
       //   }
       // }
       //
-      // for(var j in it.races[it.current.id].waypoints) {
-      //   var d = it.races[it.current.id].waypoints[j];
-      //   if(!d.validated) {
-      //     it.$emit('nextdoor', d)
-      //     break
-      //   }
-      // }
+      for(var j in it.races[it.current.id].waypoints) {
+        var d = it.races[it.current.id].waypoints[j];
+        if(!d.validated) {
+          it.$emit('nextdoor', d)
+          break
+        }
+      }
     },
     redraw() {
       this.raceLayer.clearLayers()
