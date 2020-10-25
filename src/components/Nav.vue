@@ -46,8 +46,8 @@ export default {
     return {
       notification: {
         active: true,
-        message: "NOAA est en panne... pas de nouveaux vents pour le moment",
-        level: "info"
+        message: "NOAA est en panne... pas de vent sur l'interface mais routage operationnel",
+        level: "error"
       },
       loading: false,
       map: null,
