@@ -45,8 +45,8 @@ export default {
   data: function() {
     return {
       notification: {
-        active: false,
-        message: "",
+        active: true,
+        message: "NOAA est en panne... pas de nouveaux vents pour le moment",
         level: "info"
       },
       loading: false,
