@@ -88,6 +88,9 @@ export default {
       return false
     },
     drawIceLimits() {
+      if(!this.races[this.current.id].ice_limits) {
+        return
+      }
       this.iceLimitsLayer.clearLayers()
 
       var latlngs = []

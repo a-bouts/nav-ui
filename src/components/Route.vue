@@ -71,6 +71,7 @@ export default {
       if(this.last) {
         this.last.date = new Date(this.last.date)
         this.drawRoute(this.last)
+        EventBus.$emit('route', this.last)
       }
     }
   },
@@ -165,6 +166,7 @@ export default {
 
         this.last = {
           date: runDate,
+          sumup: response.body.sumup,
           windline: windline
         }
         this.saveRoute()
@@ -265,6 +267,7 @@ export default {
     },
     saveRoute: function() {
       localStorage.setItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.last))
+      EventBus.$emit('route', this.last)
     },
     displayNotification: function(sumup) {
 

@@ -12,9 +12,10 @@
       </ul>
 
       <ul role="tablist"> <!-- bottom aligned tabs -->
-        <li><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
-        <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
+        <li><a href="#table" role="tab"><i class="fa fa-table"></i></a></li>
         <li><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
+        <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
+        <li><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
         <li v-if="debug"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
       </ul>
     </div>
@@ -232,6 +233,9 @@
         </div>
         </section>
       </div>
+      <div class="leaflet-sidebar-pane" id="table">
+        <Table></Table>
+      </div>
       <div class="leaflet-sidebar-pane" id="boats">
         <Boats></Boats>
       </div>
@@ -256,6 +260,7 @@ import Polar from './Polar.vue'
 import Buoys from './Buoys.vue'
 import Expes from './Expes.vue'
 import Boats from './Boats.vue'
+import Table from './Table.vue'
 
 export default {
   name: 'SideBar',
@@ -271,6 +276,7 @@ export default {
     Polar,
     Buoys,
     Boats,
+    Table,
     Expes
   },
   data: function() {
