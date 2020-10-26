@@ -508,6 +508,24 @@ export default {
         this.current.position.lng.s = lon[4]
       }
 
+      let latReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2})"(N|S)/
+      const latDash = clipboard.match(latReDash);
+      if(latDash) {
+        this.current.position.lat.d = latDash[1]
+        this.current.position.lat.p = latDash[4] === "N" ? 1 : -1
+        this.current.position.lat.m = latDash[2]
+        this.current.position.lat.s = latDash[3]
+      }
+
+      let lonReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2})"(E|W)/
+      const lonDash = clipboard.match(lonReDash);
+      if(lonDash) {
+        this.current.position.lng.d = lonDash[1]
+        this.current.position.lng.p = lonDash[4] === "E" ? 1 : -1
+        this.current.position.lng.m = lonDash[2]
+        this.current.position.lng.s = lonDash[3]
+      }
+
       event.preventDefault()
       this.enablePaste = false
     },
