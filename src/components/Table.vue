@@ -51,7 +51,7 @@
             <th class="has-text-centered"><i class='fa fa-ship'></i></th>
           </tr>
         </thead>
-        <tr v-for="(l) in lines" :key="l.timeshift" v-bind:class="{'has-background-grey-lighter': l.outdated}">
+        <tr v-for="(l) in lines" :key="l.timeshift" v-bind:class="{'has-background-primary-light': l.current, 'has-background-grey-lighter': l.outdated && !l.current}">
           <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
           <td v-else class="has-text-right">{{ l.duration }}</td>
           <td class="has-text-right">{{ l.date }}</td>
@@ -172,6 +172,7 @@ export default {
 
         this.lines.unshift({
           outdated: delta < 0,
+          current:  delta <= 0 && !this.lines[0].outdated,
           duration: this.formatEta(wl.duration),
           eta: this.formatEta(delta),
           date: year + "-" + month + "-" + day + " " + hrs + ":" + min,
