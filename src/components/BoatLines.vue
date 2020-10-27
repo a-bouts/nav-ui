@@ -166,7 +166,7 @@ export default {
       this.linesLayer.clearLayers()
 
       if (this.legend) {
-        this.legend.innerHTML = "<strong>Bearing </strong>" + this.bearing + "° - <strong>TWA </strong>" + this.boatLines[1][this.bearing].twa + "°"
+        this.legend.innerHTML = "<strong>Bearing </strong>" + this.bearing + "° - <strong>TWA </strong>" + this.boatLines[1][this.bearing].twa.toFixed(1) + "°"
       }
 
       for(var l in this.boatLines) {
