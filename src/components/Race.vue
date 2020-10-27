@@ -63,10 +63,9 @@ export default {
           type = "DOOR"
         if (w.name == "end")
           type = "END"
-        buoys.push({id: w.name, name: w.name, type: type, wrap: w.wrap, latlons: w.latlons, custom: false, validated: it.isValidated(w.name)})
+        buoys.push({id: w.name, name: w.name, type: type, wrap: w.wrap, latlons: w.latlons, radius: w.radius, custom: false, validated: it.isValidated(w.name)})
       });
 
-      console.log(buoys.length)
       return buoys
     }
   },

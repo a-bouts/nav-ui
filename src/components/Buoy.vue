@@ -58,6 +58,10 @@ export default {
         if(this.buoy.latlons.length == 1) {
           var endM = L.marker([this.buoy.latlons[0].lat, this.buoy.latlons[0].lon + wrap], {icon: endMarkerIcon}).addTo(this.raceLayer);
           this.markers.push(endM)
+          if (this.buoy.radius) {
+            var endCircle = L.circle(L.latLng(this.buoy.latlons[0].lat, this.buoy.latlons[0].lon + wrap), {radius: this.buoy.radius * 1852, color: "red", weight: 2, dashArray: [5, 8]}).addTo(this.raceLayer);
+            this.markers.push(endCircle)
+          }
         } else {
           var endM1 = L.marker([this.buoy.latlons[0].lat, this.buoy.latlons[0].lon + wrap], {icon: endMarkerIcon}).addTo(this.raceLayer);
           var endM2 = L.marker([this.buoy.latlons[1].lat, this.buoy.latlons[1].lon + wrap], {icon: endMarkerIcon}).addTo(this.raceLayer);
