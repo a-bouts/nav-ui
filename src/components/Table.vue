@@ -96,7 +96,7 @@ export default {
       })
     },
     onRoute(route) {
-      setLines(route)
+      this.setLines(route)
 
 
 
