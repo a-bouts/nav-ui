@@ -99,7 +99,8 @@ export default {
   },
   methods: {
     onRoute(route) {
-      this.route = route
+      setTimeout(() => {
+        this.route = route}, 0)
 
 
 
