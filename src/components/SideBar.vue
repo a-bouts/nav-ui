@@ -235,7 +235,7 @@
           </section>
         </div>
         <div class="leaflet-sidebar-pane" id="table">
-          <Table v-bind:display="displayed === 'table'"></Table>
+          <Table v-bind:display="displayed == 'table'"></Table>
         </div>
         <div class="leaflet-sidebar-pane" id="boats">
           <Boats></Boats>
@@ -368,10 +368,14 @@ export default {
       it.displayed = e.id
       if(e.id == "polars") {
         setTimeout(it.$refs.polars.onResize, 500)
-        it.sidebar.off('content')
-      } else if(e.id === "table") {
+      }
+      if(e.id == "table") {
         if (!L.DomUtil.hasClass(this._container, 'large')) {
           L.DomUtil.addClass(this._container, 'large');
+        }
+      } else {
+        if (L.DomUtil.hasClass(this._container, 'large')) {
+          L.DomUtil.removeClass(this._container, 'large');
         }
       }
     }).on('closing', function() {
