@@ -32,21 +32,21 @@ export default {
   },
   data: function() {
     return {
-      route: {
-        windline: []
-      }
+      lines: []
     }
   },
   mounted: function() {
     EventBus.$on('route', this.onRoute)
   },
   computed: {
-    lines: function() {
-      const res = []
-      this.route.windline.forEach(wl => {
+  },
+  methods: {
+    setLines: function(route) {
+      this.lines = []
+      route.windline.forEach(wl => {
         const sails = ["Jib", "Spi", "Stay", "LJ", "C0", "HG", "LG"];
 
-        var date = new Date(this.route.date.getTime())
+        var date = new Date(route.date.getTime())
         date.setMinutes(date.getMinutes() + wl.duration * 60);
 
         const delta = Math.abs(date - new Date()) / 36e5;
@@ -82,7 +82,7 @@ export default {
           min = "0" + min;
         }
 
-        res.unshift({
+        this.lines.unshift({
           timeshift: d,
           date: hrs + ":" + min,
           bearing: wl.bearing,
@@ -94,14 +94,9 @@ export default {
           boatSpeed: wl.boatSpeed
         })
       })
-      return res
-    }
-  },
-  methods: {
+    },
     onRoute(route) {
-      setTimeout(() => {
-        this.route = route}, 0)
-
+      setLines(route)
 
 
 
