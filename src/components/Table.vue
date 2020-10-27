@@ -177,12 +177,12 @@ export default {
           eta: this.formatEta(delta),
           date: year + "-" + month + "-" + day + " " + hrs + ":" + min,
           bearing: wl.bearing,
-          twa: wl.twa,
+          twa: wl.twa.toFixed(1),
           lat: pad(lat.d, 2) + "°" + (lat.p < 0 ? "S" : "N") + " " + pad(lat.m, 2) + "'" + pad(lat.s, 2) + "\"",
           lon: pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s, 2) + "\"",
           sail: sails[wl.sail],
           foil: wl.foil,
-          wind: wl.wind,
+          wind: wl.wind.toFixed(1),
           windSpeed: wl.windSpeed.toFixed(1),
           boatSpeed: wl.boatSpeed.toFixed(1)
         })

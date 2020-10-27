@@ -587,8 +587,8 @@ export default {
     max-width: 590px; } }
 @media (min-width: 1200px) {
   .leaflet-sidebar.large {
-    width: 830px;
-    max-width: 830px; } }
+    width: 860px;
+    max-width: 860px; } }
 
 .leaflet-sidebar-tabs .button {
   padding: 0px;
