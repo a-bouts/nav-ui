@@ -1,252 +1,254 @@
 <template>
-  <div id="sidebar" class="leaflet-sidebar collapsed">
-    <!-- Nav tabs -->
-    <div class="leaflet-sidebar-tabs">
-      <ul role="tablist"> <!-- top aligned tabs -->
-        <li><a href="#home" role="tab" @click="display('home')"><i class="fa fa-bars"></i></a></li>
-        <li><a role="tab" @click="center"><i class="fa fa-dot-circle"></i></a></li>
-        <li><a role="tab" @click="pan"><i class="fa fa-expand"></i></a></li>
-        <li><a role="tab" @click="showTooltip" class="button is-white"><i class="fa fa-eye"></i></a></li>
-        <li><a role="tab" @click="enablePaste = !enablePaste"><i class="fa fa-paste"></i></a></li>
-        <li><a role="tab" @click="run" class="button is-white" v-bind:class="{ 'is-loading': loading }">GO</a></li>
-      </ul>
+  <div id="truc">
+    <div id="sidebar" class="leaflet-sidebar collapsed">
+      <!-- Nav tabs -->
+      <div class="leaflet-sidebar-tabs">
+        <ul role="tablist"> <!-- top aligned tabs -->
+          <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
+          <li><a role="tab" @click="center"><i class="fa fa-dot-circle"></i></a></li>
+          <li><a role="tab" @click="pan"><i class="fa fa-expand"></i></a></li>
+          <li><a role="tab" @click="showTooltip" class="button is-white"><i class="fa fa-eye"></i></a></li>
+          <li><a role="tab" @click="enablePaste = !enablePaste"><i class="fa fa-paste"></i></a></li>
+          <li><a role="tab" @click="run" class="button is-white" v-bind:class="{ 'is-loading': loading }">GO</a></li>
+        </ul>
 
-      <ul role="tablist"> <!-- bottom aligned tabs -->
-        <li><a href="#table" role="tab" @click="display('table')"><i class="fa fa-table"></i></a></li>
-        <li><a href="#polars" role="tab" @click="display('polars')"><i class="fas fa-chart-area"></i></a></li>
-        <li><a href="#buoys" role="tab" @click="display('buoys')"><i class="fas fa-map-marked"></i></a></li>
-        <li><a href="#boats" role="tab" @click="display('boats')"><i class="fa fa-ship"></i></a></li>
-        <li v-if="debug"><a href="#settings" role="tab" @click="display('settings')"><i class="fas fa-cog"></i></a></li>
-      </ul>
-    </div>
+        <ul role="tablist"> <!-- bottom aligned tabs -->
+          <li><a href="#table" role="tab"><i class="fa fa-table"></i></a></li>
+          <li><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
+          <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
+          <li><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
+          <li v-if="debug"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
+        </ul>
+      </div>
 
-    <!-- Tab panes -->
-    <div class="leaflet-sidebar-content">
-      <div class="leaflet-sidebar-pane" id="home">
-        <h1 class="leaflet-sidebar-header">
-          Current Race
-          <div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div>
-        </h1>
-        <section class="section">
-          <label class="label">Race</label>
-          <div class="field is-grouped">
-            <div class="control has-icons-left">
-              <div class="select is-small">
-                <select v-model="current.id" @change="selectRace(current.id, true)">
-                  <option v-for="(race, id) in races" :key="id" v-bind:value="id">
-                    {{ race.name }}
-                  </option>
-                </select>
+      <!-- Tab panes -->
+      <div class="leaflet-sidebar-content">
+        <div class="leaflet-sidebar-pane" id="home">
+          <h1 class="leaflet-sidebar-header">
+            Current Race
+            <div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div>
+          </h1>
+          <section class="section">
+            <label class="label">Race</label>
+            <div class="field is-grouped">
+              <div class="control has-icons-left">
+                <div class="select is-small">
+                  <select v-model="current.id" @change="selectRace(current.id, true)">
+                    <option v-for="(race, id) in races" :key="id" v-bind:value="id">
+                      {{ race.name }}
+                    </option>
+                  </select>
+                </div>
+                <span class="icon is-left">
+                  <i class="fa fa-globe"></i>
+                </span>
               </div>
-              <span class="icon is-left">
-                <i class="fa fa-globe"></i>
-              </span>
+              <p class="control">
+                <a class="button is-small" v-bind:class="{'is-loading': polarsLoading}" @click="refreshPolars"><i class="fa fa-kiwi-bird"></i></a>
+              </p>
             </div>
-            <p class="control">
-              <a class="button is-small" v-bind:class="{'is-loading': polarsLoading}" @click="refreshPolars"><i class="fa fa-kiwi-bird"></i></a>
-            </p>
-          </div>
-          <div class="field is-grouped">
-            <div class="field">
-              <label class="label">Cap</label>
+            <div class="field is-grouped">
+              <div class="field">
+                <label class="label">Cap</label>
+                <div class="field has-addons">
+                  <p class="control">
+                    <input v-model.number="current.bearing" class="input is-small" type="text" placeholder="41" style="width:60px">
+                  </p>
+                  <p class="control">
+                    <a class="button is-static is-small">°</a>
+                  </p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Sail</label>
+                <div class="control">
+                  <div class="select is-small">
+                    <select v-model.number="current.sail">
+                      <option value="0">Jib</option>
+                      <option value="1">Spi</option>
+                      <option value="3">Génois Léger</option>
+                      <option value="6">Spi Léger</option>
+                      <option value="4">Code 0</option>
+                      <option value="2">Trinquette</option>
+                      <option value="5">Spi Lourd</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="enablePaste" class="field is-grouped">
+              <p class="control">
+                <input v-model="pasteLatlon" @paste="paste" class="input is-small" type="text">
+              </p>
+            </div>
+            <label class="label">Latitude</label>
+            <div class="field is-grouped">
               <div class="field has-addons">
                 <p class="control">
-                  <input v-model.number="current.bearing" class="input is-small" type="text" placeholder="41" style="width:60px">
+                  <input v-model.number="current.position.lat.d" class="input is-small" type="text" placeholder="41" style="width:60px">
                 </p>
                 <p class="control">
                   <a class="button is-static is-small">°</a>
                 </p>
+                <p class="control">
+                  <span class="select is-small">
+                    <select v-model="current.position.lat.p" style="width:60px">
+                      <option value="1">N</option>
+                      <option value="-1">S</option>
+                    </select>
+                  </span>
+                </p>
+                <p class="control">
+                  <input v-model.number="current.position.lat.m" class="input is-small" type="text" placeholder="42" style="width:60px">
+                </p>
+                <p class="control">
+                  <a class="button is-static is-small">'</a>
+                </p>
+                <p class="control">
+                  <input v-model.number="current.position.lat.s" class="input is-small" type="text" placeholder="43" style="width:60px">
+                </p>
+                <p class="control">
+                  <a class="button is-static is-small">''</a>
+                </p>
               </div>
             </div>
-            <div class="field">
-              <label class="label">Sail</label>
-              <div class="control">
-                <div class="select is-small">
-                  <select v-model.number="current.sail">
-                    <option value="0">Jib</option>
-                    <option value="1">Spi</option>
-                    <option value="3">Génois Léger</option>
-                    <option value="6">Spi Léger</option>
-                    <option value="4">Code 0</option>
-                    <option value="2">Trinquette</option>
-                    <option value="5">Spi Lourd</option>
-                  </select>
+            <label class="label">Longitude</label>
+            <div class="field is-grouped">
+              <div class="field has-addons">
+                <p class="control">
+                  <input v-model.number="current.position.lng.d" class="input is-small" type="text" placeholder="41" style="width:60px">
+                </p>
+                <p class="control">
+                  <a class="button is-static is-small">°</a>
+                </p>
+                <p class="control">
+                  <span class="select is-small">
+                    <select v-model.number="current.position.lng.p" style="width:60px">
+                      <option value="1">E</option>
+                      <option value="-1">W</option>
+                    </select>
+                  </span>
+                </p>
+                <p class="control">
+                  <input v-model.number="current.position.lng.m" class="input is-small" type="text" placeholder="42" style="width:60px">
+                </p>
+                <p class="control">
+                  <a class="button is-static is-small">'</a>
+                </p>
+                <p class="control">
+                  <input v-model.number="current.position.lng.s" class="input is-small" type="text" placeholder="43" style="width:60px">
+                </p>
+                <p class="control">
+                  <a class="button is-static is-small">''</a>
+                </p>
+              </div>
+            </div>
+            <div class="columns is-gapless is-multiline is-mobile">
+              <div class="column is-one-third">
+                <div class="control">
+                  <div class="field">
+                    <label class="checkbox">
+                      <input v-model="current.winch" type="checkbox">
+                      Winch
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-one-third">
+                <div class="control">
+                  <div class="field">
+                    <label class="checkbox">
+                      <input v-model="current.foil" type="checkbox">
+                      Foil
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-one-third">
+                <div class="control">
+                  <div class="field">
+                    <label class="checkbox">
+                      <input v-model="current.hull" type="checkbox">
+                      Hull
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-one-third">
+                <div class="control">
+                  <div class="field">
+                    <label class="checkbox">
+                      <input v-model="pt" type="checkbox">
+                      Petit temps
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-one-third">
+                <div class="control">
+                  <div class="field">
+                    <label class="checkbox">
+                      <input v-model="c0" type="checkbox">
+                      Code 0
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-one-third">
+                <div class="control">
+                  <div class="field">
+                    <label class="checkbox">
+                      <input v-model="gt" type="checkbox">
+                      Gros temps
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div v-if="enablePaste" class="field is-grouped">
+            <div class="field is-grouped">
             <p class="control">
-              <input v-model="pasteLatlon" @paste="paste" class="input is-small" type="text">
+              <a class="button is-small is-primary" @click="submit()">
+                Save
+              </a>
             </p>
-          </div>
-          <label class="label">Latitude</label>
-          <div class="field is-grouped">
-            <div class="field has-addons">
-              <p class="control">
-                <input v-model.number="current.position.lat.d" class="input is-small" type="text" placeholder="41" style="width:60px">
-              </p>
-              <p class="control">
-                <a class="button is-static is-small">°</a>
-              </p>
-              <p class="control">
-                <span class="select is-small">
-                  <select v-model="current.position.lat.p" style="width:60px">
-                    <option value="1">N</option>
-                    <option value="-1">S</option>
-                  </select>
-                </span>
-              </p>
-              <p class="control">
-                <input v-model.number="current.position.lat.m" class="input is-small" type="text" placeholder="42" style="width:60px">
-              </p>
-              <p class="control">
-                <a class="button is-static is-small">'</a>
-              </p>
-              <p class="control">
-                <input v-model.number="current.position.lat.s" class="input is-small" type="text" placeholder="43" style="width:60px">
-              </p>
-              <p class="control">
-                <a class="button is-static is-small">''</a>
-              </p>
-            </div>
-          </div>
-          <label class="label">Longitude</label>
-          <div class="field is-grouped">
-            <div class="field has-addons">
-              <p class="control">
-                <input v-model.number="current.position.lng.d" class="input is-small" type="text" placeholder="41" style="width:60px">
-              </p>
-              <p class="control">
-                <a class="button is-static is-small">°</a>
-              </p>
-              <p class="control">
-                <span class="select is-small">
-                  <select v-model.number="current.position.lng.p" style="width:60px">
-                    <option value="1">E</option>
-                    <option value="-1">W</option>
-                  </select>
-                </span>
-              </p>
-              <p class="control">
-                <input v-model.number="current.position.lng.m" class="input is-small" type="text" placeholder="42" style="width:60px">
-              </p>
-              <p class="control">
-                <a class="button is-static is-small">'</a>
-              </p>
-              <p class="control">
-                <input v-model.number="current.position.lng.s" class="input is-small" type="text" placeholder="43" style="width:60px">
-              </p>
-              <p class="control">
-                <a class="button is-static is-small">''</a>
-              </p>
-            </div>
-          </div>
-          <div class="columns is-gapless is-multiline is-mobile">
-            <div class="column is-one-third">
-              <div class="control">
-                <div class="field">
-                  <label class="checkbox">
-                    <input v-model="current.winch" type="checkbox">
-                    Winch
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="column is-one-third">
-              <div class="control">
-                <div class="field">
-                  <label class="checkbox">
-                    <input v-model="current.foil" type="checkbox">
-                    Foil
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="column is-one-third">
-              <div class="control">
-                <div class="field">
-                  <label class="checkbox">
-                    <input v-model="current.hull" type="checkbox">
-                    Hull
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="column is-one-third">
-              <div class="control">
-                <div class="field">
-                  <label class="checkbox">
-                    <input v-model="pt" type="checkbox">
-                    Petit temps
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="column is-one-third">
-              <div class="control">
-                <div class="field">
-                  <label class="checkbox">
-                    <input v-model="c0" type="checkbox">
-                    Code 0
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="column is-one-third">
-              <div class="control">
-                <div class="field">
-                  <label class="checkbox">
-                    <input v-model="gt" type="checkbox">
-                    Gros temps
-                  </label>
-                </div>
+            <p class="control has-icons-left">
+              <input v-model.number="current.delta" class="input is-small" type="text" placeholder="3" style="width:60px">
+              <span class="icon is-left">
+                <i class="fas fa-expand-alt"></i>
+              </span>
+            </p>
+            <p class="control has-icons-left">
+              <input v-model.number="current.delay" class="input is-small" type="text" placeholder="0" style="width:60px">
+              <span class="icon is-left">
+                <i class="fas fa-clock"></i>
+              </span>
+            </p>
+            <div class="control">
+              <div class="field">
+                <label class="checkbox">
+                  <input v-model="current.stop" type="checkbox">
+                    Stop
+                </label>
               </div>
             </div>
           </div>
-          <div class="field is-grouped">
-          <p class="control">
-            <a class="button is-small is-primary" @click="submit()">
-              Save
-            </a>
-          </p>
-          <p class="control has-icons-left">
-            <input v-model.number="current.delta" class="input is-small" type="text" placeholder="3" style="width:60px">
-            <span class="icon is-left">
-              <i class="fas fa-expand-alt"></i>
-            </span>
-          </p>
-          <p class="control has-icons-left">
-            <input v-model.number="current.delay" class="input is-small" type="text" placeholder="0" style="width:60px">
-            <span class="icon is-left">
-              <i class="fas fa-clock"></i>
-            </span>
-          </p>
-          <div class="control">
-            <div class="field">
-              <label class="checkbox">
-                <input v-model="current.stop" type="checkbox">
-                  Stop
-              </label>
-            </div>
-          </div>
+          </section>
         </div>
-        </section>
-      </div>
-      <div class="leaflet-sidebar-pane" id="table">
-        <Table v-bind:display="displayed === 'table'"></Table>
-      </div>
-      <div class="leaflet-sidebar-pane" id="boats">
-        <Boats></Boats>
-      </div>
-      <div class="leaflet-sidebar-pane polars" id="polars">
-        <Polar ref="polars" v-bind:races="races" v-bind:current="current"></Polar>
-      </div>
-      <div class="leaflet-sidebar-pane" id="buoys">
-        <Buoys v-bind:races="races" v-bind:current="current"></Buoys>
-      </div>
-      <div class="leaflet-sidebar-pane" id="settings">
-        <Expes v-bind:debug="debug"></Expes>
+        <div class="leaflet-sidebar-pane" id="table">
+          <Table v-bind:display="displayed === 'table'"></Table>
+        </div>
+        <div class="leaflet-sidebar-pane" id="boats">
+          <Boats></Boats>
+        </div>
+        <div class="leaflet-sidebar-pane polars" id="polars">
+          <Polar ref="polars" v-bind:races="races" v-bind:current="current"></Polar>
+        </div>
+        <div class="leaflet-sidebar-pane" id="buoys">
+          <Buoys v-bind:races="races" v-bind:current="current"></Buoys>
+        </div>
+        <div class="leaflet-sidebar-pane" id="settings">
+          <Expes v-bind:debug="debug"></Expes>
+        </div>
       </div>
     </div>
   </div>
@@ -349,7 +351,7 @@ export default {
         }
         console.log(this.current.sails)
       }
-    },
+    }
   },
   mounted: function() {
     const it = this
@@ -363,20 +365,23 @@ export default {
         position: 'left',     // left or right
     }).addTo(this.map);
     this.sidebar.on('content', function(e) {
+      it.displayed = e.id
       if(e.id == "polars") {
         setTimeout(it.$refs.polars.onResize, 500)
         it.sidebar.off('content')
+      } else if(e.id === "table") {
+        if (!L.DomUtil.hasClass(this._container, 'large')) {
+          L.DomUtil.addClass(this._container, 'large');
+        }
       }
+    }).on('closing', function() {
+      if (L.DomUtil.hasClass(this._container, 'large')) {
+        L.DomUtil.removeClass(this._container, 'large');
+      }
+      it.displayed = null
     })
   },
   methods: {
-    display: function(tab) {
-      if(this.displayed === tab) {
-        this.displayed = null
-      } else {
-        this.displayed = tab
-      }
-    },
     convertDMSToDD: function(p, d, m, s) {
       return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
     },
@@ -424,7 +429,6 @@ export default {
     },
     submit: function() {
       this.sidebar.close();
-      this.display = null
 
       localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
 
@@ -563,6 +567,25 @@ export default {
 
 
 <style scoped>
+
+@media (min-width: 768px) {
+  .leaflet-sidebar.large {
+    top: 10px;
+    bottom: 10px;
+    transition: width 500ms; } }
+@media (min-width: 768px) and (max-width: 991px) {
+  .leaflet-sidebar.large {
+    width: 390px;
+    max-width: 390px; } }
+@media (min-width: 992px) and (max-width: 1199px) {
+  .leaflet-sidebar.large {
+    width: 590px;
+    max-width: 590px; } }
+@media (min-width: 1200px) {
+  .leaflet-sidebar.large {
+    width: 830px;
+    max-width: 830px; } }
+
 .leaflet-sidebar-tabs .button {
   padding: 0px;
   border: 0px;

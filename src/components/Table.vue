@@ -1,25 +1,72 @@
 <template>
-  <div style="overflow-x:scroll;">
-    <table v-if="display" class="table is-full-width">
-      <thead>
-        <tr>
-          <th></th>
-          <th></th>
-          <th><i class='fa fa-compass'></i></th>
-          <th><i class='fa fa-location-arrow'></i></th>
-          <th></th>
+  <div class="container" style="overflow-x:scroll;">
+
+    <div v-if="display" style="display: inline-block">
+      <nav class="level is-mobile">
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Standard</p>
+            <p class="title">{{ formatHours(route.sumup.sailsDuration[0] + route.sumup.sailsDuration[1]) }} hrs</p>
+          </div>
+        </div>
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">LG</p>
+            <p class="title">{{ formatHours(route.sumup.sailsDuration[3] + route.sumup.sailsDuration[6]) }} hrs</p>
+          </div>
+        </div>
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Code 0</p>
+            <p class="title">{{ formatHours(route.sumup.sailsDuration[4]) }} hrs</p>
+          </div>
+        </div>
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">HG</p>
+            <p class="title">{{ formatHours(route.sumup.sailsDuration[2] + route.sumup.sailsDuration[5]) }} hrs</p>
+          </div>
+        </div>
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Foil</p>
+            <p class="title">{{ formatHours(route.sumup.foilDuration) }} hrs</p>
+          </div>
+        </div>
+      </nav>
+
+      <table class="table is-fullwidth is-narrow is-bordered monospace" style="white-space: nowrap;">
+        <thead>
+          <tr>
+            <th v-if="eta" class="is-clickable has-text-centered" @click="eta = !eta">ETA</th>
+            <th v-else class="is-clickable has-text-centered" @click="eta = !eta">Duration</th>
+            <th class="has-text-centered">Date</th>
+            <th class="has-text-centered">Latitude</th>
+            <th class="has-text-centered">Longitude</th>
+            <th class="has-text-centered"><i class='fa fa-compass'></i></th>
+            <th class="has-text-centered"><i class='fa fa-location-arrow'></i></th>
+            <th></th>
+            <th></th>
+            <th class="has-text-centered" colspan="2"><i class='fa fa-wind'></i></th>
+            <th class="has-text-centered"><i class='fa fa-ship'></i></th>
+          </tr>
+        </thead>
+        <tr v-for="(l) in lines" :key="l.timeshift" v-bind:class="{'has-background-grey-lighter': l.outdated}">
+          <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
+          <td v-else class="has-text-right">{{ l.duration }}</td>
+          <td class="has-text-right">{{ l.date }}</td>
+          <td>{{ l.lat }}</td>
+          <td>{{ l.lon }}</td>
+          <td class="has-text-right">{{ l.bearing }}°</td>
+          <td class="has-text-right">{{ l.twa }}°</td>
+          <td>{{ l.sail }}</td>
+          <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
+          <td class="has-text-right">{{ l.wind }}°</td>
+          <td class="has-text-right">{{ l.windSpeed }} kt</td>
+          <td class="has-text-right">{{ l.boatSpeed }} kt</td>
         </tr>
-      </thead>
-      <tr v-for="(l, index) in lines" :key="index">
-        <td><span style="white-space: nowrap;">{{ l.timeshift }}</span></td>
-        <td>{{ l.date }}</td>
-        <td>{{ l.bearing }}°</td>
-        <td>{{ l.twa }}°</td>
-        <td>{{ l.sail }}</td>
-        <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
-        <td><span style="white-space: nowrap;"><i class='fa fa-wind'></i> {{ l.wind }}° {{ l.windSpeed }} kt</span> <span style="white-space: nowrap;"><i class='fa fa-ship'></i> {{ l.boatSpeed }} kt</span></td>
-      </tr>
-    </table>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -36,16 +83,73 @@ export default {
   },
   data: function() {
     return {
+      route: {},
       lines: [],
+      eta: true
     }
   },
   mounted: function() {
     EventBus.$on('route', this.onRoute)
   },
   computed: {
+    //
+    // var n = sumup.sailsDuration[0] + sumup.sailsDuration[1]
+    // var l = sumup.sailsDuration[3] + sumup.sailsDuration[6]
+    // var c = sumup.sailsDuration[4]
+    // var h = sumup.sailsDuration[2] + sumup.sailsDuration[5]
+    //
+    // var title = dateFormat(sumup.start, "dd mmm HH:MM") + " " + Math.floor(sumup.duration/24) + "j" + (sumup.duration%24).toFixed(1)
+    // var message = format("Std", n) + " | " + format("LG", l) + " | " + format("C0", c) + " | " + format("HG", h) + " | " + format("Foil", sumup.foilDuration)
+    // if (Notification.permission === 'granted') {
+    //   new Notification(title, {
+    //       body: message,
+    //   });
+    // }
+
   },
   methods: {
+    convertDDToDMS: function(D){
+      return {
+        p : D<0?-1:1,
+        d : 0|(D<0?D=-D:D),
+        m : 0|D%1*60,
+        s : Math.round((0|D*60%1*6000)/100)
+      };
+    },
+    formatHours: function(duration) {
+      return Math.floor(duration / 24) * 24 + Math.round(duration % 24)
+    },
+    formatEta: function(delta) {
+      var d = delta > 0?"+":"-"
+
+      delta = Math.abs(delta)
+      var j = Math.floor(delta / 24)
+      var h = Math.floor(delta % 24)
+      var m = Math.round(60 * (delta - j * 24 - h))
+      if (m == 60) {
+        m = 0
+        h ++
+      }
+      if (h == 24) {
+        h = 0
+        j ++
+      }
+
+      if(j > 0) {
+        d += j + "j"
+      }
+      if(h > 0) {
+        d += String(h).padStart(2, ' ') + "h"
+      }
+      if(m > 0) {
+        d += String(m).padStart(2, ' ') + "m"
+      }
+
+      return d
+    },
     setLines: function(route) {
+      const pad = (num, places) => String(num).padStart(places, '0')
+
       const sails = ["Jib", "Spi", "Stay", "LJ", "C0", "HG", "LG"];
 
       this.lines = []
@@ -55,44 +159,26 @@ export default {
         var date = new Date(route.date.getTime())
         date.setMinutes(date.getMinutes() + wl.duration * 60);
 
-        const delta = Math.abs(date - new Date()) / 36e5;
+        const delta = (date - new Date()) / 36e5;
 
-        var j = Math.floor(delta / 24)
-        var h = Math.floor(delta % 24)
-        var m = Math.round(60 * (delta - j * 24 - h))
-        if (m == 60) {
-          m = 0
-          h ++
-        }
-        if (h == 24) {
-          h = 0
-          j ++
-        }
+        var year = date.getFullYear();
+        var month = pad(date.getMonth() + 1, 2);
+        var day = pad(date.getDate(), 2);
+        var hrs = pad(date.getHours(), 2);
+        var min = pad(date.getMinutes(), 2);
 
-        var d = date > new Date()?"+":"-"
-        if(j > 0) {
-          d += j + "j"
-        }
-        if(h > 0) {
-//          if(d.length > 0) d += " "
-          d += h + "h"
-        }
-        if(m > 0) {
-//          if(d.length > 0) d += " "
-          d += m + "m"
-        }
-
-        var hrs = date.getHours();
-        var min = date.getMinutes();
-        if (min < 10) {
-          min = "0" + min;
-        }
+        var lat = this.convertDDToDMS(wl.lat)
+        var lon = this.convertDDToDMS(wl.lon)
 
         this.lines.unshift({
-          timeshift: d,
-          date: hrs + ":" + min,
+          outdated: delta < 0,
+          duration: this.formatEta(wl.duration),
+          eta: this.formatEta(delta),
+          date: year + "-" + month + "-" + day + " " + hrs + ":" + min,
           bearing: wl.bearing,
           twa: wl.twa,
+          lat: pad(lat.d, 2) + "°" + (lat.p < 0 ? "S" : "N") + " " + pad(lat.m, 2) + "'" + pad(lat.s, 2) + "\"",
+          lon: pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s, 2) + "\"",
           sail: sails[wl.sail],
           foil: wl.foil,
           wind: wl.wind,
@@ -102,29 +188,18 @@ export default {
       }
     },
     onRoute(route) {
+      this.route = route
       this.setLines(route)
-
-
-
-//      var primary = "<i class='fa fa-compass'></i> " + wl.bearing + "° <i class='fa fa-location-arrow'></i> " + wl.twa + "° <span class='sail'>" + sails[wl.sail] + "</span>";
-//      if(wl.foil > 0) {
-        //primary += "<span class='foil' style='color:rgb(255," + 255 * (wl.foil / 100) + "," + 255 * (wl.foil / 100) + ");'><i class='fa fa-fighter-jet'></i></span>"
-//        primary += "<span class='foil' style='opacity:" + (wl.foil) + "%;'><i class='fa fa-fighter-jet'></i></span>"
-//      }
-//      if(wl.ice) {
-//        primary += "<span class='ice'><i class='fas fa-igloo'></i></span>"
-//      }
-//      const secondary = "<i class='fa fa-wind'></i> " + wl.wind + "° " + wl.windSpeed.toFixed(1) + "kt <i class='fa fa-ship'></i> " + wl.boatSpeed.toFixed(1) + "kt";
-
-//      var res = '<tr class="date"><span>' + d + '</span><span class="hour">' + hrs + ":" + min + '</span></tr><tr class="primary">' + primary + '</tr>';
-//      if(secondary)
-//          res += '<tr class="secondary">' + secondary + '</tr>';
-
-//      return res;
     }
   }
 }
 </script>
 
 <style scoped>
+.monospace {
+  font-family: Roboto Mono,SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+}
+.outdated {
+  background-color: #fafafa;
+}
 </style>
