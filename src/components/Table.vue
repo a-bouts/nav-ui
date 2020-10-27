@@ -1,6 +1,6 @@
 <template>
   <div style="overflow-x:scroll;">
-    <table class="table is-fullwidth">
+    <table v-if="display" class="table is-full-width">
       <thead>
         <tr>
           <th></th>
@@ -17,7 +17,7 @@
         <td>{{ l.twa }}°</td>
         <td>{{ l.sail }}</td>
         <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
-        <td><span style="white-space: nowrap;"><i class='fa fa-wind'></i> {{ l.wind }}° {{ l.windSpeed.toFixed(1) }} kt</span> <span style="white-space: nowrap;"><i class='fa fa-ship'></i> {{ l.boatSpeed.toFixed(1) }} kt</span></td>
+        <td><span style="white-space: nowrap;"><i class='fa fa-wind'></i> {{ l.wind }}° {{ l.windSpeed }} kt</span> <span style="white-space: nowrap;"><i class='fa fa-ship'></i> {{ l.boatSpeed }} kt</span></td>
       </tr>
     </table>
   </div>
@@ -26,13 +26,17 @@
 <script>
 import {EventBus} from '../event-bus.js';
 
+
 export default {
   name: 'Table',
+  components: {
+  },
   props: {
+    display: Boolean
   },
   data: function() {
     return {
-      lines: []
+      lines: [],
     }
   },
   mounted: function() {
@@ -42,9 +46,11 @@ export default {
   },
   methods: {
     setLines: function(route) {
+      const sails = ["Jib", "Spi", "Stay", "LJ", "C0", "HG", "LG"];
+
       this.lines = []
-      route.windline.forEach(wl => {
-        const sails = ["Jib", "Spi", "Stay", "LJ", "C0", "HG", "LG"];
+      for (var i = 0 ; i < Math.min(500, route.windline.length) ; i++) {
+        const wl = route.windline[i]
 
         var date = new Date(route.date.getTime())
         date.setMinutes(date.getMinutes() + wl.duration * 60);
@@ -90,10 +96,10 @@ export default {
           sail: sails[wl.sail],
           foil: wl.foil,
           wind: wl.wind,
-          windSpeed: wl.windSpeed,
-          boatSpeed: wl.boatSpeed
+          windSpeed: wl.windSpeed.toFixed(1),
+          boatSpeed: wl.boatSpeed.toFixed(1)
         })
-      })
+      }
     },
     onRoute(route) {
       this.setLines(route)
@@ -110,9 +116,9 @@ export default {
 //      }
 //      const secondary = "<i class='fa fa-wind'></i> " + wl.wind + "° " + wl.windSpeed.toFixed(1) + "kt <i class='fa fa-ship'></i> " + wl.boatSpeed.toFixed(1) + "kt";
 
-//      var res = '<div class="date"><span>' + d + '</span><span class="hour">' + hrs + ":" + min + '</span></div><div class="primary">' + primary + '</div>';
+//      var res = '<tr class="date"><span>' + d + '</span><span class="hour">' + hrs + ":" + min + '</span></tr><tr class="primary">' + primary + '</tr>';
 //      if(secondary)
-//          res += '<div class="secondary">' + secondary + '</div>';
+//          res += '<tr class="secondary">' + secondary + '</tr>';
 
 //      return res;
     }

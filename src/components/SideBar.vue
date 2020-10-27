@@ -3,7 +3,7 @@
     <!-- Nav tabs -->
     <div class="leaflet-sidebar-tabs">
       <ul role="tablist"> <!-- top aligned tabs -->
-        <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
+        <li><a href="#home" role="tab" @click="display('home')"><i class="fa fa-bars"></i></a></li>
         <li><a role="tab" @click="center"><i class="fa fa-dot-circle"></i></a></li>
         <li><a role="tab" @click="pan"><i class="fa fa-expand"></i></a></li>
         <li><a role="tab" @click="showTooltip" class="button is-white"><i class="fa fa-eye"></i></a></li>
@@ -12,11 +12,11 @@
       </ul>
 
       <ul role="tablist"> <!-- bottom aligned tabs -->
-        <li><a href="#table" role="tab"><i class="fa fa-table"></i></a></li>
-        <li><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
-        <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
-        <li><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
-        <li v-if="debug"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
+        <li><a href="#table" role="tab" @click="display('table')"><i class="fa fa-table"></i></a></li>
+        <li><a href="#polars" role="tab" @click="display('polars')"><i class="fas fa-chart-area"></i></a></li>
+        <li><a href="#buoys" role="tab" @click="display('buoys')"><i class="fas fa-map-marked"></i></a></li>
+        <li><a href="#boats" role="tab" @click="display('boats')"><i class="fa fa-ship"></i></a></li>
+        <li v-if="debug"><a href="#settings" role="tab" @click="display('settings')"><i class="fas fa-cog"></i></a></li>
       </ul>
     </div>
 
@@ -234,7 +234,7 @@
         </section>
       </div>
       <div class="leaflet-sidebar-pane" id="table">
-        <Table></Table>
+        <Table v-bind:display="displayed === 'table'"></Table>
       </div>
       <div class="leaflet-sidebar-pane" id="boats">
         <Boats></Boats>
@@ -307,6 +307,7 @@ export default {
         stop: false
       },
       pasteLatlon: "",
+      displayed: null
     }
   },
   computed: {
@@ -369,6 +370,13 @@ export default {
     })
   },
   methods: {
+    display: function(tab) {
+      if(this.displayed === tab) {
+        this.displayed = null
+      } else {
+        this.displayed = tab
+      }
+    },
     convertDMSToDD: function(p, d, m, s) {
       return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
     },
