@@ -424,6 +424,7 @@ export default {
     },
     submit: function() {
       this.sidebar.close();
+      this.display = null
 
       localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
 
