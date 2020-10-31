@@ -8,7 +8,7 @@
       <SideBar ref="sidebar" v-if="map != null" v-bind:boat="boat" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
-    <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:to="nextDoor" v-bind:map="map"></Geodesic>
+    <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:map="map"></Geodesic>
     <Race v-if="map != null" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:current="current" v-on:nextdoor="onNextDoor"></Race>
     <Route ref="route" v-if="map != null" v-bind:debug="debug" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
     <BoatLines ref="boatlines" v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current"></BoatLines>
