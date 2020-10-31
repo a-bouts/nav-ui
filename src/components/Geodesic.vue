@@ -54,7 +54,6 @@ export default {
       })
     },
     addGeodesic: function(from, to) {
-      console.log("wrap", from.wrap, to.wrap)
       const fromLatLng = new L.LatLng(from.lat, from.lon + from.wrap * 360)
       const toLatLng = new L.LatLng(to.lat, to.lon + to.wrap * 360)
       L.geodesic([fromLatLng, toLatLng], {wrap: false, weight: 1, opacity: 0.7}).addTo(this.layer)
