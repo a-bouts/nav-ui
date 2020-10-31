@@ -124,51 +124,10 @@ export default {
     drawRace() {
       var it = this
 
-
-      //this.raceLayer.clearLayers()
-
-      //var startMarkerIcon = L.ExtraMarkers.icon({shape: 'circle', markerColor: 'green' , prefix: 'fa'})
-      //var endMarkerIcon = L.ExtraMarkers.icon({shape: 'circle', markerColor: 'red' , prefix: 'fa'});
-
-      //var start = this.races[this.current.id].start
-      //L.marker([start.lat, start.lon], {icon: startMarkerIcon}).addTo(this.raceLayer)
-
-      // for(var i in this.races[this.current.id].waypoints) {
-      //   var door = this.races[this.current.id].waypoints[i];
-      //
-      //   if(door.name === "end") {
-      //     if(door.latlons.length == 1) {
-      //       L.marker([door.latlons[0].lat, door.latlons[0].lon], {icon: endMarkerIcon}).addTo(this.raceLayer);
-      //     } else {
-      //       L.marker([door.latlons[0].lat, door.latlons[0].lon], {icon: endMarkerIcon}).addTo(this.raceLayer);
-      //       L.marker([door.latlons[1].lat, door.latlons[1].lon], {icon: endMarkerIcon}).addTo(this.raceLayer);
-      //       L.polyline([[door.latlons[0].lat, door.latlons[0].lon], [door.latlons[1].lat, door.latlons[1].lon]], {color: 'red'}).addTo(this.raceLayer);
-      //     }
-      //     continue;
-      //   }
-      //
-      //   if(this.validated && this.validated.indexOf(door.name) >= 0) {
-      //       door.validated = true;
-      //   }
-      //   var markerIcon = L.ExtraMarkers.icon({icon: 'fa-number', number: door.name, shape: 'penta', markerColor: door.validated === true ? 'green-light' : 'yellow'});
-      //
-      //   L.marker([door.latlons[0].lat, door.latlons[0].lon], {door: door, icon: markerIcon}).on('click', function() {
-      //       it.validateBuoy(this)
-      //   }).addTo(this.raceLayer);
-      //
-      //   if(door.latlons.length > 1) {
-      //     var markerIconTribord = L.ExtraMarkers.icon({icon: 'fa-number', number: door.name, shape: 'penta', markerColor: door.validated === true ? 'green-light' : 'orange'});
-      //     L.marker([door.latlons[1].lat, door.latlons[1].lon], {door: door, icon: markerIconTribord}).on('click', function() {
-      //         it.validateBuoy(this)
-      //     }).addTo(this.raceLayer)
-      //     L.polyline([[door.latlons[0].lat, door.latlons[0].lon], [door.latlons[1].lat, door.latlons[1].lon]], {color: 'red', dashArray: '4, 8', dashOffset: '0', weight: 1}).addTo(this.raceLayer);
-      //   }
-      // }
-      //
-      for(var j in it.races[it.current.id].waypoints) {
-        var d = it.races[it.current.id].waypoints[j];
-        if(!d.validated) {
-          it.$emit('nextdoor', d)
+      for(var j in it.buoys) {
+        var b = it.buoys[j]
+        if(b.type != "START" && !it.isValidated(b.id)) {
+          it.$emit('nextdoor', b)
           break
         }
       }
@@ -187,14 +146,6 @@ export default {
         this.validated.splice(this.validated.indexOf(marker.options.door.name), 1);
       }
       localStorage.setItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.validated))
-
-      for(var i in this.races[this.current.id].waypoints) {
-        var door = this.races[this.current.id].waypoints[i];
-        if(!door.validated) {
-          this.$emit('nextdoor', door)
-          break
-        }
-      }
 
       this.drawRace()
     },
@@ -257,6 +208,8 @@ export default {
       buoy.validated = validated
       localStorage.setItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.validated))
       EventBus.$emit('buoys', this.buoys)
+
+      this.drawRace()
     },
     onEditBuoy(buoy) {
       const it = this
