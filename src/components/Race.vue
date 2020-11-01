@@ -87,10 +87,11 @@ export default {
       return false
     },
     drawIceLimits() {
+      this.iceLimitsLayer.clearLayers()
+
       if(!this.races[this.current.id].ice_limits) {
         return
       }
-      this.iceLimitsLayer.clearLayers()
 
       var latlngs = []
       for(var n = -1 ; n <= 1 ; n++) {
