@@ -37,6 +37,11 @@ export default {
       debug: false
     }
   },
+  watch: {
+    boat: function() {
+      document.title = this.boat
+    }
+  },
   created: function() {
     this.boats = JSON.parse(localStorage.getItem("_boats_"))
 
@@ -56,6 +61,10 @@ export default {
           }
         }
       });
+    }
+
+    if (this.boats && this.boats.length == 1) {
+      this.boat = this.boats[0].name
     }
 
     if (Notification.permission === 'granted') {
