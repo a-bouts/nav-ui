@@ -247,7 +247,7 @@
           <Buoys v-bind:races="races" v-bind:current="current"></Buoys>
         </div>
         <div class="leaflet-sidebar-pane" id="settings">
-          <Expes v-bind:debug="debug"></Expes>
+          <Expes v-bind:priv="priv" v-bind:debug="debug"></Expes>
         </div>
       </div>
     </div>
@@ -272,7 +272,8 @@ export default {
     races: Object,
     position: Object,
     loading: Boolean,
-    debug: Boolean
+    debug: Boolean,
+    priv: Boolean
   },
   components: {
     Polar,

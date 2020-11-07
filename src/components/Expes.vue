@@ -16,7 +16,8 @@ import {EventBus} from '../event-bus.js';
 export default {
   name: 'Expes',
   props: {
-    debug: Boolean
+    debug: Boolean,
+    priv: Boolean
   },
   data: function() {
     return {
@@ -26,7 +27,11 @@ export default {
   mounted: function() {
     const it = this
     this.expes = JSON.parse(localStorage.getItem("_expes_"))
-    this.$http.get('/debug/nav/expes').then(response => {
+    var url = '/debug/nav/expes'
+    if (this.priv) {
+      url = '/private/nav/expes'
+    }
+    this.$http.get(url).then(response => {
       const expes = {}
       response.body.forEach(expe => {
         expes[expe] = false

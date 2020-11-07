@@ -11,6 +11,7 @@ export default {
   name: 'Route',
   props: {
     debug: Boolean,
+    priv: Boolean,
     boat: String,
     map: Object,
     layerControl: Object,
@@ -116,7 +117,11 @@ export default {
       }
 
       this.$emit('loading', true)
-      this.$http.post('/debug/nav/run', params).then(response => {
+      var url = '/debug/nav/run'
+      if (this.priv) {
+        url = '/private/nav/run'
+      }
+      this.$http.post(url, params).then(response => {
 
         this.isoLayer.eachLayer((layer) => {
           this.layerControl.removeLayer(layer)
@@ -145,7 +150,7 @@ export default {
                       }
                       const myLayer = layer
                       var poly = L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 1, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
-                      if (this.debug) {
+                      if (this.priv) {
                         poly.on('click', function() {
                           this._latlngs.forEach(p => {
                             L.marker([p.lat, p.lng], {icon: it.icon}).addTo(myLayer)

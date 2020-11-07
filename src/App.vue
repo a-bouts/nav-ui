@@ -16,7 +16,7 @@
       </div>
       <button class="modal-close is-large" aria-label="close"></button>
     </div>
-    <Nav v-if="boat || !boats || boats.length <= 1" v-bind:debug="debug" v-bind:boat="boat"></Nav>
+    <Nav v-if="boat || !boats || boats.length <= 1" v-bind:priv="priv" v-bind:debug="debug" v-bind:boat="boat"></Nav>
   </div>
 </template>
 
@@ -34,7 +34,8 @@ export default {
     return {
       boat: null,
       boats: [],
-      debug: false
+      debug: false,
+      priv: false
     }
   },
   watch: {
@@ -54,6 +55,9 @@ export default {
         if(v == 'debug') {
           new VConsole()
           it.debug = true
+        } else if(v == 'private') {
+          new VConsole()
+          it.priv = true
         } else {
           let kv = v.split('=')
           if(kv[0] == 'boat' && kv.length == 2) {

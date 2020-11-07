@@ -11,7 +11,8 @@ export default {
     map: Object,
     layerControl: Object,
     current: Object,
-    races: Object
+    races: Object,
+    priv: Boolean
   },
   data: function() {
     return {
@@ -156,7 +157,11 @@ export default {
           stop: this.current.stop
       }
 
-      this.$http.post('/debug/nav/boatlines', params).then(response => {
+      var url = '/debug/nav/boatlines'
+      if (this.priv) {
+        url = '/private/nav/boatlines'
+      }
+      this.$http.post(url, params).then(response => {
 
         this.boatLines = response.body
         this.display()
