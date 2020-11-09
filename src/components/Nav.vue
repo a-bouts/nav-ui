@@ -130,13 +130,14 @@ export default {
       localStorage.setItem('pan', JSON.stringify([this.map.getCenter().lat, this.map.getCenter().lng]));
     },
     initWindControls: function() {
+      const it = this
       const map = this.map
       L.Control.WindControl = L.Control.extend({
         onAdd: function() {
 
           const WindControlConstructor = Vue.extend(WindControl)
           var windControl = new WindControlConstructor({
-            propsData: { map: map }
+            propsData: { map: map, debug: it.debug }
           })
           windControl.$mount()
 

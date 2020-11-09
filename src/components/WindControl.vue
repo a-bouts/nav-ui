@@ -1,8 +1,14 @@
 <template>
   <div class="leaflet-control-layers leaflet-control forecast-times">
-    <div v-for="forecast in forecasts" :key="forecast.hour" id="" v-bind:class="{ last: forecast.stamp == lastStamp, selected: forecast.forecast == selectedForecast }" @click="loadWind(forecast.forecast)">
-      <div class="days"><span v-if="forecast.hour >= 24 && forecast.hour % 24 < 3">{{ Math.floor(forecast.hour/24) }}j</span></div>
-      <div class="hours">{{ forecast.hour%24 }}h</div>
+    <div v-for="forecast in forecasts" :key="forecast.hour" v-bind:class="{ last: forecast.stamp == lastStamp, selected: forecast.forecast == selectedForecast }">
+      <div @click="loadWind(forecast.forecast, 0)">
+        <div class="days"><span v-if="forecast.hour >= 24 && forecast.hour % 24 < 3">{{ Math.floor(forecast.hour/24) }}j</span></div>
+        <div class="hours">{{ forecast.hour%24 }}h</div>
+      </div>
+      <div v-if="debug && forecast.stamp2 != ''" @click="loadWind(forecast.forecast, 1)">
+        <div class="days">#</div>
+        <div class="hours">{{ forecast.hour%24 }}h</div>
+      </div>
       <span class="forecast-date"></span>
     </div>
   </div>
@@ -16,7 +22,8 @@ const moment = require('moment');
 export default {
   name: 'WindControl',
   props: {
-    map: Object
+    map: Object,
+    debug: Boolean
   },
   data: function () {
 
@@ -48,20 +55,20 @@ export default {
     this.$http.get('/winds').then(response => {
       this.forecasts = response.body
       this.forecasts.sort((a, b) => a.hour - b.hour)
-      this.loadWind(this.forecasts[0].forecast)
+      this.loadWind(this.forecasts[0].forecast, 0)
 
     }, () => {
       console.log("Error loading winds")
     });
   },
   methods: {
-    loadWind: function(forecast) {
+    loadWind: function(forecast, stamp) {
 
-      if(this.forecastsData[forecast]) {
-        this.velocityLayer.setData(this.forecastsData[forecast])
+      if(this.forecastsData[forecast + (stamp != undefined ? "-" + stamp : "")]) {
+        this.velocityLayer.setData(this.forecastsData[forecast + (stamp ? "-" + stamp : "")])
         this.selectedForecast = forecast
       } else {
-        this.$http.get('/winds/'+forecast).then(response => {
+        this.$http.get('/winds/'+forecast + (stamp != undefined ? "/" + stamp : "")).then(response => {
           this.forecastsData[forecast] = response.body
           this.velocityLayer.setData(response.body)
           this.selectedForecast = forecast
