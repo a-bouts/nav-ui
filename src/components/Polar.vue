@@ -60,8 +60,8 @@ export default {
     },
     current: {
       deep: true,
-      handler() {
-        if(!this.races) {
+      handler(newCurrent, oldCurrent) {
+        if(!this.races || (oldCurrent &&  newCurrent.id == oldCurrent.id)) {
           return
         }
         this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {

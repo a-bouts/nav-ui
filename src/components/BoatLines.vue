@@ -67,11 +67,6 @@ export default {
     L.control.boatlines({ position: 'bottomleft' }).addTo(this.map);
 
   },
-  watch: {
-    current: function() {
-      this.go()
-    }
-  },
   methods: {
     convertDMSToDD: function(p, d, m, s) {
       return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
