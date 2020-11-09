@@ -176,6 +176,12 @@ export default {
         }
         this.saveRoute()
         this.drawRoute()
+      }, () => {
+        this.$emit('error', {
+            level: "error",
+            duration: 20000,
+            message: "An error occured. Please retry"
+        })
       }).finally(() => {
         this.$emit('loading', false)
       })
