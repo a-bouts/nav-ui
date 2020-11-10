@@ -28,6 +28,7 @@ export default {
   data: function () {
 
     var now = new Date()
+    now.setHours(now.getHours() - 1)
 
     return {
       velocityLayer: null,
