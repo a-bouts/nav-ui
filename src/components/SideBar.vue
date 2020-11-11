@@ -536,7 +536,7 @@ export default {
       const latDash = clipboard.match(latReDash);
       if(latDash) {
         this.current.position.lat.d = latDash[1]
-        this.current.position.lat.p = latDash[4] === "N" ? 1 : -1
+        this.current.position.lat.p = latDash[5] === "N" ? 1 : -1
         this.current.position.lat.m = latDash[2]
         this.current.position.lat.s = latDash[3]
       }
@@ -545,7 +545,7 @@ export default {
       const lonDash = clipboard.match(lonReDash);
       if(lonDash) {
         this.current.position.lng.d = lonDash[1]
-        this.current.position.lng.p = lonDash[4] === "E" ? 1 : -1
+        this.current.position.lng.p = lonDash[5] === "E" ? 1 : -1
         this.current.position.lng.m = lonDash[2]
         this.current.position.lng.s = lonDash[3]
       }
