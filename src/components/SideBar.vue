@@ -12,7 +12,7 @@
           <li><a role="tab" @click="run" class="button is-white" v-bind:class="{ 'is-loading': loading }">GO</a></li>
         </ul>
 
-        <ul role="tablist"> <!-- bottom aligned tabs -->
+        <ul role="tablist" class="bottom"> <!-- bottom aligned tabs -->
           <li><a href="#table" role="tab"><i class="fa fa-table"></i></a></li>
           <li><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
           <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
@@ -572,6 +572,12 @@ export default {
 
 
 <style scoped>
+
+@media (max-height: 400px) {
+  .bottom {
+    visibility: hidden;
+  }
+}
 
 @media (min-width: 768px) {
   .leaflet-sidebar.large {
