@@ -1,6 +1,6 @@
 <template>
   <div class="leaflet-control-layers leaflet-control forecast-times">
-    <div class="stamp" @click="colapsed = !colapsed">{{ maxStamp.slice(-2) }}h {{ Math.round(progress * 100 / forecasts.length) }}%</div>
+    <div class="stamp" @click="colapsed = !colapsed">{{ maxStamp.slice(-2) }}h {{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</div>
     <div v-show="!colapsed" v-for="forecast in forecasts" :key="forecast.hour" v-bind:class="{ last: forecast.stamp == lastStamp, selected: forecast.forecast == selectedForecast }">
       <div @click="loadWind(forecast.forecast, 0)">
         <div class="days"><span v-if="forecast.hour >= 24 && forecast.hour % 24 < 3">{{ Math.floor(forecast.hour/24) }}j</span></div>
@@ -62,14 +62,15 @@ export default {
       this.forecasts = response.body
       this.forecasts.sort((a, b) => a.hour - b.hour)
       this.loadWind(this.forecasts[0].forecast, 0)
-      this.forecasts.forEach((forecast) => {
+      for(var i = 2 ; i < this.forecasts.length ; i++) {
+        var forecast = this.forecasts[i]
         if (forecast.stamp > it.maxStamp) {
           it.maxStamp = forecast.stamp
           it.progress = 1
         } else if (forecast.stamp == it.maxStamp) {
           it.progress++
         }
-      })
+      }
 
     }, () => {
       console.log("Error loading winds")
