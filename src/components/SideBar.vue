@@ -532,7 +532,7 @@ export default {
         this.current.position.lng.s = lon[4]
       }
 
-      let latReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2})"(N|S)/
+      let latReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(N|S)/
       const latDash = clipboard.match(latReDash);
       if(latDash) {
         this.current.position.lat.d = latDash[1]
@@ -541,7 +541,7 @@ export default {
         this.current.position.lat.s = latDash[3]
       }
 
-      let lonReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2})"(E|W)/
+      let lonReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(E|W)/
       const lonDash = clipboard.match(lonReDash);
       if(lonDash) {
         this.current.position.lng.d = lonDash[1]
