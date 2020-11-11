@@ -1,6 +1,7 @@
 <template>
   <div class="leaflet-control-layers leaflet-control forecast-times">
-    <div v-for="forecast in forecasts" :key="forecast.hour" v-bind:class="{ last: forecast.stamp == lastStamp, selected: forecast.forecast == selectedForecast }">
+    <div class="stamp" @click="colapsed = !colapsed">{{ maxStamp.slice(-2) }}h {{ Math.round(progress * 100 / forecasts.length) }}%</div>
+    <div v-show="!colapsed" v-for="forecast in forecasts" :key="forecast.hour" v-bind:class="{ last: forecast.stamp == lastStamp, selected: forecast.forecast == selectedForecast }">
       <div @click="loadWind(forecast.forecast, 0)">
         <div class="days"><span v-if="forecast.hour >= 24 && forecast.hour % 24 < 3">{{ Math.floor(forecast.hour/24) }}j</span></div>
         <div class="hours">{{ forecast.hour%24 }}h</div>
@@ -36,10 +37,14 @@ export default {
       ],
       forecastsData: {},
       selectedForecast: "",
-      lastStamp: now.getUTCFullYear() + ("00" + (now.getUTCMonth() + 1)).slice(-2) + ("00" + now.getUTCDate()).slice(-2) + ("00" + (now.getUTCHours() - now.getUTCHours()%6)).slice(-2)
+      lastStamp: now.getUTCFullYear() + ("00" + (now.getUTCMonth() + 1)).slice(-2) + ("00" + now.getUTCDate()).slice(-2) + ("00" + (now.getUTCHours() - now.getUTCHours()%6)).slice(-2),
+      maxStamp: "",
+      progress: 0,
+      colapsed: true
     }
   },
   mounted: function() {
+    const it = this
     this.velocityLayer = L.velocityLayer({
             displayValues: true,
             displayOptions: {
@@ -57,6 +62,14 @@ export default {
       this.forecasts = response.body
       this.forecasts.sort((a, b) => a.hour - b.hour)
       this.loadWind(this.forecasts[0].forecast, 0)
+      this.forecasts.forEach((forecast) => {
+        if (forecast.stamp > it.maxStamp) {
+          it.maxStamp = forecast.stamp
+          it.progress = 1
+        } else if (forecast.stamp == it.maxStamp) {
+          it.progress++
+        }
+      })
 
     }, () => {
       console.log("Error loading winds")
@@ -192,6 +205,11 @@ div.leaflet-top.leaflet-right {
     display: flex;
     flex-flow: column;
 }
+div.leaflet-control-layers.leaflet-control.forecast-times.expanded {
+}
+div.leaflet-control-layers.leaflet-control.forecast-times.colapsed {
+    height: 120px;
+}
 </style>
 
 <style scoped>
@@ -201,6 +219,10 @@ div.leaflet-control-layers.leaflet-control.forecast-times {
     margin-bottom: 10px;
     -webkit-overflow-scrolling: touch;
     z-index: 25;
+}
+
+.stamp {
+    text-align: center;
 }
 
 .days {
