@@ -18,6 +18,7 @@
           <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
           <li><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
           <li v-if="debug"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
+          <li><a href="#info" role="tab"><i class="fas fa-info"></i></a></li>
         </ul>
       </div>
 
@@ -249,6 +250,31 @@
         <div class="leaflet-sidebar-pane" id="settings">
           <Expes v-bind:priv="priv" v-bind:debug="debug"></Expes>
         </div>
+        <div class="leaflet-sidebar-pane" id="info">
+          <div class="card">
+            <div class="card-image">
+              <figure class="image">
+                <img src="/images/phtheirichthys-512x170.png" alt="Placeholder image">
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="media">
+                <div class="media-content">
+                  <p class="title is-4"><a href="https://fr.wikipedia.org/wiki/Phtheirichthys" target="_blank">Phtheirichthys</a></p>
+                </div>
+              </div>
+
+              <div class="content">
+                Petite solution de routage. Si son nom ne vous revient pas, vous pouvez toujours l'appeler <strong>La Sardine</strong>
+                <br>
+                <a href="https://route.phtheirichthys.fr">https://route.phtheirichthys.fr</a>
+                <br>
+                <br>
+
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -310,7 +336,8 @@ export default {
         stop: false
       },
       pasteLatlon: "",
-      displayed: null
+      displayed: null,
+      info: false
     }
   },
   computed: {

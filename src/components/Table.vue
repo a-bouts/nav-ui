@@ -41,22 +41,20 @@
             <th v-if="eta" class="is-clickable has-text-centered" @click="eta = !eta">ETA</th>
             <th v-else class="is-clickable has-text-centered" @click="eta = !eta">Duration</th>
             <th class="has-text-centered">Date</th>
-            <th class="has-text-centered">Latitude</th>
-            <th class="has-text-centered">Longitude</th>
             <th class="has-text-centered"><i class='fa fa-compass'></i></th>
             <th class="has-text-centered"><i class='fa fa-location-arrow'></i></th>
             <th></th>
             <th></th>
             <th class="has-text-centered" colspan="2"><i class='fa fa-wind'></i></th>
             <th class="has-text-centered"><i class='fa fa-ship'></i></th>
+            <th class="has-text-centered">Latitude</th>
+            <th class="has-text-centered">Longitude</th>
           </tr>
         </thead>
         <tr v-for="(l) in lines" :key="l.timeshift" v-bind:class="{'has-background-primary-light': l.current, 'has-background-grey-lighter': l.outdated && !l.current}">
           <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
           <td v-else class="has-text-right">{{ l.duration }}</td>
           <td class="has-text-right">{{ l.date }}</td>
-          <td>{{ l.lat }}</td>
-          <td>{{ l.lon }}</td>
           <td class="has-text-right">{{ l.bearing }}°</td>
           <td class="has-text-right">{{ l.twa }}°</td>
           <td>{{ l.sail }}</td>
@@ -64,6 +62,8 @@
           <td class="has-text-right">{{ l.wind }}°</td>
           <td class="has-text-right">{{ l.windSpeed }} kt</td>
           <td class="has-text-right">{{ l.boatSpeed }} kt</td>
+          <td>{{ l.lat }}</td>
+          <td>{{ l.lon }}</td>
         </tr>
       </table>
     </div>

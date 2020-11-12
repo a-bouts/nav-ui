@@ -40,7 +40,7 @@ export default {
   },
   watch: {
     boat: function() {
-      document.title = this.boat
+      document.title = this.boat + " - " + document.title
     }
   },
   created: function() {
