@@ -18,7 +18,9 @@
           <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
           <li><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
           <li v-if="debug"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
-          <li><a href="#info" role="tab"><i class="fas fa-info"></i></a></li>
+          <li><a href="#info" role="tab" class="p-2">
+            <img src="/images/phtheirichthys-2-512x512.png" alt="Placeholder image">
+          </a></li>
         </ul>
       </div>
 
