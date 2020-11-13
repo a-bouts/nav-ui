@@ -303,7 +303,7 @@ export default {
         }
 
         for(var j = 0 ; j < w1[i].data.length ; j++) {
-          item.data.push(w1[i].data[j]*h + w2[i].data[j]*(1-h))
+          item.data.push(w2[i].data[j]*h + w1[i].data[j]*(1-h))
         }
 
         w.push(item)
