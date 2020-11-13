@@ -323,8 +323,6 @@ export default {
     loadMergedWind: function(mergedForecast) {
       const it = this
 
-      console.log(mergedForecast)
-
       if(mergedForecast.data) {
         this.velocityLayer.setData(mergedForecast.data)
         this.selectedForecast = mergedForecast.hour
