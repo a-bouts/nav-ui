@@ -55,7 +55,7 @@ export default {
         }
       })
 
-      this.$http.get(this.priv ? '/private/nav/-/healthz' : '/debug/-/healthz').then(response => {
+      this.$http.get(this.priv ? '/private/nav/-/healthz' : '/debug/nav/-/healthz').then(response => {
         this.route = response.body
       }, (error) => {
         console.log(error)
