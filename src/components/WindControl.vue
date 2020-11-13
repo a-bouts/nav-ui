@@ -92,7 +92,8 @@ export default {
       lastStamp: now.getUTCFullYear() + ("00" + (now.getUTCMonth() + 1)).slice(-2) + ("00" + now.getUTCDate()).slice(-2) + ("00" + (now.getUTCHours() - now.getUTCHours()%6)).slice(-2),
       progress: 0,
       colapsed: true,
-      mergedForecasts: mergedForecasts
+      mergedForecasts: mergedForecasts,
+      atDate: null
     }
   },
   mounted: function() {
@@ -322,41 +323,83 @@ export default {
 
       return d
     },
+    loadWindAt: function(d) {
+      if (this.mergedForecasts.length == 0 || d < this.mergedForecasts[0].date)
+        return
+      var date = new Date(d.getTime())
+      date.setSeconds(0)
+      date.setMilliseconds(0)
+      var forecast = {
+        display: ("00" + date.getHours()).slice(-2) + ":" + ("00" + date.getMinutes()).slice(-2),
+        hour: "z",
+        date: date
+      }
+      var i
+      for(i = 0 ; i < this.mergedForecasts.length - 1 ; i++) {
+        var d1 = this.mergedForecasts[i].date
+        var d2 = this.mergedForecasts[i + 1].date
+        if (date == d1) {
+          this.loadMergedWind(this.mergedForecasts[i])
+          return
+        }
+        if (date == d2) {
+          this.loadMergedWind(this.mergedForecasts[i+1])
+          return
+        }
+        if (date > d1 && date < d2)
+        {
+          break
+        }
+      }
+      this.mergedForecasts.splice(i, 0, forecast)
+      this.loadMergedWind(forecast).then(() => {
+        this.atDate = i 
+      })
+    },
     loadMergedWind: function(mergedForecast) {
       const it = this
 
-      if(mergedForecast.data) {
-        this.velocityLayer.setData(mergedForecast.data)
-        this.selectedForecast = mergedForecast.hour
-      } else {
-        // il va falloir merger. deja on regarde si on a les vents pour...
-        var i = 0
-        for(i = 0 ; i < this.forecasts.length - 1 ; i++) {
-          var d1 = this.getDateFromForecast(this.forecasts[i].forecast)
-          var d2 = this.getDateFromForecast(this.forecasts[i + 1].forecast)
-
-          if(mergedForecast.date >= d1 && mergedForecast.date < d2) {
-            mergedForecast.w1 = this.forecasts[i].forecast
-            mergedForecast.w2 = this.forecasts[i + 1].forecast
-            mergedForecast.h = (mergedForecast.date.getTime() - d1.getTime()) / (d2.getTime() - d1.getTime())
-            break
-          }
-        }
-
-        if(!mergedForecast.w1) {
-          mergedForecast.w1 = this.forecasts[this.forecasts.length - 1].forecast
-          mergedForecast.w2 = this.forecasts[this.forecasts.length - 1].forecast
-          mergedForecast.h = 1
-        }
-
-        this.loadWindAsync(mergedForecast.w1, 0).then(w1 => {
-          it.loadWindAsync(mergedForecast.w2, 0).then(w2 => {
-            mergedForecast.data = it.mergeWinds(w1, w2, mergedForecast.h)
-            this.velocityLayer.setData(mergedForecast.data)
-            this.selectedForecast = mergedForecast.hour
-          })
-        })
+      if (it.atDate) {
+        it.mergedForecasts.splice(it.atDate, 1)
+        it.atDate = null
       }
+
+      return new Promise(function(resolve) {
+
+        if(mergedForecast.data) {
+          it.selectedForecast = mergedForecast.hour
+          it.velocityLayer.setData(mergedForecast.data)
+          resolve()
+        } else {
+          var i = 0
+          for(i = 0 ; i < it.forecasts.length - 1 ; i++) {
+            var d1 = it.getDateFromForecast(it.forecasts[i].forecast)
+            var d2 = it.getDateFromForecast(it.forecasts[i + 1].forecast)
+
+            if(mergedForecast.date >= d1 && mergedForecast.date < d2) {
+              mergedForecast.w1 = it.forecasts[i].forecast
+              mergedForecast.w2 = it.forecasts[i + 1].forecast
+              mergedForecast.h = (mergedForecast.date.getTime() - d1.getTime()) / (d2.getTime() - d1.getTime())
+              break
+            }
+          }
+
+          if(!mergedForecast.w1) {
+            mergedForecast.w1 = it.forecasts[it.forecasts.length - 1].forecast
+            mergedForecast.w2 = it.forecasts[it.forecasts.length - 1].forecast
+            mergedForecast.h = 1
+          }
+
+          it.loadWindAsync(mergedForecast.w1, 0).then(w1 => {
+            it.loadWindAsync(mergedForecast.w2, 0).then(w2 => {
+              it.selectedForecast = mergedForecast.hour
+              mergedForecast.data = it.mergeWinds(w1, w2, mergedForecast.h)
+              it.velocityLayer.setData(mergedForecast.data)
+              resolve()
+            })
+          })
+        }
+      })
     }
   }
 }

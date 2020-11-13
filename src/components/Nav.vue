@@ -60,7 +60,8 @@ export default {
       races: null,
       current: {},
       nextDoor: null,
-      boatLines: null
+      boatLines: null,
+      windControl: null
     }
   },
   created: function() {
@@ -136,16 +137,16 @@ export default {
         onAdd: function() {
 
           const WindControlConstructor = Vue.extend(WindControl)
-          var windControl = new WindControlConstructor({
+          it.windControl = new WindControlConstructor({
             propsData: { map: map, debug: it.debug }
           })
-          windControl.$mount()
+          it.windControl.$mount()
 
           L.DomEvent
-              .disableClickPropagation(windControl.$el)
-              .disableScrollPropagation(windControl.$el)
+              .disableClickPropagation(it.windControl.$el)
+              .disableScrollPropagation(it.windControl.$el)
 
-          return windControl.$el;
+          return it.windControl.$el;
         },
 
         onRemove: function() {
@@ -220,6 +221,7 @@ export default {
     },
     selectPoint(point) {
       this.$refs.sidebar.selectPoint(point)
+      this.windControl.loadWindAt(point.date)
     }
   }
 }

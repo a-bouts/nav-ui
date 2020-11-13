@@ -245,6 +245,7 @@ export default {
 
         var date = new Date(this.last.date.getTime())
         date.setMinutes(date.getMinutes() + wl.duration * 60);
+        wl.date = date
         if(date.getHours() > 21 || date.getHours() < 7) {
             wl.night = true
         }
