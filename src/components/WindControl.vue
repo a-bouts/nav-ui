@@ -1,16 +1,21 @@
 <template>
-  <div class="leaflet-control-layers leaflet-control forecast-times">
-    <div class="stamp" @click="colapsed = !colapsed">{{ maxStamp.slice(-2) }}h {{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</div>
-    <div v-show="!colapsed" v-for="forecast in forecasts" :key="forecast.hour" v-bind:class="{ last: forecast.stamp == lastStamp, selected: forecast.forecast == selectedForecast }">
-      <div @click="loadWind(forecast.forecast, 0)">
-        <div class="days"><span v-if="forecast.hour >= 24 && forecast.hour % 24 < 3">{{ Math.floor(forecast.hour/24) }}j</span></div>
-        <div class="hours">{{ forecast.hour%24 }}h</div>
+  <div class="leaflet-control-layers leaflet-control forecast-times" :class="{expanded: !colapsed}">
+    <div class="stamp">{{ maxStamp.slice(-2) }}h {{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</div>
+    <div class="has-text-centered is-clickable" @click="colapsed = !colapsed">
+      <span v-show="colapsed"><i class="fas fa-caret-down"></i></span>
+      <span v-show="!colapsed"><i class="fas fa-caret-up"></i></span>
+    </div>
+    <div v-show="!colapsed" class="columns m-0 is-clickable is-unselectable" v-for="(forecast, index) in forecasts" :key="forecast.hour">
+      <div v-if="forecast.stamp2 != ''" v-bind:class="forecastOldClass(forecast)" @click="loadWind(forecast.forecast, 0)" class="column p-0 has-text-left pl-1">
+        <i class="fas fa-history"></i>
       </div>
-      <div v-if="debug && forecast.stamp2 != ''" @click="loadWind(forecast.forecast, 1)">
-        <div class="days">#</div>
-        <div class="hours">{{ forecast.hour%24 }}h</div>
+      <div v-if="index == 0" class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadWind(forecast.forecast, forecast.stamp2 == '' ? 0 : 1)">
+        {{ forecast.time }}h00
       </div>
-      <span class="forecast-date"></span>
+      <div v-if="index > 0" class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadWind(forecast.forecast, forecast.stamp2 == '' ? 0 : 1)">
+        <span v-if="forecast.hour - forecasts[0].hour >= 24 && (forecast.hour - forecasts[0].hour) % 24 < 3">+{{ Math.floor((forecast.hour - forecasts[0].hour)/24) }}j</span>
+        <span v-else>+{{ (forecast.hour - forecasts[0].hour)%24 }}h</span>
+      </div>
     </div>
   </div>
 </template>
@@ -23,8 +28,7 @@ const moment = require('moment');
 export default {
   name: 'WindControl',
   props: {
-    map: Object,
-    debug: Boolean
+    map: Object
   },
   data: function () {
 
@@ -61,7 +65,21 @@ export default {
     this.$http.get('/winds').then(response => {
       this.forecasts = response.body
       this.forecasts.sort((a, b) => a.hour - b.hour)
-      this.loadWind(this.forecasts[0].forecast, 0)
+
+      var d = new Date()
+      d.setUTCFullYear(this.forecasts[0].forecast.substr(0, 4))
+      d.setUTCMonth(this.forecasts[0].forecast.substr(4, 2) - 1)
+      d.setUTCDate(this.forecasts[0].forecast.substr(6, 2))
+      d.setUTCHours(this.forecasts[0].forecast.substr(8, 2))
+      d.setUTCMinutes(0)
+      d.setUTCSeconds(0)
+      d.setUTCMilliseconds(0)
+
+      this.forecasts[0].time = d.getHours()
+
+      console.log(this.forecasts)
+
+      this.loadWind(this.forecasts[0].forecast, 1)
       for(var i = 2 ; i < this.forecasts.length ; i++) {
         var forecast = this.forecasts[i]
         if (forecast.stamp > it.maxStamp) {
@@ -77,16 +95,30 @@ export default {
     });
   },
   methods: {
+    forecastClass: function(forecast) {
+      return {
+        last: forecast.stamp2 == '' && forecast.stamp == this.lastStamp || forecast.stamp2 == this.lastStamp,
+        selected: forecast.forecast + "-" + (forecast.stamp2 == '' ? 0 : 1) == this.selectedForecast
+      }
+    },
+    forecastOldClass: function(forecast) {
+      return {
+        last: forecast.stamp == this.lastStamp,
+        selected: forecast.forecast + "-" + 0 == this.selectedForecast
+      }
+    },
     loadWind: function(forecast, stamp) {
 
       if(this.forecastsData[forecast + (stamp != undefined ? "-" + stamp : "")]) {
         this.velocityLayer.setData(this.forecastsData[forecast + (stamp ? "-" + stamp : "")])
-        this.selectedForecast = forecast
+        this.selectedForecast = forecast + (stamp != undefined ? "-" + stamp : "")
+        console.log(this.selectedForecast)
       } else {
         this.$http.get('/winds/'+forecast + (stamp != undefined ? "/" + stamp : "")).then(response => {
           this.forecastsData[forecast] = response.body
           this.velocityLayer.setData(response.body)
-          this.selectedForecast = forecast
+          this.selectedForecast = forecast + (stamp != undefined ? "-" + stamp : "")
+          console.log(this.selectedForecast)
         }, () => {
           console.log("Error loading winds")
         })
@@ -207,6 +239,7 @@ div.leaflet-top.leaflet-right {
     flex-flow: column;
 }
 div.leaflet-control-layers.leaflet-control.forecast-times.expanded {
+  overflow-y: scroll;
 }
 div.leaflet-control-layers.leaflet-control.forecast-times.colapsed {
     height: 120px;
@@ -216,7 +249,6 @@ div.leaflet-control-layers.leaflet-control.forecast-times.colapsed {
 <style scoped>
 
 div.leaflet-control-layers.leaflet-control.forecast-times {
-    overflow-y: scroll;
     margin-bottom: 10px;
     -webkit-overflow-scrolling: touch;
     z-index: 25;
@@ -228,13 +260,13 @@ div.leaflet-control-layers.leaflet-control.forecast-times {
 
 .days {
     display: inline-block;
-    width: 25px;
+    width: 15px;
     text-align: center;
 }
 
 .hours {
     display: inline-block;
-    width: 35px;
+    width: 25px;
     text-align: center;
 }
 
