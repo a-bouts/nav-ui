@@ -1,19 +1,21 @@
 <template>
   <div class="leaflet-control-layers leaflet-control forecast-times" :class="{expanded: !colapsed}">
-    <div class="stamp">{{ lastStamp.slice(-2) }}h {{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</div>
+    <div v-show="!colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
+      <i class="fas fa-caret-up"></i>
+    </div>
     <div v-show="colapsed" class="columns m-0 is-clickable is-unselectable">
       <div class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(mergedForecasts[0])" @click="loadMergedWind(mergedForecasts[0])">
         {{ mergedForecasts[0].display }}
       </div>
     </div>
-    <div class="has-text-centered is-clickable" @click="colapsed = !colapsed">
-      <span v-show="colapsed"><i class="fas fa-caret-down"></i></span>
-      <span v-show="!colapsed"><i class="fas fa-caret-up"></i></span>
-    </div>
     <div v-show="!colapsed" class="columns m-0 is-clickable is-unselectable" v-for="forecast in mergedForecasts" :key="forecast.hour">
       <div class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadMergedWind(forecast)">
         {{ forecast.display }}
       </div>
+    </div>
+    <div class="stamp">{{ lastStamp.slice(-2) }}h {{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</div>
+    <div v-show="colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
+      <i class="fas fa-caret-down"></i>
     </div>
     <!--<div v-show="!colapsed" class="columns m-0 is-clickable is-unselectable" v-for="(forecast, index) in forecasts" :key="forecast.hour">
       <div v-if="forecast.stamp2 != ''" v-bind:class="forecastOldClass(forecast)" @click="loadWind(forecast.forecast, 0)" class="column p-0 has-text-left pl-1">
