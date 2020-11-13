@@ -275,6 +275,7 @@
 
               </div>
             </div>
+            <Status v-bind:priv="priv"></Status>
           </div>
         </div>
       </div>
@@ -291,6 +292,7 @@ import Buoys from './Buoys.vue'
 import Expes from './Expes.vue'
 import Boats from './Boats.vue'
 import Table from './Table.vue'
+import Status from './Status.vue'
 
 export default {
   name: 'SideBar',
@@ -308,7 +310,8 @@ export default {
     Buoys,
     Boats,
     Table,
-    Expes
+    Expes,
+    Status
   },
   data: function() {
     return {
