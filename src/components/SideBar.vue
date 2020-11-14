@@ -79,7 +79,8 @@
                 </div>
               </div>
             </div>
-            <div v-if="enablePaste" class="field is-grouped">
+            <label class="label">Copier - coller</label>
+            <div class="field is-grouped">
               <p class="control">
                 <input v-model="pasteLatlon" @paste="paste" class="input is-small" type="text">
               </p>
