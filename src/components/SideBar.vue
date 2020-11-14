@@ -89,13 +89,13 @@
             <div class="field is-grouped">
               <div class="field has-addons">
                 <p class="control">
-                  <input v-model.number="current.position.lat.d" class="input is-small" type="text" placeholder="41" style="width:60px">
+                  <input v-model.number="current.position.lat.d" class="input is-small" :class="{'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}" type="text" placeholder="41" style="width:60px">
                 </p>
                 <p class="control">
-                  <a class="button is-static is-small">°</a>
+                  <a class="button is-small" :class="{'is-static': latPadteStatus === 0, 'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}">°</a>
                 </p>
                 <p class="control">
-                  <span class="select is-small">
+                  <span class="select is-small" :class="{'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}">
                     <select v-model="current.position.lat.p" style="width:60px">
                       <option value="1">N</option>
                       <option value="-1">S</option>
@@ -103,16 +103,16 @@
                   </span>
                 </p>
                 <p class="control">
-                  <input v-model.number="current.position.lat.m" class="input is-small" type="text" placeholder="42" style="width:60px">
+                  <input v-model.number="current.position.lat.m" class="input is-small" :class="{'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}" type="text" placeholder="42" style="width:60px">
                 </p>
                 <p class="control">
-                  <a class="button is-static is-small">'</a>
+                  <a class="button is-small" :class="{'is-static': latPasteStatus === 0, 'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}">'</a>
                 </p>
                 <p class="control">
-                  <input v-model.number="current.position.lat.s" class="input is-small" type="text" placeholder="43" style="width:60px">
+                  <input v-model.number="current.position.lat.s" class="input is-small" :class="{'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}" type="text" placeholder="43" style="width:60px">
                 </p>
                 <p class="control">
-                  <a class="button is-static is-small">''</a>
+                  <a class="button is-small" :class="{'is-static': latPasteStatus === 0, 'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}">''</a>
                 </p>
               </div>
             </div>
@@ -120,13 +120,13 @@
             <div class="field is-grouped">
               <div class="field has-addons">
                 <p class="control">
-                  <input v-model.number="current.position.lng.d" class="input is-small" type="text" placeholder="41" style="width:60px">
+                  <input v-model.number="current.position.lng.d" class="input is-small" :class="{'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}" type="text" placeholder="41" style="width:60px">
                 </p>
                 <p class="control">
-                  <a class="button is-static is-small">°</a>
+                  <a class="button is-small" :class="{'is-static': lonPadteStatus === 0, 'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">°</a>
                 </p>
                 <p class="control">
-                  <span class="select is-small">
+                  <span class="select is-small" :class="{'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">
                     <select v-model.number="current.position.lng.p" style="width:60px">
                       <option value="1">E</option>
                       <option value="-1">W</option>
@@ -134,16 +134,16 @@
                   </span>
                 </p>
                 <p class="control">
-                  <input v-model.number="current.position.lng.m" class="input is-small" type="text" placeholder="42" style="width:60px">
+                  <input v-model.number="current.position.lng.m" class="input is-small" :class="{'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}" type="text" placeholder="42" style="width:60px">
                 </p>
                 <p class="control">
-                  <a class="button is-static is-small">'</a>
+                  <a class="button is-small" :class="{'is-static': lonPasteStatus === 0, 'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">'</a>
                 </p>
                 <p class="control">
-                  <input v-model.number="current.position.lng.s" class="input is-small" type="text" placeholder="43" style="width:60px">
+                  <input v-model.number="current.position.lng.s" class="input is-small" :class="{'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}" type="text" placeholder="43" style="width:60px">
                 </p>
                 <p class="control">
-                  <a class="button is-static is-small">''</a>
+                  <a class="button is-small" :class="{'is-static': lonPasteStatus === 0, 'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">''</a>
                 </p>
               </div>
             </div>
@@ -343,7 +343,9 @@ export default {
       },
       pasteLatlon: "",
       displayed: null,
-      info: false
+      info: false,
+      latPasteStatus: 0,
+      lonPasteStatus: 0
     }
   },
   computed: {
@@ -545,6 +547,8 @@ export default {
       });
     },*/
     paste: function(event) {
+      this.latPasteStatus = -1
+      this.lonPasteStatus = -1
       var clipboard = event.clipboardData.getData("text/plain")
 
       let latRe = /(0?[0-9]{2})°(N|S) ([0-9]{2})(?:'|‘) ?([0-9]{2})"/
@@ -554,6 +558,7 @@ export default {
         this.current.position.lat.p = lat[2] === "N" ? 1 : -1
         this.current.position.lat.m = lat[3]
         this.current.position.lat.s = lat[4]
+        this.latPasteStatus = 1
       }
 
       let lonRe = /(0?[0-9]{2})°(E|W) ([0-9]{2})(?:'|‘) ?([0-9]{2})"/
@@ -563,6 +568,7 @@ export default {
         this.current.position.lng.p = lon[2] === "E" ? 1 : -1
         this.current.position.lng.m = lon[3]
         this.current.position.lng.s = lon[4]
+        this.lonPasteStatus = 1
       }
 
       let latReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(N|S)/
@@ -572,6 +578,7 @@ export default {
         this.current.position.lat.p = latDash[5] === "N" ? 1 : -1
         this.current.position.lat.m = latDash[2]
         this.current.position.lat.s = latDash[3]
+        this.latPasteStatus = 1
       }
 
       let lonReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(E|W)/
@@ -581,8 +588,14 @@ export default {
         this.current.position.lng.p = lonDash[5] === "E" ? 1 : -1
         this.current.position.lng.m = lonDash[2]
         this.current.position.lng.s = lonDash[3]
+        this.lonPasteStatus = 1
       }
 
+      const it = this
+      setTimeout(() => {
+        it.latPasteStatus = 0
+        it.lonPasteStatus = 0
+      }, 30000)
       event.preventDefault()
       this.enablePaste = false
     },
