@@ -40,7 +40,8 @@ const moment = require('moment');
 export default {
   name: 'WindControl',
   props: {
-    map: Object
+    map: Object,
+    layerControl: Object
   },
   data: function () {
 
@@ -110,6 +111,7 @@ export default {
             },
             maxVelocity: 15
     }).addTo(this.map);
+    this.layerControl.addOverlay(this.velocityLayer, "Wind");
 
     this.$http.get('/winds').then(response => {
       this.forecasts = response.body

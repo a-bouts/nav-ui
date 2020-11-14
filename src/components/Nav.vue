@@ -138,7 +138,7 @@ export default {
 
           const WindControlConstructor = Vue.extend(WindControl)
           it.windControl = new WindControlConstructor({
-            propsData: { map: map, debug: it.debug }
+            propsData: { map: map, debug: it.debug, layerControl: it.layerControl }
           })
           it.windControl.$mount()
 

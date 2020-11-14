@@ -92,7 +92,7 @@
                   <input v-model.number="current.position.lat.d" class="input is-small" :class="{'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}" type="text" placeholder="41" style="width:60px">
                 </p>
                 <p class="control">
-                  <a class="button is-small" :class="{'is-static': latPadteStatus === 0, 'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}">°</a>
+                  <a class="button is-small" :class="{'is-static': latPasteStatus === 0, 'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}">°</a>
                 </p>
                 <p class="control">
                   <span class="select is-small" :class="{'is-success': latPasteStatus === 1, 'is-danger': latPasteStatus === -1}">
@@ -123,7 +123,7 @@
                   <input v-model.number="current.position.lng.d" class="input is-small" :class="{'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}" type="text" placeholder="41" style="width:60px">
                 </p>
                 <p class="control">
-                  <a class="button is-small" :class="{'is-static': lonPadteStatus === 0, 'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">°</a>
+                  <a class="button is-small" :class="{'is-static': lonPasteStatus === 0, 'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">°</a>
                 </p>
                 <p class="control">
                   <span class="select is-small" :class="{'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">
