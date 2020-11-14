@@ -326,6 +326,12 @@ export default {
     loadWindAt: function(d) {
       if (this.mergedForecasts.length == 0 || d < this.mergedForecasts[0].date)
         return
+
+      if (this.atDate) {
+        this.mergedForecasts.splice(this.atDate, 1)
+        this.atDate = null
+      }
+
       var date = new Date(d.getTime())
       date.setSeconds(0)
       date.setMilliseconds(0)
@@ -351,9 +357,9 @@ export default {
           break
         }
       }
-      this.mergedForecasts.splice(i, 0, forecast)
+      this.mergedForecasts.splice(i + 1, 0, forecast)
       this.loadMergedWind(forecast).then(() => {
-        this.atDate = i 
+        this.atDate = i + 1
       })
     },
     loadMergedWind: function(mergedForecast) {
