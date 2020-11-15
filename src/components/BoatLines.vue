@@ -34,7 +34,6 @@ export default {
     this.linesLayer = L.layerGroup().addTo(this.layer)
     this.layerControl.addOverlay(this.layer, "<i class='fa fa-route'></i>")
 
-    this.center()
     // this.map.on("mousemove", this.onMouseMove, this);
 
     L.Control.BoatLines = L.Control.extend({
@@ -55,6 +54,7 @@ export default {
 
     L.control.boatlines({ position: 'bottomleft' }).addTo(this.map);
 
+    this.center()
   },
   watch: {
     current: function() {
