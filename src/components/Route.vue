@@ -132,9 +132,14 @@ export default {
 
         var navs = response.body.navs
 
+        var first = true
         for(var d in navs) {
           var layer = L.layerGroup().addTo(this.isoLayer);
           this.layerControl.addOverlay(layer, navs[d].name);
+          if (!first) {
+            this.map.removeLayer(layer)
+          }
+          first = false
           for(var iso in navs[d].isochrones) {
               for(var i in navs[d].isochrones[iso].paths) {
                   var path = [];
