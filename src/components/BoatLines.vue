@@ -4,6 +4,7 @@
 
 <script>
 import L from 'leaflet'
+import {EventBus} from '../event-bus.js';
 
 export default {
   name: 'BoatLines',
@@ -17,6 +18,7 @@ export default {
   data: function() {
     return {
       layer: null,
+      markerLayer: null,
       linesLayer: null,
       boatLines: null,
       b: 0,
@@ -24,28 +26,15 @@ export default {
     }
   },
   mounted: function() {
+    EventBus.$on('center-sneak', () => {this.center()})
+
     const it = this
     this.layer = L.layerGroup().addTo(this.map)
+    this.markerLayer = L.layerGroup().addTo(this.layer)
     this.linesLayer = L.layerGroup().addTo(this.layer)
     this.layerControl.addOverlay(this.layer, "<i class='fa fa-route'></i>")
 
-    var lineMarker = L.ExtraMarkers.icon({ icon: 'fa-route', markerColor: 'black', shape: 'star', prefix: 'fa' })
-    L.marker(this.map.getCenter(),
-      {icon: lineMarker, draggable: true, zIndexOffset: 5000}
-    ).addTo(this.layer).on('drag', function() {
-      var position = this.getLatLng();
-      const start = {
-        lat: it.convertDMSToDD(it.current.position.lat.p, it.current.position.lat.d, it.current.position.lat.m, it.current.position.lat.s),
-        lng: it.convertDMSToDD(it.current.position.lng.p, it.current.position.lng.d, it.current.position.lng.m, it.current.position.lng.s)
-      }
-      var b = Math.round(it.bearingTo(start, position))
-      if(b == 360) b = 0
-      if(it.bearing != b) {
-        it.bearing = b
-        it.display()
-      }
-    });
-
+    this.center()
     // this.map.on("mousemove", this.onMouseMove, this);
 
     L.Control.BoatLines = L.Control.extend({
@@ -67,6 +56,11 @@ export default {
     L.control.boatlines({ position: 'bottomleft' }).addTo(this.map);
 
   },
+  watch: {
+    current: function() {
+      this.go()
+    }
+  },
   methods: {
     convertDMSToDD: function(p, d, m, s) {
       return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
@@ -78,6 +72,31 @@ export default {
         m : 0|D%1*60,
         s :(0|D*60%1*6000)/100
       };
+    },
+    center: function() {
+      const it = this
+      this.markerLayer.clearLayers()  
+      
+      var lineMarker = L.ExtraMarkers.icon({ icon: 'fa-route', markerColor: 'black', shape: 'star', prefix: 'fa' })
+      L.marker(this.map.getCenter(),
+        {icon: lineMarker, draggable: true, zIndexOffset: 5000}
+      ).addTo(this.markerLayer).on('drag', function() {
+        var position = this.getLatLng();
+        it.rotate(position)
+      })
+      this.rotate(this.map.getCenter())
+    },
+    rotate: function(position) {
+        const start = {
+          lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
+          lng: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
+        }
+        var b = Math.round(this.bearingTo(start, position))
+        if(b == 360) b = 0
+        if(this.bearing != b) {
+          this.bearing = b
+          this.display()
+        }
     },
     bearingTo: function(from, to) {
       const toRadians = (a) => a * π / 180.0

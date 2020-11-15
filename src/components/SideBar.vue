@@ -8,7 +8,7 @@
           <li><a role="tab" @click="center"><i class="fa fa-dot-circle"></i></a></li>
           <li><a role="tab" @click="pan"><i class="fa fa-expand"></i></a></li>
           <li><a role="tab" @click="showTooltip" class="button is-white"><i class="fa fa-eye"></i></a></li>
-          <li><a role="tab" @click="enablePaste = !enablePaste"><i class="fa fa-paste"></i></a></li>
+          <li><a role="tab" @click="centerSneak"><i class="fas fa-route"></i></a></li>
           <li><a role="tab" @click="run" class="button is-white" v-bind:class="{ 'is-loading': loading }">GO</a></li>
         </ul>
 
@@ -294,6 +294,7 @@ import Expes from './Expes.vue'
 import Boats from './Boats.vue'
 import Table from './Table.vue'
 import Status from './Status.vue'
+import {EventBus} from '../event-bus.js';
 
 export default {
   name: 'SideBar',
@@ -432,6 +433,9 @@ export default {
         m : 0|D%1*60,
         s :(0|D*60%1*6000)/100
       };
+    },
+    centerSneak: function() {
+      EventBus.$emit('center-sneak')
     },
     selectRace: function(race, pan) {
       try {
