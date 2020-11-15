@@ -3,6 +3,7 @@
     <div v-show="!colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
       <i class="fas fa-caret-up"></i>
     </div>
+    <div class="stamp" :class="windStatus"><i class="fas fa-wind"></i><span v-if="progress > 0">{{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</span></div>
     <div v-show="colapsed" class="columns m-0 is-clickable is-unselectable">
       <div class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(mergedForecasts[0])" @click="loadMergedWind(mergedForecasts[0])">
         {{ mergedForecasts[0].display }}
@@ -13,7 +14,6 @@
         {{ forecast.display }}
       </div>
     </div>
-    <div class="stamp">{{ lastStamp.slice(-2) }}h {{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</div>
     <div v-show="colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
       <i class="fas fa-caret-down"></i>
     </div>
@@ -81,16 +81,56 @@ export default {
     }
 
     now = new Date()
+
+    const h0 = new Date()
+    h0.setUTCHours(-3)
+    h0.setUTCMinutes(30)
+    h0.setUTCSeconds(0)
+    h0.setUTCMilliseconds(0)
+    const h1 = new Date()
+    h1.setUTCHours(3)
+    h1.setUTCMinutes(30)
+    h1.setUTCSeconds(0)
+    h1.setUTCMilliseconds(0)
+    const h2 = new Date()
+    h2.setUTCHours(9)
+    h2.setUTCMinutes(30)
+    h2.setUTCSeconds(0)
+    h2.setUTCMilliseconds(0)
+    const h3 = new Date()
+    h3.setUTCHours(15)
+    h3.setUTCMinutes(30)
+    h3.setUTCSeconds(0)
+    h3.setUTCMilliseconds(0)
+    const h4 = new Date()
+    h4.setUTCHours(21)
+    h4.setUTCMinutes(30)
+    h4.setUTCSeconds(0)
+    h4.setUTCMilliseconds(0)
+
+    var lastStamp = ""
+    if(now >= h4) {
+      lastStamp = h4.getUTCFullYear() + ("00" + (h4.getUTCMonth() + 1)).slice(-2) + ("00" + h4.getUTCDate()).slice(-2) + "18"
+    } else if(now >= h3) {
+      lastStamp = h3.getUTCFullYear() + ("00" + (h3.getUTCMonth() + 1)).slice(-2) + ("00" + h3.getUTCDate()).slice(-2) + "12"
+    } else if(now >= h2) {
+      lastStamp = h2.getUTCFullYear() + ("00" + (h2.getUTCMonth() + 1)).slice(-2) + ("00" + h2.getUTCDate()).slice(-2) + "06"
+    } else if(now >= h1) {
+      lastStamp = h1.getUTCFullYear() + ("00" + (h1.getUTCMonth() + 1)).slice(-2) + ("00" + h1.getUTCDate()).slice(-2) + "00"
+    } else {
+      lastStamp = h0.getUTCFullYear() + ("00" + (h0.getUTCMonth() + 1)).slice(-2) + ("00" + h0.getUTCDate()).slice(-2) + "18"
+    }
     now.setHours(now.getHours() - 1)
 
     return {
+      windIsOnTime: undefined,
       velocityLayer: null,
       forecasts: [
       ],
       forecastsData: {},
       selectedForecast: "",
       lastForecast: now,
-      lastStamp: now.getUTCFullYear() + ("00" + (now.getUTCMonth() + 1)).slice(-2) + ("00" + now.getUTCDate()).slice(-2) + ("00" + (now.getUTCHours() - now.getUTCHours()%6)).slice(-2),
+      lastStamp: lastStamp,
       progress: 0,
       colapsed: true,
       mergedForecasts: mergedForecasts,
@@ -139,6 +179,7 @@ export default {
       if(maxForecast) {
         it.lastForecast = this.getDateFromForecast(maxForecast)
       }
+      it.windIsOnTime = it.progress > 0
 
       this.loadMergedWind(this.mergedForecasts[0])
 
@@ -146,6 +187,14 @@ export default {
       console.log("Error loading winds")
     });
 
+  },
+  computed: {
+    windStatus: function() {
+      return {
+        'has-text-danger': this.windIsOnTime === false,
+        'has-text-success': this.windIsOnTime === true
+      }
+    },
   },
   methods: {
     forecastClass: function(forecast) {
