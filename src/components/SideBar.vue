@@ -575,7 +575,7 @@ export default {
         this.lonPasteStatus = 1
       }
 
-      let latReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(N|S)/
+      let latReDash = /(0?[0-9]?[0-9])°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(N|S)/
       const latDash = clipboard.match(latReDash);
       if(latDash) {
         this.current.position.lat.d = latDash[1]
@@ -585,7 +585,7 @@ export default {
         this.latPasteStatus = 1
       }
 
-      let lonReDash = /(0?[0-9]{2})°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(E|W)/
+      let lonReDash = /(0?[0-9]?[0-9])°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(E|W)/
       const lonDash = clipboard.match(lonReDash);
       if(lonDash) {
         this.current.position.lng.d = lonDash[1]
