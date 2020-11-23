@@ -42,8 +42,13 @@ export default {
                     iconSize: new L.Point(7, 7),
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon standard'
     })
+    const _darkIcon = new L.DivIcon({
+                    iconSize: new L.Point(7, 7),
+                    className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon dark'
+    })
     return {
       last: null,
+      ptevious: null,
       isoLayer: null,
       markers: [],
       editIcon: _editIcon,
@@ -51,6 +56,7 @@ export default {
       nightIcon: _nightIcon,
       nightChangedIcon: _nightChangedIcon,
       icon: _icon,
+      darkIcon: _darkIcon,
       routeBuoys: null,
       expes: {}
     }
@@ -73,6 +79,14 @@ export default {
         this.last.date = new Date(this.last.date)
         this.drawRoute(this.last)
         EventBus.$emit('route', this.last)
+      }
+
+      var previous = JSON.parse(localStorage.getItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.current.id))
+
+      if(previous && previous.length > 0) {
+        this.previous = previous[0]
+        this.previous.date = new Date(this.previous.date)
+        this.drawRoute(this.previous, true)
       }
     }
   },
@@ -180,7 +194,8 @@ export default {
           windline: windline
         }
         this.saveRoute()
-        this.drawRoute()
+        this.drawRoute(this.last)
+        this.drawRoute(this.previous, true)
       }, () => {
         this.$emit('error', {
             level: "error",
@@ -243,12 +258,12 @@ export default {
 
       return res;
     },
-    drawRoute: function() {
+    drawRoute: function(route, dark) {
       this.markers.splice(0, this.markers.length);
-      for(var w in this.last.windline) {
-        var wl = this.last.windline[w];
+      for(var w in route.windline) {
+        var wl = route.windline[w];
 
-        var date = new Date(this.last.date.getTime())
+        var date = new Date(route.date.getTime())
         date.setMinutes(date.getMinutes() + wl.duration * 60);
         wl.date = date
         if(date.getHours() > 21 || date.getHours() < 7) {
@@ -262,6 +277,8 @@ export default {
             icon = this.nightChangedIcon
           else
             icon = this.nightIcon
+        if (dark)
+          icon = this.darkIcon
         const pt = wl
         var marker = L.marker([wl.lat, wl.lon], {icon: icon})
           .bindTooltip(this.getTooltip(date, wl), {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
@@ -272,8 +289,23 @@ export default {
         this.markers.push(marker)
         //setTimeout(() => { marker.openTooltip() }, 0)
       }
-      L.polyline(this.last.windline, {color: 'green', weight: 2, smoothFactor: 2, lineJoin: 'round'}).addTo(this.isoLayer)
-      this.$emit('select', this.last.windline[this.last.windline.length-1])
+      var polylineOptions = {
+        color: 'green',
+        weight: 2,
+        smoothFactor: 2,
+        lineJoin: 'round'
+      }
+      if (dark) {
+        polylineOptions = {
+          color: '#777777',
+          weight: 1,
+          smoothFactor: 2,
+          lineJoin: 'round',
+          opacity: 0.7
+        }
+      }
+      L.polyline(route.windline, polylineOptions).addTo(this.isoLayer)
+      this.$emit('select', route.windline[route.windline.length-1])
     },
     showTooltip: function() {
       for(var m in this.markers) {
@@ -283,7 +315,16 @@ export default {
       }
     },
     saveRoute: function() {
+      var previous = JSON.parse(localStorage.getItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id))
+
+      if(previous) {
+        this.previous = previous
+        this.previous.date = new Date(this.previous.date)
+        localStorage.setItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify([this.previous]))
+      }
+
       localStorage.setItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.last))
+
       EventBus.$emit('route', this.last)
     },
     displayNotification: function(sumup) {

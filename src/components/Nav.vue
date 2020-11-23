@@ -236,6 +236,13 @@ export default {
     background-color: #333;
 }
 
+.leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.dark {
+    background: "#cccccc";
+    border-radius: 50%;
+    color: "#777777";
+    opacity: 40%;
+}
+
 .leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.standard {
     background: white;
     border-radius: 50%;
