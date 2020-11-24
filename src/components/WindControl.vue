@@ -3,32 +3,15 @@
     <div v-show="!colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
       <i class="fas fa-caret-up"></i>
     </div>
-    <div class="stamp" :class="windStatus"><i class="fas fa-wind"></i><span v-if="progress > 0">{{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</span></div>
-    <div v-show="colapsed" class="columns m-0 is-clickable is-unselectable">
-      <div class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(mergedForecasts[0])" @click="loadMergedWind(mergedForecasts[0])">
-        {{ mergedForecasts[0].display }}
-      </div>
-    </div>
-    <div v-show="!colapsed" class="columns m-0 is-clickable is-unselectable" v-for="forecast in mergedForecasts" :key="forecast.hour">
-      <div class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadMergedWind(forecast)">
+    <div class="button is-small is-fullwidth is-white p-0" :class="windStatus"><i class="fas fa-wind"></i><span v-if="progress > 0">{{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</span></div>
+    <div class="columns m-0 is-clickable is-unselectable" v-for="(forecast, index) in mergedForecasts" :key="forecast.hour">
+      <div v-show="!colapsed || index == 0 || forecast.hour == selectedForecast" class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadMergedWind(forecast)">
         {{ forecast.display }}
       </div>
     </div>
     <div v-show="colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
       <i class="fas fa-caret-down"></i>
     </div>
-    <!--<div v-show="!colapsed" class="columns m-0 is-clickable is-unselectable" v-for="(forecast, index) in forecasts" :key="forecast.hour">
-      <div v-if="forecast.stamp2 != ''" v-bind:class="forecastOldClass(forecast)" @click="loadWind(forecast.forecast, 0)" class="column p-0 has-text-left pl-1">
-        <i class="fas fa-history"></i>
-      </div>
-      <div v-if="index == 0" class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadWind(forecast.forecast, forecast.stamp2 == '' ? 0 : 1)">
-        {{ forecast.time }}h00
-      </div>
-      <div v-if="index > 0" class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadWind(forecast.forecast, forecast.stamp2 == '' ? 0 : 1)">
-        <span v-if="forecast.hour - forecasts[0].hour >= 24 && (forecast.hour - forecasts[0].hour) % 24 < 3">+{{ Math.floor((forecast.hour - forecasts[0].hour)/24) }}j</span>
-        <span v-else>+{{ (forecast.hour - forecasts[0].hour)%24 }}h</span>
-      </div>
-    </div>-->
   </div>
 </template>
 
@@ -45,100 +28,24 @@ export default {
   },
   data: function () {
 
-    const mergedForecasts = []
-    var now = new Date()
-    mergedForecasts.push({
-      hour: 0,
-      display: now.getHours() + ":" + ("00" + now.getMinutes()).slice(-2),
-      date: now
-    })
-    for(var i = 1 ; i <= 24 ; i++) {
-      var date = new Date(now.getTime())
-      date.setHours(date.getHours() + i)
-      mergedForecasts.push({
-        hour: i,
-        display: "+ " + i + "h",
-        date: date
-      })
-    }
-    for(i = 30 ; i <= 48 ; i+=6) {
-      date = new Date(now.getTime())
-      date.setHours(date.getHours() + i)
-      mergedForecasts.push({
-        hour: i,
-        display: "+ " + i + "h",
-        date: date
-      })
-    }
-    for(i = 72 ; i <= 360 ; i+=24) {
-      date = new Date(now.getTime())
-      date.setHours(date.getHours() + i)
-      mergedForecasts.push({
-        hour: i,
-        display: i % 24 == 0 ? "+ " + Math.round(i/24) + "j" : "+ " + i + "h",
-        date: date
-      })
-    }
-
-    now = new Date()
-
-    const h0 = new Date()
-    h0.setUTCHours(-3)
-    h0.setUTCMinutes(30)
-    h0.setUTCSeconds(0)
-    h0.setUTCMilliseconds(0)
-    const h1 = new Date()
-    h1.setUTCHours(3)
-    h1.setUTCMinutes(30)
-    h1.setUTCSeconds(0)
-    h1.setUTCMilliseconds(0)
-    const h2 = new Date()
-    h2.setUTCHours(9)
-    h2.setUTCMinutes(30)
-    h2.setUTCSeconds(0)
-    h2.setUTCMilliseconds(0)
-    const h3 = new Date()
-    h3.setUTCHours(15)
-    h3.setUTCMinutes(30)
-    h3.setUTCSeconds(0)
-    h3.setUTCMilliseconds(0)
-    const h4 = new Date()
-    h4.setUTCHours(21)
-    h4.setUTCMinutes(30)
-    h4.setUTCSeconds(0)
-    h4.setUTCMilliseconds(0)
-
-    var lastStamp = ""
-    if(now >= h4) {
-      lastStamp = h4.getUTCFullYear() + ("00" + (h4.getUTCMonth() + 1)).slice(-2) + ("00" + h4.getUTCDate()).slice(-2) + "18"
-    } else if(now >= h3) {
-      lastStamp = h3.getUTCFullYear() + ("00" + (h3.getUTCMonth() + 1)).slice(-2) + ("00" + h3.getUTCDate()).slice(-2) + "12"
-    } else if(now >= h2) {
-      lastStamp = h2.getUTCFullYear() + ("00" + (h2.getUTCMonth() + 1)).slice(-2) + ("00" + h2.getUTCDate()).slice(-2) + "06"
-    } else if(now >= h1) {
-      lastStamp = h1.getUTCFullYear() + ("00" + (h1.getUTCMonth() + 1)).slice(-2) + ("00" + h1.getUTCDate()).slice(-2) + "00"
-    } else {
-      lastStamp = h0.getUTCFullYear() + ("00" + (h0.getUTCMonth() + 1)).slice(-2) + ("00" + h0.getUTCDate()).slice(-2) + "18"
-    }
-    now.setHours(now.getHours() - 1)
+    const now = new Date()
 
     return {
       windIsOnTime: undefined,
       velocityLayer: null,
-      forecasts: [
-      ],
+      forecasts: [],
       forecastsData: {},
       selectedForecast: "",
       lastForecast: now,
-      lastStamp: lastStamp,
+      lastStamp: this.initLastStamp(now),
       progress: 0,
       colapsed: true,
-      mergedForecasts: mergedForecasts,
-      atDate: null
+      mergedForecasts: this.initMergedForecasts(now),
+      atDate: null,
+      loading: false
     }
   },
   mounted: function() {
-    const it = this
     this.velocityLayer = L.velocityLayer({
             displayValues: true,
             displayOptions: {
@@ -151,48 +58,41 @@ export default {
             },
             maxVelocity: 15
     }).addTo(this.map);
-    this.layerControl.addOverlay(this.velocityLayer, "Wind");
+    this.layerControl.addOverlay(this.velocityLayer, "<i class='fas fa-wind'></i>");
 
-    this.$http.get('/winds').then(response => {
-      this.forecasts = response.body
-      this.forecasts.sort((a, b) => a.hour - b.hour)
-
-      var d = new Date()
-      d.setUTCFullYear(this.forecasts[0].forecast.substr(0, 4))
-      d.setUTCMonth(this.forecasts[0].forecast.substr(4, 2) - 1)
-      d.setUTCDate(this.forecasts[0].forecast.substr(6, 2))
-      d.setUTCHours(this.forecasts[0].forecast.substr(8, 2))
-      d.setUTCMinutes(0)
-      d.setUTCSeconds(0)
-      d.setUTCMilliseconds(0)
-
-      this.forecasts[0].time = d.getHours()
-
-      var maxForecast
-      for(var i = 2 ; i < this.forecasts.length ; i++) {
-        var forecast = this.forecasts[i]
-        if (forecast.stamp == it.lastStamp) {
-          maxForecast = forecast.forecast
-          it.progress++
-        }
-      }
-      if(maxForecast) {
-        it.lastForecast = this.getDateFromForecast(maxForecast)
-      }
-      it.windIsOnTime = it.progress > 0
-
+    this.loadWinds().then(() => {
       this.loadMergedWind(this.mergedForecasts[0])
 
-    }, () => {
-      console.log("Error loading winds")
-    });
+      var forecastsData = {}
+      for (var i= 0 ; i < this.forecasts.length ; i++) {
+        if (this.forecastsData[this.forecasts[i].stamp + "-" + this.forecasts[i].forecast]) {
+          forecastsData[this.forecasts[i].stamp + "-" + this.forecasts[i].forecast] = this.forecastsData[this.forecasts[i].stamp + "-" + this.forecasts[i].forecast]
+        }
+      }
+      this.forecastsData = forecastsData
+    })
+
+    var date1 = new Date()
+    var date2 = new Date(date1)
+    date1.setSeconds(0)
+    date1.setMilliseconds(0)
+    date1.setMinutes(date1.getMinutes() + 2)
+    window.setTimeout(() => { this.refresh()}, date1.getTime() - date2.getTime())
+
+    date1 = new Date()
+    date2 = new Date(date1)
+    date1.setSeconds(0)
+    date1.setMilliseconds(0)
+    date1.setMinutes(date1.getMinutes() - date1.getMinutes()%5 + 6)
+    window.setTimeout(() => { this.loadWinds()}, date1.getTime() - date2.getTime())
 
   },
   computed: {
     windStatus: function() {
       return {
         'has-text-danger': this.windIsOnTime === false,
-        'has-text-success': this.windIsOnTime === true
+        'has-text-success': this.windIsOnTime === true,
+        'is-loading': this.loading
       }
     },
   },
@@ -203,36 +103,163 @@ export default {
         selected: forecast.hour == this.selectedForecast
       }
     },
-    forecastOldClass: function(forecast) {
-      return {
-        last: forecast.stamp == this.lastStamp,
-        selected: forecast.hour == this.selectedForecast
-      }
-    },
-    loadWind: function(forecast, stamp) {
-
-      if(this.forecastsData[forecast + (stamp != undefined ? "-" + stamp : "")]) {
-        this.velocityLayer.setData(this.forecastsData[forecast + (stamp ? "-" + stamp : "")])
-        this.selectedForecast = forecast + (stamp != undefined ? "-" + stamp : "")
-      } else {
-        this.$http.get('/winds/'+forecast + (stamp != undefined ? "/" + stamp : "")).then(response => {
-          this.forecastsData[forecast] = response.body
-          this.velocityLayer.setData(response.body)
-          this.selectedForecast = forecast + (stamp != undefined ? "-" + stamp : "")
-        }, () => {
-          console.log("Error loading winds")
+    initMergedForecasts: function(now) {
+      const mergedForecasts = []
+      mergedForecasts.push({
+        hour: 0,
+        display: now.getHours() + ":" + ("00" + now.getMinutes()).slice(-2),
+        date: now
+      })
+      for(var i = 1 ; i <= 24 ; i++) {
+        var date = new Date(now.getTime())
+        date.setHours(date.getHours() + i)
+        mergedForecasts.push({
+          hour: i,
+          display: "+ " + i + "h",
+          date: date
         })
       }
+      for(i = 30 ; i <= 48 ; i+=6) {
+        date = new Date(now.getTime())
+        date.setHours(date.getHours() + i)
+        mergedForecasts.push({
+          hour: i,
+          display: "+ " + i + "h",
+          date: date
+        })
+      }
+      for(i = 72 ; i <= 360 ; i+=24) {
+        date = new Date(now.getTime())
+        date.setHours(date.getHours() + i)
+        mergedForecasts.push({
+          hour: i,
+          display: i % 24 == 0 ? "+ " + Math.round(i/24) + "j" : "+ " + i + "h",
+          date: date
+        })
+      }
+      return mergedForecasts
     },
-    loadWindAsync: function(forecast, stamp) {
+    initLastStamp: function(now) {
+      const h0 = new Date()
+      h0.setUTCHours(-3)
+      h0.setUTCMinutes(30)
+      h0.setUTCSeconds(0)
+      h0.setUTCMilliseconds(0)
+      const h1 = new Date()
+      h1.setUTCHours(3)
+      h1.setUTCMinutes(30)
+      h1.setUTCSeconds(0)
+      h1.setUTCMilliseconds(0)
+      const h2 = new Date()
+      h2.setUTCHours(9)
+      h2.setUTCMinutes(30)
+      h2.setUTCSeconds(0)
+      h2.setUTCMilliseconds(0)
+      const h3 = new Date()
+      h3.setUTCHours(15)
+      h3.setUTCMinutes(30)
+      h3.setUTCSeconds(0)
+      h3.setUTCMilliseconds(0)
+      const h4 = new Date()
+      h4.setUTCHours(21)
+      h4.setUTCMinutes(30)
+      h4.setUTCSeconds(0)
+      h4.setUTCMilliseconds(0)
+
+      var lastStamp = ""
+      if(now >= h4) {
+        lastStamp = h4.getUTCFullYear() + ("00" + (h4.getUTCMonth() + 1)).slice(-2) + ("00" + h4.getUTCDate()).slice(-2) + "18"
+      } else if(now >= h3) {
+        lastStamp = h3.getUTCFullYear() + ("00" + (h3.getUTCMonth() + 1)).slice(-2) + ("00" + h3.getUTCDate()).slice(-2) + "12"
+      } else if(now >= h2) {
+        lastStamp = h2.getUTCFullYear() + ("00" + (h2.getUTCMonth() + 1)).slice(-2) + ("00" + h2.getUTCDate()).slice(-2) + "06"
+      } else if(now >= h1) {
+        lastStamp = h1.getUTCFullYear() + ("00" + (h1.getUTCMonth() + 1)).slice(-2) + ("00" + h1.getUTCDate()).slice(-2) + "00"
+      } else {
+        lastStamp = h0.getUTCFullYear() + ("00" + (h0.getUTCMonth() + 1)).slice(-2) + ("00" + h0.getUTCDate()).slice(-2) + "18"
+      }
+
+      return lastStamp
+    },
+    loadWinds: function() {
+      this.loading = true
+
+      const it = this
+      return new Promise(function(resolve, reject) {
+        it.$http.get('/winds').then(response => {
+          it.forecasts = response.body
+          it.forecasts.sort((a, b) => a.hour - b.hour)
+
+          var d = new Date()
+          d.setUTCFullYear(it.forecasts[0].forecast.substr(0, 4))
+          d.setUTCMonth(it.forecasts[0].forecast.substr(4, 2) - 1)
+          d.setUTCDate(it.forecasts[0].forecast.substr(6, 2))
+          d.setUTCHours(it.forecasts[0].forecast.substr(8, 2))
+          d.setUTCMinutes(0)
+          d.setUTCSeconds(0)
+          d.setUTCMilliseconds(0)
+
+          it.forecasts[0].time = d.getHours()
+
+          it.progress = 0
+          var maxForecast
+          for(var i = 2 ; i < it.forecasts.length ; i++) {
+            var forecast = it.forecasts[i]
+            if (forecast.stamp == it.lastStamp) {
+              maxForecast = forecast.forecast
+              it.progress++
+            }
+          }
+          if(maxForecast) {
+            it.lastForecast = it.getDateFromForecast(maxForecast)
+          }
+          it.windIsOnTime = it.progress > 0
+
+          it.loading = false
+          resolve()
+
+        }, () => {
+          console.log("Error loading winds")
+          it.loading = false
+          reject()
+        })
+      })
+    },
+    refresh: function() {
+      var dateToLoad
+      if (this.atDate) {
+        dateToLoad = this.mergedForecasts[this.atDate].date
+        this.atDate = null
+      } else if (this.selectedForecast > 0) {
+        for (var i=0;i<this.mergedForecasts.length;i++) {
+          if (this.mergedForecasts[i].hour === this.selectedForecast) {
+            dateToLoad = this.mergedForecasts[i].date
+            break
+          }
+        }
+      }
+
+      const now = new Date()
+      this.lastStamp = this.initLastStamp(now)
+      this.mergedForecasts = this.initMergedForecasts(now)
+      if (this.selectedForecast === 0) {
+        this.loadMergedWind(this.mergedForecasts[0])
+      } else if (dateToLoad) {
+        this.loadWindAt(dateToLoad, true)
+      }
+      window.setTimeout(() => { this.refresh()}, 60000)
+    },
+    loadWindAsync: function(w) {
       const it = this
 
+      console.log(it.forecastsData)
+
       return new Promise(function(resolve, reject) {
-        if(it.forecastsData[forecast + (stamp != undefined ? "-" + stamp : "")]) {
-          resolve(it.forecastsData[forecast + (stamp ? "-" + stamp : "")])
+        if(it.forecastsData[w.stamp + "-" + w.forecast]) {
+          resolve(it.forecastsData[w.stamp + "-" + w.forecast])
         } else {
-          it.$http.get('/winds/'+forecast + (stamp != undefined ? "/" + stamp : "")).then(response => {
-            it.forecastsData[forecast] = response.body
+          it.$http.get('/winds/'+w.forecast).then(response => {
+            it.forecastsData[w.stamp + "-" + w.forecast] = response.body
             resolve(response.body)
           }, () => {
             console.log("Error loading winds")
@@ -246,7 +273,7 @@ export default {
 
       var keys = []
       for(var i in this.forecasts) {
-        keys.push(this.forecasts[i].forecast)
+        keys.push(this.forecasts[i].stamp + "-" + this.forecasts[i].forecast)
       }
       keys.sort()
       if (keys[0] > stamp) {
@@ -374,8 +401,8 @@ export default {
 
       return d
     },
-    loadWindAt: function(d) {
-      if (this.mergedForecasts.length == 0 || d < this.mergedForecasts[0].date)
+    loadWindAt: function(d, doNotLoadWinds) {
+      if (this.loading || this.mergedForecasts.length == 0 || d < this.mergedForecasts[0].date)
         return
 
       if (this.atDate) {
@@ -396,11 +423,11 @@ export default {
         var d1 = this.mergedForecasts[i].date
         var d2 = this.mergedForecasts[i + 1].date
         if (date == d1) {
-          this.loadMergedWind(this.mergedForecasts[i])
+          this.loadMergedWind(this.mergedForecasts[i], doNotLoadWinds)
           return
         }
         if (date == d2) {
-          this.loadMergedWind(this.mergedForecasts[i+1])
+          this.loadMergedWind(this.mergedForecasts[i+1], doNotLoadWinds)
           return
         }
         if (date > d1 && date < d2)
@@ -409,12 +436,18 @@ export default {
         }
       }
       this.mergedForecasts.splice(i + 1, 0, forecast)
-      this.loadMergedWind(forecast).then(() => {
+      this.loadMergedWind(forecast, doNotLoadWinds).then(() => {
         this.atDate = i + 1
       })
     },
-    loadMergedWind: function(mergedForecast) {
+    loadMergedWind: function(mergedForecast, doNotLoadWinds) {
       const it = this
+
+      if (it.loading) {
+        return
+      }
+
+      it.loading = true
 
       if (it.atDate) {
         it.mergedForecasts.splice(it.atDate, 1)
@@ -425,7 +458,10 @@ export default {
 
         if(mergedForecast.data) {
           it.selectedForecast = mergedForecast.hour
-          it.velocityLayer.setData(mergedForecast.data)
+          if (doNotLoadWinds !== true) {
+            it.velocityLayer.setData(mergedForecast.data)
+          }
+          it.loading = false
           resolve()
         } else {
           var i = 0
@@ -434,27 +470,34 @@ export default {
             var d2 = it.getDateFromForecast(it.forecasts[i + 1].forecast)
 
             if(mergedForecast.date >= d1 && mergedForecast.date < d2) {
-              mergedForecast.w1 = it.forecasts[i].forecast
-              mergedForecast.w2 = it.forecasts[i + 1].forecast
+              mergedForecast.w1 = {forecast: it.forecasts[i].forecast, stamp: it.forecasts[i].stamp}
+              mergedForecast.w2 = {forecast: it.forecasts[i + 1].forecast, stamp: it.forecasts[i + 1].stamp}
               mergedForecast.h = (mergedForecast.date.getTime() - d1.getTime()) / (d2.getTime() - d1.getTime())
               break
             }
           }
 
           if(!mergedForecast.w1) {
-            mergedForecast.w1 = it.forecasts[it.forecasts.length - 1].forecast
-            mergedForecast.w2 = it.forecasts[it.forecasts.length - 1].forecast
+            mergedForecast.w1 = {forecast: it.forecasts[it.forecasts.length - 1].forecast, stamp: it.forecasts[it.forecasts.length - 1].stamp}
+            mergedForecast.w2 = {forecast: it.forecasts[it.forecasts.length - 1].forecast, stamp: it.forecasts[it.forecasts.length - 1].stamp}
             mergedForecast.h = 1
           }
 
-          it.loadWindAsync(mergedForecast.w1, 0).then(w1 => {
-            it.loadWindAsync(mergedForecast.w2, 0).then(w2 => {
-              it.selectedForecast = mergedForecast.hour
-              mergedForecast.data = it.mergeWinds(w1, w2, mergedForecast.h)
-              it.velocityLayer.setData(mergedForecast.data)
-              resolve()
+          if (doNotLoadWinds === true) {
+            it.selectedForecast = mergedForecast.hour
+            it.loading = false
+            resolve()
+          } else {
+            it.loadWindAsync(mergedForecast.w1, 0).then(w1 => {
+              it.loadWindAsync(mergedForecast.w2, 0).then(w2 => {
+                it.selectedForecast = mergedForecast.hour
+                mergedForecast.data = it.mergeWinds(w1, w2, mergedForecast.h)
+                it.velocityLayer.setData(mergedForecast.data)
+                it.loading = false
+                resolve()
+              })
             })
-          })
+          }
         }
       })
     }
