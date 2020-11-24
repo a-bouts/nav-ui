@@ -21,7 +21,7 @@ export default {
       markerLayer: null,
       linesLayer: null,
       boatLines: null,
-      b: 0,
+      sneakPosition: null,
       legend: Object
     }
   },
@@ -75,28 +75,16 @@ export default {
     },
     center: function() {
       const it = this
-      this.markerLayer.clearLayers()  
-      
+      this.markerLayer.clearLayers()
+
       var lineMarker = L.ExtraMarkers.icon({ icon: 'fa-route', markerColor: 'black', shape: 'star', prefix: 'fa' })
       L.marker(this.map.getCenter(),
         {icon: lineMarker, draggable: true, zIndexOffset: 5000}
       ).addTo(this.markerLayer).on('drag', function() {
-        var position = this.getLatLng();
-        it.rotate(position)
+        it.sneakPosition = this.getLatLng();
+        it.display()
       })
-      this.rotate(this.map.getCenter())
-    },
-    rotate: function(position) {
-        const start = {
-          lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-          lng: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
-        }
-        var b = Math.round(this.bearingTo(start, position))
-        if(b == 360) b = 0
-        if(this.bearing != b) {
-          this.bearing = b
-          this.display()
-        }
+      this.sneakPosition = this.map.getCenter()
     },
     bearingTo: function(from, to) {
       const toRadians = (a) => a * π / 180.0
@@ -131,22 +119,9 @@ export default {
       return wrap360(b)
     },
     onMouseMove: function(e) {
-      if(!this.current || !this.current.position)
-        return
+      this.sneakPosition = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))
 
-      const pos = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))
-
-      const start = {
-        lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-        lng: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
-      }
-
-      var b = Math.round(this.bearingTo(start, pos))
-      if(b == 360) b = 0
-      if(this.bearing != b) {
-        this.bearing = b
-        this.display()
-      }
+      this.display()
     },
     go: function() {
       if(!this.current || !this.current.position)
@@ -182,6 +157,21 @@ export default {
       })
     },
     display: function() {
+      if(!this.sneakPosition || !this.current || !this.current.position)
+        return
+
+      const start = {
+        lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
+        lng: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
+      }
+
+      var b = Math.round(this.bearingTo(start, this.sneakPosition))
+      if(b == 360) b = 0
+      if(this.bearing == b) {
+        return
+      }
+      this.bearing = b
+
       this.linesLayer.clearLayers()
 
       if (this.legend) {
