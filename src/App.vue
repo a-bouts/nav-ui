@@ -71,7 +71,7 @@ export default {
       this.boat = this.boats[0].name
     }
 
-    if (Notification) {
+    if (typeof Notification !== 'undefined') {
       if (Notification.permission === 'granted') {
         // show notification here
       } else {
