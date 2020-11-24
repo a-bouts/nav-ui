@@ -61,7 +61,8 @@ export default {
       current: {},
       nextDoor: null,
       boatLines: null,
-      windControl: null
+      windControl: null,
+      legend: null
     }
   },
   created: function() {
@@ -72,6 +73,7 @@ export default {
     })
   },
   mounted: function() {
+    const it = this
     this.map = L.map('map', {zoomControl: true, worldCopyJump: false}).setView([51.505, -0.09], 13)
 
     var imagery = esri.basemapLayer('Imagery').addTo(this.map)
@@ -101,6 +103,20 @@ export default {
     this.map.on('moveend', this.zoomend);
 
     this.initWindControls()
+
+    L.Control.Legend = L.Control.extend({
+      onAdd: function() {
+        it.legend = L.DomUtil.create("div", "leaflet-control-velocity")
+        return it.legend
+      },
+      onRemove: function() {
+      }
+    })
+    L.control.legend = function(opts) {
+        return new L.Control.Legend(opts)
+    }
+    L.control.legend({ position: 'bottomleft' }).addTo(this.map)
+    this.map.on("mousemove", this.onMouseMove, this)
   },
   computed: {
     level: function() {
@@ -112,6 +128,19 @@ export default {
     }
   },
   methods: {
+    onMouseMove: function(e) {
+      const pad = (num, places) => String(num).padStart(places, '0')
+      var pos = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))
+      var lat = this.convertDDToDMS(pos.lat)
+      var lon = this.convertDDToDMS(pos.lng)
+
+      var wind = this.windControl.getWindAt(pos)
+      if (this.legend) {
+        var legend = "<div>" + pad(lat.d, 2) + "°" + (lat.p < 0 ? "S" : "N") + " " + pad(lat.m, 2) + "'" + pad(lat.s.toFixed(0), 2) + "\" - " + pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s.toFixed(0), 2) + "\"</div>"
+        legend += "<div><strong><i class='fa fa-wind'></i> </strong>" + wind.direction.toFixed(2) + "° " + wind.speed.toFixed(2) + "kt</div>"
+        this.legend.innerHTML = legend
+      }
+    },
     onLoading: function(loading) {
       this.loading = loading
     },

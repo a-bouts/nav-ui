@@ -47,7 +47,7 @@ export default {
   },
   mounted: function() {
     this.velocityLayer = L.velocityLayer({
-            displayValues: true,
+            displayValues: false,
             displayOptions: {
                     velocityType: 'Global Wind',
                     position: 'bottomleft',
@@ -102,6 +102,20 @@ export default {
         last: forecast.date <= this.lastForecast,
         selected: forecast.hour == this.selectedForecast
       }
+    },
+    getWindAt: function(pos) {
+      var gridValue = this.velocityLayer._windy.interpolatePoint(pos.lng, pos.lat)
+      if (gridValue && !isNaN(gridValue[0]) && !isNaN(gridValue[1]) && gridValue[2]) {
+        var velocityAbs = Math.sqrt(Math.pow(gridValue[0], 2) + Math.pow(gridValue[1], 2));
+        var direction = this.vectorToDegrees(gridValue[0], gridValue[1], velocityAbs)
+        var speed = this.meterSec2Knots(velocityAbs)
+        return {direction: direction, speed: speed}
+      } else {
+        return null
+      }      
+    },
+    meterSec2Knots: function(meters) {
+      return meters / 0.514;
     },
     initMergedForecasts: function(now) {
       const mergedForecasts = []
