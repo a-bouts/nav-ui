@@ -149,7 +149,6 @@ export default {
         if (this.last) {
           this.previousLayer = L.layerGroup().addTo(this.isoLayer)
           this.layerControl.addOverlay(this.previousLayer, "<i class='fas fa-history'></i>");
-          this.drawRoute(this.previous, true)
         }
 
         this.displayNotification(response.body.sumup)
