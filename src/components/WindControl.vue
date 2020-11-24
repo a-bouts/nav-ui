@@ -84,7 +84,7 @@ export default {
     date1.setSeconds(0)
     date1.setMilliseconds(0)
     date1.setMinutes(date1.getMinutes() - date1.getMinutes()%5 + 6)
-    window.setTimeout(() => { this.loadWinds()}, date1.getTime() - date2.getTime())
+    window.setTimeout(() => { this.refreshWinds()}, date1.getTime() - date2.getTime())
 
   },
   computed: {
@@ -248,6 +248,10 @@ export default {
         this.loadWindAt(dateToLoad, true)
       }
       window.setTimeout(() => { this.refresh()}, 60000)
+    },
+    refreshWinds: function() {
+      this.loadWinds()
+      window.setTimeout(() => { this.refreshWinds()}, 300000)
     },
     loadWindAsync: function(w) {
       const it = this
