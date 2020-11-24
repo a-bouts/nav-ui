@@ -21,38 +21,16 @@ export default {
       markerLayer: null,
       linesLayer: null,
       boatLines: null,
-      sneakPosition: null,
-      legend: Object
+      sneakPosition: null
     }
   },
   mounted: function() {
     EventBus.$on('center-sneak', () => {this.center()})
 
-    const it = this
     this.layer = L.layerGroup().addTo(this.map)
     this.markerLayer = L.layerGroup().addTo(this.layer)
     this.linesLayer = L.layerGroup().addTo(this.layer)
     this.layerControl.addOverlay(this.layer, "<i class='fa fa-route'></i>")
-
-    // this.map.on("mousemove", this.onMouseMove, this);
-
-    L.Control.BoatLines = L.Control.extend({
-      onAdd: function() {
-
-        it.legend = L.DomUtil.create("div", "leaflet-control-velocity");
-
-        return it.legend;
-      },
-
-      onRemove: function() {
-      }
-    });
-
-    L.control.boatlines = function(opts) {
-        return new L.Control.BoatLines(opts);
-    }
-
-    L.control.boatlines({ position: 'bottomleft' }).addTo(this.map);
 
     this.center()
   },
@@ -174,9 +152,7 @@ export default {
 
       this.linesLayer.clearLayers()
 
-      if (this.legend) {
-        this.legend.innerHTML = "<strong>Bearing </strong>" + this.bearing + "° - <strong>TWA </strong>" + this.boatLines[1][this.bearing].twa.toFixed(1) + "°"
-      }
+      this.$emit("move", {bearing: this.bearing, twa: this.boatLines[1][this.bearing].twa})
 
       for(var l in this.boatLines) {
         var path = [];

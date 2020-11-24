@@ -11,7 +11,7 @@
     <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:map="map"></Geodesic>
     <Race v-if="map != null" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:current="current" v-on:nextdoor="onNextDoor"></Race>
     <Route ref="route" v-if="map != null" v-bind:priv="priv" v-bind:debug="debug" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
-    <BoatLines ref="boatlines" v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv"></BoatLines>
+    <BoatLines ref="boatlines" v-if="map != null" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv" v-on:move="onSneakMove"></BoatLines>
   </div>
 </template>
 
@@ -62,7 +62,10 @@ export default {
       nextDoor: null,
       boatLines: null,
       windControl: null,
-      legend: null
+      legend: null,
+      cursor: null,
+      sneak: null,
+      wind: null
     }
   },
   created: function() {
@@ -129,15 +132,30 @@ export default {
   },
   methods: {
     onMouseMove: function(e) {
-      const pad = (num, places) => String(num).padStart(places, '0')
-      var pos = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))
-      var lat = this.convertDDToDMS(pos.lat)
-      var lon = this.convertDDToDMS(pos.lng)
+      this.cursor = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))
 
-      var wind = this.windControl.getWindAt(pos)
+      this.wind = this.windControl.getWindAt(this.cursor)
+      this.displayLegend()
+    },
+    onSneakMove: function(sneak) {
+      this.sneak = sneak
+      this.displayLegend()
+    },
+    displayLegend: function() {
+      const pad = (num, places) => String(num).padStart(places, '0')
       if (this.legend) {
-        var legend = "<div>" + pad(lat.d, 2) + "°" + (lat.p < 0 ? "S" : "N") + " " + pad(lat.m, 2) + "'" + pad(lat.s.toFixed(0), 2) + "\" - " + pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s.toFixed(0), 2) + "\"</div>"
-        legend += "<div><strong><i class='fa fa-wind'></i> </strong>" + wind.direction.toFixed(2) + "° " + wind.speed.toFixed(2) + "kt</div>"
+        var legend = ""
+        if (this.cursor) {
+          var lat = this.convertDDToDMS(this.cursor.lat)
+          var lon = this.convertDDToDMS(this.cursor.lng)
+          legend += "<div>" + pad(lat.d, 2) + "°" + (lat.p < 0 ? "S" : "N") + " " + pad(lat.m, 2) + "'" + pad(lat.s.toFixed(0), 2) + "\" - " + pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s.toFixed(0), 2) + "\"</div>"
+        }
+        if (this.sneak) {
+          legend += "<div><strong><i class='fa fa-compass'></i></strong> " + this.sneak.bearing + "° <strong><i class='fa fa-location-arrow'></i></strong> " + this.sneak.twa.toFixed(1) + "°<div>"
+        }
+        if (this.wind) {
+          legend += "<div><strong><i class='fa fa-wind'></i> </strong>" + this.wind.direction.toFixed(1) + "° " + this.wind.speed.toFixed(1) + "kt</div>"
+        }
         this.legend.innerHTML = legend
       }
     },
