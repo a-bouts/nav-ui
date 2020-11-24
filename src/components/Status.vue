@@ -44,7 +44,7 @@ export default {
   },
   methods: {
     refresh: function() {
-      this.$http.get('/-/healthz').then(response => {
+      this.$http.get('/-/healthz', {responseType: "json"}).then(response => {
         this.ui = response.body
       }, (error) => {
         console.log(error)
