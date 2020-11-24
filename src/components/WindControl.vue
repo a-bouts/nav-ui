@@ -252,8 +252,6 @@ export default {
     loadWindAsync: function(w) {
       const it = this
 
-      console.log(it.forecastsData)
-
       return new Promise(function(resolve, reject) {
         if(it.forecastsData[w.stamp + "-" + w.forecast]) {
           resolve(it.forecastsData[w.stamp + "-" + w.forecast])
