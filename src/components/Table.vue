@@ -191,6 +191,9 @@ export default {
     onRoute(route) {
       this.route = route
       this.setLines(route)
+    },
+    refresh() {
+      this.setLines(this.route)
     }
   }
 }

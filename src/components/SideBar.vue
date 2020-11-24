@@ -12,13 +12,13 @@
           <li><a role="tab" @click="run" class="button is-white" v-bind:class="{ 'is-loading': loading }">GO</a></li>
         </ul>
 
-        <ul role="tablist" class="bottom"> <!-- bottom aligned tabs -->
+        <ul role="tablist"> <!-- bottom aligned tabs -->
           <li><a href="#table" role="tab"><i class="fa fa-table"></i></a></li>
-          <li><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
-          <li><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
-          <li><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
-          <li v-if="debug"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
-          <li><a href="#info" role="tab" class="p-2">
+          <li class="bottom"><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
+          <li class="bottom"><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
+          <li class="bottom"><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
+          <li v-if="debug" class="bottom"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
+          <li class="bottom"><a href="#info" role="tab" class="p-2">
             <img src="/images/phtheirichthys-2-512x512.png" alt="Placeholder image">
           </a></li>
         </ul>
@@ -239,7 +239,7 @@
           </section>
         </div>
         <div class="leaflet-sidebar-pane" id="table">
-          <Table v-bind:display="displayed == 'table'"></Table>
+          <Table ref="table" v-bind:display="displayed == 'table'"></Table>
         </div>
         <div class="leaflet-sidebar-pane" id="boats">
           <Boats></Boats>
@@ -409,6 +409,7 @@ export default {
       if(e.id == "table") {
         if (!L.DomUtil.hasClass(this._container, 'large')) {
           L.DomUtil.addClass(this._container, 'large');
+          it.$refs.table.refresh()
         }
       } else {
         if (L.DomUtil.hasClass(this._container, 'large')) {
@@ -623,9 +624,10 @@ export default {
 
 <style scoped>
 
-@media (max-height: 400px) {
+@media (max-height: 460px) {
   .bottom {
     visibility: hidden;
+    height: 0px;
   }
 }
 
