@@ -48,8 +48,9 @@ export default {
     })
     return {
       last: null,
-      ptevious: null,
+      previous: null,
       isoLayer: null,
+      previousLayer: null,
       markers: [],
       editIcon: _editIcon,
       changedIcon: _changedIcon,
@@ -63,6 +64,7 @@ export default {
   },
   mounted: function() {
     this.isoLayer = L.layerGroup().addTo(this.map)
+
     EventBus.$on('buoys', (buoys) => {this.routeBuoys = buoys})
     EventBus.$on('expes', (expes) => {this.expes = expes})
   },
@@ -84,6 +86,9 @@ export default {
       var previous = JSON.parse(localStorage.getItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.current.id))
 
       if(previous && previous.length > 0) {
+        this.previousLayer = L.layerGroup().addTo(this.isoLayer)
+        this.layerControl.addOverlay(this.previousLayer, "<i class='fas fa-history'></i>");
+
         this.previous = previous[0]
         this.previous.date = new Date(this.previous.date)
         this.drawRoute(this.previous, true)
@@ -141,6 +146,11 @@ export default {
           this.layerControl.removeLayer(layer)
         })
         this.isoLayer.clearLayers()
+        if (this.last) {
+          this.previousLayer = L.layerGroup().addTo(this.isoLayer)
+          this.layerControl.addOverlay(this.previousLayer, "<i class='fas fa-history'></i>");
+          this.drawRoute(this.previous, true)
+        }
 
         this.displayNotification(response.body.sumup)
 
@@ -195,7 +205,9 @@ export default {
         }
         this.saveRoute()
         this.drawRoute(this.last)
-        this.drawRoute(this.previous, true)
+        if (this.previous) {
+          this.drawRoute(this.previous, true)
+        }
       }, () => {
         this.$emit('error', {
             level: "error",
@@ -259,6 +271,11 @@ export default {
       return res;
     },
     drawRoute: function(route, dark) {
+      var layer = this.isoLayer
+      if (dark) {
+        layer = this.previousLayer
+      }
+
       this.markers.splice(0, this.markers.length);
       for(var w in route.windline) {
         var wl = route.windline[w];
@@ -285,7 +302,7 @@ export default {
           .on('click', () => {
             this.$emit('select', pt)
           })
-          .addTo(this.isoLayer)
+          .addTo(layer)
         this.markers.push(marker)
         //setTimeout(() => { marker.openTooltip() }, 0)
       }
@@ -304,7 +321,7 @@ export default {
           opacity: 0.7
         }
       }
-      L.polyline(route.windline, polylineOptions).addTo(this.isoLayer)
+      L.polyline(route.windline, polylineOptions).addTo(layer)
       this.$emit('select', route.windline[route.windline.length-1])
     },
     showTooltip: function() {
