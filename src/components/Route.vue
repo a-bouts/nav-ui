@@ -79,7 +79,7 @@ export default {
 
       if(this.last) {
         this.last.date = new Date(this.last.date)
-        this.drawRoute(this.last)
+        this.drawRoute()
         EventBus.$emit('route', this.last)
       }
 
@@ -91,7 +91,7 @@ export default {
 
         this.previous = previous[0]
         this.previous.date = new Date(this.previous.date)
-        this.drawRoute(this.previous, true)
+        this.drawPreviousRoute()
       }
     }
   },
@@ -203,9 +203,9 @@ export default {
           windline: windline
         }
         this.saveRoute()
-        this.drawRoute(this.last)
+        this.drawRoute()
         if (this.previous) {
-          this.drawRoute(this.previous, true)
+          this.drawPreviousRoute()
         }
       }, () => {
         this.$emit('error', {
@@ -269,17 +269,12 @@ export default {
 
       return res;
     },
-    drawRoute: function(route, dark) {
-      var layer = this.isoLayer
-      if (dark) {
-        layer = this.previousLayer
-      }
-
+    drawRoute: function() {
       this.markers.splice(0, this.markers.length);
-      for(var w in route.windline) {
-        var wl = route.windline[w];
+      for(var w in this.last.windline) {
+        var wl = this.last.windline[w];
 
-        var date = new Date(route.date.getTime())
+        var date = new Date(this.last.date.getTime())
         date.setMinutes(date.getMinutes() + wl.duration * 60);
         wl.date = date
         if(date.getHours() > 21 || date.getHours() < 7) {
@@ -293,17 +288,14 @@ export default {
             icon = this.nightChangedIcon
           else
             icon = this.nightIcon
-        if (dark)
-          icon = this.darkIcon
         const pt = wl
         var marker = L.marker([wl.lat, wl.lon], {icon: icon})
           .bindTooltip(this.getTooltip(date, wl), {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
           .on('click', () => {
             this.$emit('select', pt)
           })
-          .addTo(layer)
+          .addTo(this.isoLayer)
         this.markers.push(marker)
-        //setTimeout(() => { marker.openTooltip() }, 0)
       }
       var polylineOptions = {
         color: 'green',
@@ -311,17 +303,39 @@ export default {
         smoothFactor: 2,
         lineJoin: 'round'
       }
-      if (dark) {
-        polylineOptions = {
-          color: '#777777',
-          weight: 1,
-          smoothFactor: 2,
-          lineJoin: 'round',
-          opacity: 0.7
-        }
+      L.polyline(this.last.windline, polylineOptions).addTo(this.isoLayer)
+      this.$emit('select', this.last.windline[this.last.windline.length-1])
+    },
+    drawPreviousRoute: function() {
+      if (!this.previous) {
+        return
       }
-      L.polyline(route.windline, polylineOptions).addTo(layer)
-      this.$emit('select', route.windline[route.windline.length-1])
+      for(var w in this.previous.windline) {
+        var wl = this.previous.windline[w];
+
+        var date = new Date(this.previous.date.getTime())
+        date.setMinutes(date.getMinutes() + wl.duration * 60);
+        wl.date = date
+        if(date.getHours() > 21 || date.getHours() < 7) {
+            wl.night = true
+        }
+        var icon = this.darkIcon
+        const pt = wl
+        L.marker([wl.lat, wl.lon], {icon: icon})
+          .bindTooltip(this.getTooltip(date, wl), {permanent: false, opacity: 0.7, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
+          .on('click', () => {
+            this.$emit('select', pt)
+          })
+          .addTo(this.previousLayer)
+      }
+      var polylineOptions = {
+        color: '#777777',
+        weight: 1,
+        smoothFactor: 2,
+        lineJoin: 'round',
+        opacity: 0.7
+      }
+      L.polyline(this.previous.windline, polylineOptions).addTo(this.previousLayer)
     },
     showTooltip: function() {
       for(var m in this.markers) {
