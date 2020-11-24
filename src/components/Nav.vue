@@ -145,16 +145,16 @@ export default {
       const pad = (num, places) => String(num).padStart(places, '0')
       if (this.legend) {
         var legend = ""
-        if (this.cursor) {
-          var lat = this.convertDDToDMS(this.cursor.lat)
-          var lon = this.convertDDToDMS(this.cursor.lng)
-          legend += "<div>" + pad(lat.d, 2) + "°" + (lat.p < 0 ? "S" : "N") + " " + pad(lat.m, 2) + "'" + pad(lat.s.toFixed(0), 2) + "\" - " + pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s.toFixed(0), 2) + "\"</div>"
-        }
         if (this.sneak) {
           legend += "<div><strong><i class='fa fa-compass'></i></strong> " + this.sneak.bearing + "° <strong><i class='fa fa-location-arrow'></i></strong> " + this.sneak.twa.toFixed(1) + "°<div>"
         }
         if (this.wind) {
           legend += "<div><strong><i class='fa fa-wind'></i> </strong>" + this.wind.direction.toFixed(1) + "° " + this.wind.speed.toFixed(1) + "kt</div>"
+        }
+        if (this.cursor) {
+          var lat = this.convertDDToDMS(this.cursor.lat)
+          var lon = this.convertDDToDMS(this.cursor.lng)
+          legend += "<div>" + pad(lat.d, 2) + "°" + (lat.p < 0 ? "S" : "N") + " " + pad(lat.m, 2) + "'" + pad(lat.s.toFixed(0), 2) + "\" - " + pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s.toFixed(0), 2) + "\"</div>"
         }
         this.legend.innerHTML = legend
       }
