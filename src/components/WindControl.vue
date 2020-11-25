@@ -58,7 +58,7 @@ export default {
             },
             maxVelocity: 15
     }).addTo(this.map);
-    this.layerControl.addOverlay(this.velocityLayer, "<i class='fas fa-wind'></i>");
+    this.layerControl.addOverlay(this.velocityLayer, "<i class='fas fa-wind'></i> Wind");
 
     this.loadWinds().then(() => {
       this.loadMergedWind(this.mergedForecasts[0])
@@ -104,7 +104,10 @@ export default {
       }
     },
     getWindAt: function(pos) {
-      var gridValue = this.velocityLayer._windy.interpolatePoint(pos.lng, pos.lat)
+      var gridValue
+      if (this.velocityLayer._windy) {
+        gridValue = this.velocityLayer._windy.interpolatePoint(pos.lng, pos.lat)
+      }
       if (gridValue && !isNaN(gridValue[0]) && !isNaN(gridValue[1]) && gridValue[2]) {
         var velocityAbs = Math.sqrt(Math.pow(gridValue[0], 2) + Math.pow(gridValue[1], 2));
         var direction = this.vectorToDegrees(gridValue[0], gridValue[1], velocityAbs)
@@ -112,7 +115,7 @@ export default {
         return {direction: direction, speed: speed}
       } else {
         return null
-      }      
+      }
     },
     meterSec2Knots: function(meters) {
       return meters / 0.514;

@@ -87,7 +87,7 @@ export default {
 
       if(previous && previous.length > 0) {
         this.previousLayer = L.layerGroup().addTo(this.isoLayer)
-        this.layerControl.addOverlay(this.previousLayer, "<i class='fas fa-history'></i>");
+        this.layerControl.addOverlay(this.previousLayer, "<i class='fas fa-history'></i> History");
 
         this.previous = previous[0]
         this.previous.date = new Date(this.previous.date)
@@ -148,7 +148,7 @@ export default {
         this.isoLayer.clearLayers()
         if (this.last) {
           this.previousLayer = L.layerGroup().addTo(this.isoLayer)
-          this.layerControl.addOverlay(this.previousLayer, "<i class='fas fa-history'></i>");
+          this.layerControl.addOverlay(this.previousLayer, "<i class='fas fa-history'></i> History");
         }
 
         this.displayNotification(response.body.sumup)
@@ -158,7 +158,7 @@ export default {
         var first = true
         for(var d in navs) {
           var layer = L.layerGroup().addTo(this.isoLayer);
-          this.layerControl.addOverlay(layer, navs[d].name);
+          this.layerControl.addOverlay(layer, "<i class='fas fa-map-marker-alt'></i> " + navs[d].name);
           if (!first) {
             this.map.removeLayer(layer)
           }

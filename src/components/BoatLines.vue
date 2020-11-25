@@ -25,12 +25,24 @@ export default {
     }
   },
   mounted: function() {
+    const self = this
     EventBus.$on('center-sneak', () => {this.center()})
 
     this.layer = L.layerGroup().addTo(this.map)
     this.markerLayer = L.layerGroup().addTo(this.layer)
     this.linesLayer = L.layerGroup().addTo(this.layer)
-    this.layerControl.addOverlay(this.layer, "<i class='fa fa-route'></i>")
+    this.layerControl.addOverlay(this.layer, "<i class='fa fa-route'></i> Sneak")
+    this.map.on("overlayremove", function(event) {
+      if (event.layer === self.layer) {
+        self.$emit("move", null)
+        self.bearing = -1
+      }
+    })
+    this.map.on("overlayadd", function(event) {
+      if (event.layer === self.layer) {
+        self.display()
+      }
+    })
 
     this.center()
   },
@@ -135,8 +147,10 @@ export default {
       })
     },
     display: function() {
-      if(!this.sneakPosition || !this.current || !this.current.position)
+      if(!this.sneakPosition || !this.current || !this.current.position) {
+        this.$emit("move", null)
         return
+      }
 
       const start = {
         lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
