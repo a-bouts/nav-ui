@@ -9,6 +9,7 @@
           <li><a role="tab" @click="pan"><i class="fa fa-expand"></i></a></li>
           <li><a role="tab" @click="showTooltip" class="button is-white"><i class="fa fa-eye"></i></a></li>
           <li><a role="tab" @click="centerSneak"><i class="fas fa-route"></i></a></li>
+          <li v-if="isNative()"><a role="tab" @click="geoloc"><i class="fas fa-globe-europe"></i></a></li>
           <li><a role="tab" @click="run" class="button is-white" v-bind:class="{ 'is-loading': loading }">GO</a></li>
         </ul>
 
@@ -296,6 +297,10 @@ import Table from './Table.vue'
 import Status from './Status.vue'
 import {EventBus} from '../event-bus.js';
 
+import { Capacitor , Plugins } from '@capacitor/core';
+
+const { App } = Plugins;
+
 export default {
   name: 'SideBar',
   props: {
@@ -422,8 +427,16 @@ export default {
       }
       it.displayed = null
     })
+
+    App.addListener('appStateChange', (state) => {
+      // state.isActive contains the active state
+      console.log('App state changed. Is active?', state.isActive);
+    });
   },
   methods: {
+    isNative: function() {
+      return Capacitor.isNative
+    },
     convertDMSToDD: function(p, d, m, s) {
       return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
     },
@@ -437,6 +450,11 @@ export default {
     },
     centerSneak: function() {
       EventBus.$emit('center-sneak')
+    },
+    geoloc: function() {
+      App.openUrl({ url: 'fr.phtheirichthys.geoloc://' }).then(ret => {
+        console.log('Open url response: ', ret);
+      })
     },
     selectRace: function(race, pan) {
       try {
@@ -556,7 +574,7 @@ export default {
       this.lonPasteStatus = -1
       var clipboard = event.clipboardData.getData("text/plain")
 
-      let latRe = /(0?[0-9]{2})°(N|S) ([0-9]{2})(?:'|‘) ?([0-9]{2})"/
+      let latRe = /(0?[0-9]{2}) ?°(N|S) ([0-9]{2}) ?(?:'|‘) ?([0-9]{2})"/
       const lat = clipboard.match(latRe);
       if(lat) {
         this.current.position.lat.d = lat[1]
@@ -566,7 +584,7 @@ export default {
         this.latPasteStatus = 1
       }
 
-      let lonRe = /(0?[0-9]{2})°(E|W) ([0-9]{2})(?:'|‘) ?([0-9]{2})"/
+      let lonRe = /(0?[0-9]{2}) ?°(E|W) ([0-9]{2}) ?(?:'|‘) ?([0-9]{2})"/
       const lon = clipboard.match(lonRe);
       if(lon) {
         this.current.position.lng.d = lon[1]
