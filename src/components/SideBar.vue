@@ -300,6 +300,7 @@ import {EventBus} from '../event-bus.js';
 import { Capacitor , Plugins } from '@capacitor/core';
 
 const { App } = Plugins;
+const { Clipboard } = Plugins;
 
 export default {
   name: 'SideBar',
@@ -429,8 +430,16 @@ export default {
     })
 
     App.addListener('appStateChange', (state) => {
-      // state.isActive contains the active state
-      console.log('App state changed. Is active?', state.isActive);
+
+      if (state.isActive && Capacitor.isNative) {
+        Clipboard.read().then(result => {
+          var res = it.pasteData(result.value)
+          if(res) {
+            Clipboard.write({string: ""})
+            it.submit()
+          }
+        })
+      }
     });
   },
   methods: {
@@ -570,9 +579,13 @@ export default {
       });
     },*/
     paste: function(event) {
+      var clipboard = event.clipboardData.getData("text/plain")
+      this.pasteData(clipboard)
+      event.preventDefault()
+    },
+    pasteData: function(clipboard) {
       this.latPasteStatus = -1
       this.lonPasteStatus = -1
-      var clipboard = event.clipboardData.getData("text/plain")
 
       let latRe = /(0?[0-9]{2}) ?°(N|S) ([0-9]{2}) ?(?:'|‘) ?([0-9]{2})"/
       const lat = clipboard.match(latRe);
@@ -619,8 +632,9 @@ export default {
         it.latPasteStatus = 0
         it.lonPasteStatus = 0
       }, 30000)
-      event.preventDefault()
       this.enablePaste = false
+
+      return this.lonPasteStatus == 1 && this.latPasteStatus == 1
     },
     selectPoint(point) {
       this.$refs.polars.selectPoint(point)
