@@ -413,18 +413,18 @@ export default {
         setTimeout(it.$refs.polars.onResize, 500)
       }
       if(e.id == "table") {
-        if (!L.DomUtil.hasClass(this._container, 'large')) {
-          L.DomUtil.addClass(this._container, 'large');
+        if (!L.DomUtil.hasClass(this._container, 'extended')) {
+          L.DomUtil.addClass(this._container, 'extended');
           it.$refs.table.refresh()
         }
       } else {
-        if (L.DomUtil.hasClass(this._container, 'large')) {
-          L.DomUtil.removeClass(this._container, 'large');
+        if (L.DomUtil.hasClass(this._container, 'extended')) {
+          L.DomUtil.removeClass(this._container, 'extended');
         }
       }
     }).on('closing', function() {
-      if (L.DomUtil.hasClass(this._container, 'large')) {
-        L.DomUtil.removeClass(this._container, 'large');
+      if (L.DomUtil.hasClass(this._container, 'extended')) {
+        L.DomUtil.removeClass(this._container, 'extended');
       }
       it.displayed = null
     })
@@ -664,20 +664,20 @@ export default {
 }
 
 @media (min-width: 768px) {
-  .leaflet-sidebar.large {
+  .leaflet-sidebar.extended {
     top: 10px;
     bottom: 10px;
     transition: width 500ms; } }
 @media (min-width: 768px) and (max-width: 991px) {
-  .leaflet-sidebar.large {
+  .leaflet-sidebar.extended {
     width: 390px;
     max-width: 390px; } }
 @media (min-width: 992px) and (max-width: 1199px) {
-  .leaflet-sidebar.large {
+  .leaflet-sidebar.extended {
     width: 590px;
     max-width: 590px; } }
 @media (min-width: 1200px) {
-  .leaflet-sidebar.large {
+  .leaflet-sidebar.extended {
     width: 860px;
     max-width: 860px; } }
 

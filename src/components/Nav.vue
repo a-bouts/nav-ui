@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div v-show="notification.active" class="notification" v-bind:class="level" style="display: block; position: fixed; z-index: 5000; left: 70px; right: 70px; top: 20px">
-      <button class="delete" @click="notification.active = false"></button>
-      {{ notification.message }}
-    </div>
     <div style="height:100%" id="map" width="100%" height="100%">
+      <div v-show="notification.active" class="notification" v-bind:class="level" style="display: block; position: fixed; z-index: 1999; ">
+        <button class="delete" @click="notification.active = false"></button>
+        {{ notification.message }}
+      </div>
       <SideBar ref="sidebar" v-if="map != null" v-bind:boat="boat" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
@@ -412,5 +412,74 @@ svg text::selection {
 .leaflet-bottom .leaflet-control-velocity {
   margin-bottom: 10px !important;
 }
+
+.notification {
+  right: 70px;
+  top: 20px;
+}
+
+@media (min-width: 768px) {
+  .leaflet-sidebar-left ~ .notification {
+    transition: left 500ms;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .leaflet-sidebar-left.extended ~ .leaflet-control-container .leaflet-left {
+    left: 400px;
+  }
+  .leaflet-sidebar-left.extended ~ .notification {
+    left: 456px;
+  }
+  .leaflet-sidebar-left ~ .notification {
+    left: 371px;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .leaflet-sidebar-left.extended ~ .leaflet-control-container .leaflet-left {
+    left: 600px;
+  }
+  .leaflet-sidebar-left.extended ~ .notification {
+    left: 656px;
+  }
+  .leaflet-sidebar-left ~ .notification {
+    left: 456px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .leaflet-sidebar-left.extended ~ .leaflet-control-container .leaflet-left {
+    left: 870px;
+  }
+  .leaflet-sidebar-left.extended ~ .notification {
+    left: 926px;
+  }
+  .leaflet-sidebar-left ~ .notification {
+    left: 526px;
+  }
+}
+
+.leaflet-sidebar-left.collapsed ~ .notification {
+  left: 106px;
+}
+
+@media (min-width: 768px) {
+  .leaflet-sidebar.extended {
+    top: 10px;
+    bottom: 10px;
+    transition: width 500ms; } }
+@media (min-width: 768px) and (max-width: 991px) {
+  .leaflet-sidebar.extended {
+    width: 390px; /*305*/
+    max-width: 390px; } }
+@media (min-width: 992px) and (max-width: 1199px) {
+  .leaflet-sidebar.extended {
+    width: 590px; /*390*/
+    max-width: 590px; } }
+@media (min-width: 1200px) {
+  .leaflet-sidebar.extended {
+    width: 860px; /*460*/
+    max-width: 860px; } }
 
 </style>
