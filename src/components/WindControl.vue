@@ -63,7 +63,8 @@ export default {
                     angleConvention: 'meteoCW',
                     speedUnit: 'kt'
             },
-            maxVelocity: 15
+            maxVelocity: 15,
+            zIndex: 20
     }).addTo(this.map);
     this.layerControl.addOverlay(this.velocityLayer, "<i class='fas fa-wind'></i> Wind");
 
@@ -478,7 +479,8 @@ export default {
 
         this.windTileLayerControl.clearLayers()
         this.windTileLayer = L.tileLayer('/tiles/wind/' + timestamp + '/{z}/{x}/{y}', {
-          opacity: 0.5
+          opacity: 0.5,
+          zIndex: 10
         }).addTo(this.windTileLayerControl)
       }
 
