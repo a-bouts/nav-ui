@@ -48,6 +48,7 @@ export default {
     }
   },
   mounted: function() {
+    const self = this
 
     this.windTileLayerControl = L.layerGroup()
 
@@ -94,6 +95,20 @@ export default {
     date1.setMinutes(date1.getMinutes() - date1.getMinutes()%5 + 6)
     window.setTimeout(() => { this.refreshWinds()}, date1.getTime() - date2.getTime())
 
+    this.map.on("overlayremove", function(event) {
+      if (event.layer === self.windTileLayerControl) {
+        self.velocityLayer.setOptions({
+          colorScale: undefined
+        })
+      }
+    })
+    this.map.on("overlayadd", function(event) {
+      if (event.layer === self.windTileLayerControl) {
+        self.velocityLayer.setOptions({
+          colorScale: ["rgb(255, 255, 255)"],
+        })
+      }
+    })
   },
   computed: {
     windStatus: function() {
