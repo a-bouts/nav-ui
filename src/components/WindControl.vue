@@ -33,6 +33,8 @@ export default {
     return {
       windIsOnTime: undefined,
       velocityLayer: null,
+      windTileLayerControl: null,
+      windTileLayer: null,
       forecasts: [],
       forecastsData: {},
       selectedForecast: "",
@@ -46,6 +48,11 @@ export default {
     }
   },
   mounted: function() {
+
+    this.windTileLayerControl = L.layerGroup()
+
+    this.layerControl.addOverlay(this.windTileLayerControl, "<i class='fas fa-wind'></i> Wind 2");
+
     this.velocityLayer = L.velocityLayer({
             displayValues: false,
             displayOptions: {
@@ -464,6 +471,15 @@ export default {
 
       if (it.loading) {
         return
+      }
+
+      if (doNotLoadWinds !== true) {
+        const timestamp = mergedForecast.date.getUTCFullYear() + ("00" + (mergedForecast.date.getUTCMonth() + 1)).slice(-2) + ("00" + mergedForecast.date.getUTCDate()).slice(-2) + ("00" + mergedForecast.date.getUTCHours()).slice(-2) + ("00" + mergedForecast.date.getUTCMinutes()).slice(-2)
+
+        this.windTileLayerControl.clearLayers()
+        this.windTileLayer = L.tileLayer('/tiles/wind/' + timestamp + '/{z}/{x}/{y}', {
+          opacity: 0.5
+        }).addTo(this.windTileLayerControl)
       }
 
       it.loading = true
