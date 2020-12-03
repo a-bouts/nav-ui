@@ -105,7 +105,7 @@ export default {
           }
         })
       }
-      L.polygon(latlngs, {color: 'white', weight: 2, opacity: 0.7}).addTo(this.iceLimitsLayer);
+      L.polygon(latlngs, {color: 'white', weight: 1, opacity: 0.7}).addTo(this.iceLimitsLayer);
 
       latlngs = []
       for(n = -1 ; n <= 1 ; n++) {
