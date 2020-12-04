@@ -494,7 +494,7 @@ export default {
 
         this.windTileLayerControl.clearLayers()
         this.windTileLayer = L.tileLayer('/tiles/wind/' + timestamp + '/{z}/{x}/{y}', {
-          opacity: 0.5,
+          opacity: 0.7,
           zIndex: 10
         }).addTo(this.windTileLayerControl)
       }
