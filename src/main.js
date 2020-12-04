@@ -4,6 +4,7 @@ import VueResource from 'vue-resource';
 
 import 'bulma/css/bulma.css';
 import 'bulma-slider/dist/css/bulma-slider.min.css'
+import 'bulma-checkradio/dist/css/bulma-checkradio.min.css'
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-sidebar-v2/css/leaflet-sidebar.css';

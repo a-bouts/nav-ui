@@ -17,12 +17,14 @@
 
 <script>
 import L from 'leaflet'
+import {EventBus} from '../event-bus.js';
 import 'leaflet-velocity'
 const moment = require('moment');
 
 export default {
   name: 'WindControl',
   props: {
+    settings: Object,
     map: Object,
     layerControl: Object
   },
@@ -30,8 +32,31 @@ export default {
 
     const now = new Date()
 
+    const whiteColorScale = ["rgb(255, 255, 255)"]
+    const gradientColorScale = [
+      "rgb(36,104, 180)",
+      "rgb(60,157, 194)",
+      "rgb(128,205,193 )",
+      "rgb(151,218,168 )",
+      "rgb(198,231,181)",
+      "rgb(238,247,217)",
+      "rgb(255,238,159)",
+      "rgb(252,217,125)",
+      "rgb(255,182,100)",
+      "rgb(252,150,75)",
+      "rgb(250,112,52)",
+      "rgb(245,64,32)",
+      "rgb(237,45,28)",
+      "rgb(220,24,32)",
+      "rgb(180,0,35)"
+    ]
+
     return {
       windIsOnTime: undefined,
+      options: {
+        windHasBackgroundColor: false,
+      },
+      velocityLayerControl: null,
       velocityLayer: null,
       windTileLayerControl: null,
       windTileLayer: null,
@@ -44,15 +69,36 @@ export default {
       colapsed: true,
       mergedForecasts: this.initMergedForecasts(now),
       atDate: null,
-      loading: false
+      loading: false,
+      whiteColorScale: whiteColorScale,
+      gradientColorScale: gradientColorScale
     }
   },
   mounted: function() {
     const self = this
 
-    this.windTileLayerControl = L.layerGroup()
+    EventBus.$on('settings', (settings) => {
+      if (this.options.windHasBackgroundColor && !settings.windHasBackgroundColor) {
+        this.map.removeLayer(this.windTileLayerControl)
+      } else if (!this.options.windHasBackgroundColor && settings.windHasBackgroundColor) {
+        this.windTileLayerControl.addTo(this.map)
+      }
+      self.init(settings)
+    })
 
+    self.init(this.settings)
+
+    this.velocityLayerControl = L.layerGroup().addTo(this.map)
+    this.layerControl.addOverlay(this.velocityLayerControl, "<i class='fas fa-wind'></i> Wind");
+
+    this.windTileLayerControl = L.layerGroup()
     this.layerControl.addOverlay(this.windTileLayerControl, "<i class='fas fa-wind'></i> Wind 2");
+
+    var colorScale = this.gradientColorScale
+    if (this.options.windHasBackgroundColor) {
+      this.windTileLayerControl.addTo(this.map)
+      colorScale = this.whiteColorScale
+    }
 
     this.velocityLayer = L.velocityLayer({
             displayValues: false,
@@ -65,9 +111,9 @@ export default {
                     speedUnit: 'kt'
             },
             maxVelocity: 15,
-            zIndex: 20
-    }).addTo(this.map);
-    this.layerControl.addOverlay(this.velocityLayer, "<i class='fas fa-wind'></i> Wind");
+            zIndex: 20,
+            colorScale: colorScale
+    }).addTo(this.velocityLayerControl);
 
     this.loadWinds().then(() => {
       this.loadMergedWind(this.mergedForecasts[0])
@@ -97,16 +143,44 @@ export default {
 
     this.map.on("overlayremove", function(event) {
       if (event.layer === self.windTileLayerControl) {
-        self.velocityLayer.setOptions({
-          colorScale: undefined
-        })
+        console.log("REMOVE WIND 2")
+        self.velocityLayerControl.clearLayers()
+        self.velocityLayer = L.velocityLayer({
+                displayValues: false,
+                displayOptions: {
+                        velocityType: 'Global Wind',
+                        position: 'bottomleft',
+                        displayPosition: 'bottomleft',
+                        displayEmptyString: 'No wind data',
+                        angleConvention: 'meteoCW',
+                        speedUnit: 'kt'
+                },
+                colorScale: self.gradientColorScale,
+                maxVelocity: 15,
+                zIndex: 20,
+                data: self.velocityLayer.options.data
+        }).addTo(self.velocityLayerControl)
       }
     })
     this.map.on("overlayadd", function(event) {
       if (event.layer === self.windTileLayerControl) {
-        self.velocityLayer.setOptions({
-          colorScale: ["rgb(255, 255, 255)"],
-        })
+        console.log("ADD WIND 2")
+        self.velocityLayerControl.clearLayers()
+        self.velocityLayer = L.velocityLayer({
+                displayValues: false,
+                displayOptions: {
+                        velocityType: 'Global Wind',
+                        position: 'bottomleft',
+                        displayPosition: 'bottomleft',
+                        displayEmptyString: 'No wind data',
+                        angleConvention: 'meteoCW',
+                        speedUnit: 'kt'
+                },
+                colorScale: self.whiteColorScale,
+                maxVelocity: 15,
+                zIndex: 20,
+                data: self.velocityLayer.options.data
+        }).addTo(self.velocityLayerControl)
       }
     })
   },
@@ -120,6 +194,11 @@ export default {
     },
   },
   methods: {
+    init: function(settings) {
+      this.options = {
+        windHasBackgroundColor: settings.windHasBackgroundColor
+      }
+    },
     forecastClass: function(forecast) {
       return {
         last: forecast.date <= this.lastForecast,

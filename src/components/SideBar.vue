@@ -18,7 +18,7 @@
           <li class="bottom"><a href="#polars" role="tab"><i class="fas fa-chart-area"></i></a></li>
           <li class="bottom"><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
           <li class="bottom"><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
-          <li v-if="debug" class="bottom"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
+          <li class="bottom"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
           <li class="bottom"><a href="#info" role="tab" class="p-2">
             <img src="/images/phtheirichthys-2-512x512.png" alt="Placeholder image">
           </a></li>

@@ -17,6 +17,7 @@
 
 <script>
 import Vue from 'vue'
+import {EventBus} from '../event-bus.js';
 import L from 'leaflet'
 import * as esri from "esri-leaflet"
 import 'leaflet-extra-markers'
@@ -45,6 +46,7 @@ export default {
   },
   data: function() {
     return {
+      settings: null,
       notification: {
         active: false,
         message: "NOAA toujours en panne... mais les vents sont là, pour peu que l'on soit patient",
@@ -77,6 +79,10 @@ export default {
   },
   mounted: function() {
     const it = this
+
+    it.settings = JSON.parse(localStorage.getItem("_settings_"))
+    EventBus.$on('settings', (settings) => {console.log("nav received settings", settings); it.settings = settings})
+
     this.map = L.map('map', {zoomControl: true, worldCopyJump: false}).setView([51.505, -0.09], 13)
 
     var imagery = esri.basemapLayer('Imagery').addTo(this.map)
@@ -185,7 +191,7 @@ export default {
 
           const WindControlConstructor = Vue.extend(WindControl)
           it.windControl = new WindControlConstructor({
-            propsData: { map: map, debug: it.debug, layerControl: it.layerControl }
+            propsData: { settings: it.settings, map: map, debug: it.debug, layerControl: it.layerControl }
           })
           it.windControl.$mount()
 
