@@ -10,6 +10,7 @@ import {EventBus} from '../event-bus.js';
 export default {
   name: 'Route',
   props: {
+    settings: Object,
     debug: Boolean,
     priv: Boolean,
     boat: String,
@@ -47,6 +48,10 @@ export default {
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon dark'
     })
     return {
+      night: {
+        sunset: 21*60,
+        dawn: 7*60
+      },
       last: null,
       previous: null,
       isoLayer: null,
@@ -64,6 +69,11 @@ export default {
   },
   mounted: function() {
     this.isoLayer = L.layerGroup().addTo(this.map)
+
+    if (this.settings.sunset && this.settings.dawn) {
+      this.night.sunset = this.settings.sunset.split(":")[0] * 60 - -1*this.settings.sunset.split(":")[1]
+      this.night.dawn = this.settings.dawn.split(":")[0] * 60 - -1*this.settings.dawn.split(":")[1]
+    }
 
     EventBus.$on('buoys', (buoys) => {this.routeBuoys = buoys})
     EventBus.$on('expes', (expes) => {this.expes = expes})
@@ -277,7 +287,7 @@ export default {
         var date = new Date(this.last.date.getTime())
         date.setMinutes(date.getMinutes() + wl.duration * 60);
         wl.date = date
-        if(date.getHours() > 21 || date.getHours() < 7) {
+        if(date.getHours() * 60 + date.getMinutes() > this.night.sunset || date.getHours() * 60 + date.getMinutes() < this.night.dawn) {
             wl.night = true
         }
         var icon = this.editIcon
@@ -316,7 +326,7 @@ export default {
         var date = new Date(this.previous.date.getTime())
         date.setMinutes(date.getMinutes() + wl.duration * 60);
         wl.date = date
-        if(date.getHours() > 21 || date.getHours() < 7) {
+        if(date.getHours() > this.night.sunset || date.getHours() < this.night.dawn) {
             wl.night = true
         }
         var icon = this.darkIcon

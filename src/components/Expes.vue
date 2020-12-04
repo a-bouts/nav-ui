@@ -11,6 +11,21 @@
           <input class="is-checkradio is-info" id="wind-has-background-color" type="checkbox" name="wind-has-background-color" v-model="settings.windHasBackgroundColor" >
           <label for="wind-has-background-color">Vents sur fond coloré par défaut</label>
         </div>
+        <label class="label">Horaires de nuit</label>
+        <div class="field is-grouped">
+          <p class="control has-icons-left">
+            <input class="input is-small" type="text" pattern="[0-9]{2}:[0-9]{2}" placeholder="hh:mm" title="hh:mm" style="width:80px" v-model="settings.sunset" >
+            <span class="icon is-left">
+              <i class="fas fa-moon"></i>
+            </span>
+          </p>
+          <p class="control has-icons-left">
+            <input class="input is-small" type="text" pattern="[0-9]{2}:[0-9]{2}" placeholder="hh:mm" title="hh:mm" style="width:80px" v-model="settings.dawn" >
+            <span class="icon is-left">
+              <i class="fas fa-sun"></i>
+            </span>
+          </p>
+        </div>
       </div>
     </div>
 
