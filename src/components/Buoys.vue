@@ -36,8 +36,9 @@
         <td><div class="has-text-centered" v-if="buoy.custom" @click="remove(index)"><i class="fas fa-trash"></i></div></td>
       </tr>
     </table>
-    <div class="buttons has-addons is-right">
+    <div class="buttons is-right">
       <button class="button is-small is-primary" @click="add()">Add</button>
+      <button class="button is-small is-primary" @click="clear()">Clear</button>
     </div>
   </div>
 </template>
@@ -66,6 +67,9 @@ export default {
     },
     add() {
       EventBus.$emit('add-buoy')
+    },
+    clear() {
+      EventBus.$emit('clear-buoy')
     },
     up(index) {
       EventBus.$emit('up-buoy', index)

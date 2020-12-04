@@ -34,6 +34,7 @@ export default {
     this.raceLayer = L.layerGroup().addTo(this.map)
     this.iceLimitsLayer = L.layerGroup().addTo(this.raceLayer)
     EventBus.$on('add-buoy', this.onAddBuoy)
+    EventBus.$on('clear-buoy', this.onClearBuoy)
     EventBus.$on('up-buoy', this.onUpBuoy)
     EventBus.$on('down-buoy', this.onDownBuoy)
     EventBus.$on('remove-buoy', this.onRemoveBuoy)
@@ -149,6 +150,11 @@ export default {
       localStorage.setItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.validated))
 
       this.drawRace()
+    },
+    onClearBuoy() {
+      this.customBuoys = []
+      localStorage.removeItem("_buoys_" + this.current.id)
+      EventBus.$emit('buoys', this.buoys)
     },
     onAddBuoy() {
       if(!this.customBuoys || this.customBuoys.length == 0) {
