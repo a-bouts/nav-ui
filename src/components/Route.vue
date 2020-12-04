@@ -70,7 +70,7 @@ export default {
   mounted: function() {
     this.isoLayer = L.layerGroup().addTo(this.map)
 
-    if (this.settings.sunset && this.settings.dawn) {
+    if (this.settings && this.settings.sunset && this.settings.dawn) {
       this.night.sunset = this.settings.sunset.split(":")[0] * 60 - -1*this.settings.sunset.split(":")[1]
       this.night.dawn = this.settings.dawn.split(":")[0] * 60 - -1*this.settings.dawn.split(":")[1]
     }

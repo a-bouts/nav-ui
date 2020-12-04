@@ -1,6 +1,7 @@
-FROM node as build-stage
+FROM node:alpine as build-stage
 WORKDIR /app
 COPY package*.json ./
+RUN 
 RUN yarn install
 COPY ./ .
 RUN yarn build
