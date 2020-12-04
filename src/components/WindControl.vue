@@ -196,7 +196,7 @@ export default {
   methods: {
     init: function(settings) {
       this.options = {
-        windHasBackgroundColor: settings.windHasBackgroundColor
+        windHasBackgroundColor: settings ? settings.windHasBackgroundColor : false
       }
     },
     forecastClass: function(forecast) {
