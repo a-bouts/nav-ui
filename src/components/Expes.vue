@@ -8,6 +8,10 @@
       </div>
       <div class="content">
         <div class="field">
+          <input class="is-checkradio is-info" id="route-last-update" type="checkbox" name="route-last-update" v-model="settings.routeLastUpdate" >
+          <label for="route-last-update">Route depuis la dernière position (pas la simulation)</label>
+        </div>
+        <div class="field">
           <input class="is-checkradio is-info" id="wind-has-background-color" type="checkbox" name="wind-has-background-color" v-model="settings.windHasBackgroundColor" >
           <label for="wind-has-background-color">Vents sur fond coloré par défaut</label>
         </div>

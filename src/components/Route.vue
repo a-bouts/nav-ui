@@ -121,6 +121,16 @@ export default {
 
       const it = this
 
+      var startTime = new Date()
+      startTime.setHours(startTime.getHours() + this.current.delay) 
+      if (this.settings && this.settings.routeLastUpdate === true) {
+        startTime.setMilliseconds(0)
+        startTime.setSeconds(0)
+        startTime.setMinutes(startTime.getMinutes()  - startTime.getMinutes()%10)
+      }
+
+      console.log("RUN AT ", startTime.toString())
+
       const params = {
           expes: this.expes,
           start: {
@@ -133,6 +143,7 @@ export default {
           delta: this.current.delta,
           maxDuration: 1728.0,
           delay: this.current.delay,
+          startTime: startTime,
           sail: this.current.sails,
           foil: this.current.foil,
           hull: this.current.hull,
