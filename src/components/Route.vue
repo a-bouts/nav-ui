@@ -212,14 +212,9 @@ export default {
         }
 
         var windline = response.body.windline
-        const runDate = new Date()
-        console.log(runDate)
-        console.log(params.delay)
-        runDate.setHours(runDate.getHours() + 1*params.delay);
-        console.log(runDate)
 
         this.last = {
-          date: runDate,
+          date: startTime,
           sumup: response.body.sumup,
           windline: windline
         }
