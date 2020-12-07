@@ -9,6 +9,7 @@ import {EventBus} from '../event-bus.js';
 export default {
   name: 'BoatLines',
   props: {
+    settings: Object,
     map: Object,
     layerControl: Object,
     current: Object,
@@ -117,6 +118,16 @@ export default {
       if(!this.current || !this.current.position)
         return
 
+        var startTime = new Date()
+        startTime.setHours(startTime.getHours() + this.current.delay)
+        if (this.settings && this.settings.routeLastUpdate === true) {
+          startTime.setMilliseconds(0)
+          startTime.setSeconds(0)
+          startTime.setMinutes(startTime.getMinutes()  - startTime.getMinutes()%10)
+        }
+
+        console.log("RUN AT ", startTime.toString())
+
       const params = {
           start: {
             lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
@@ -128,6 +139,7 @@ export default {
           delta: this.current.delta,
           maxDuration: 480.0,
           delay: this.current.delay,
+          startTime: startTime,
           sail: this.current.sails,
           foil: this.current.foil,
           hull: this.current.hull,
