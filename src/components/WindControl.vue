@@ -83,12 +83,18 @@ export default {
       } else if (!this.options.windHasBackgroundColor && settings.windHasBackgroundColor) {
         this.windTileLayerControl.addTo(this.map)
       }
+      if (settings && settings.windDisabled) {
+        this.map.removeLayer(this.velocityLayerControl)
+      }
       self.init(settings)
     })
 
     self.init(this.settings)
 
-    this.velocityLayerControl = L.layerGroup().addTo(this.map)
+    this.velocityLayerControl = L.layerGroup()
+    if (!this.settings || !this.settings.windDisabled) {
+      this.velocityLayerControl.addTo(this.map)
+    }
     this.layerControl.addOverlay(this.velocityLayerControl, "<i class='fas fa-wind'></i> Wind");
 
     this.windTileLayerControl = L.layerGroup()
@@ -113,7 +119,7 @@ export default {
             maxVelocity: 15,
             zIndex: 20,
             colorScale: colorScale
-    }).addTo(this.velocityLayerControl);
+    }).addTo(this.velocityLayerControl)
 
     this.loadWinds().then(() => {
       this.loadMergedWind(this.mergedForecasts[0])

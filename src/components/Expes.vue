@@ -15,6 +15,10 @@
           <input class="is-checkradio is-info" id="wind-has-background-color" type="checkbox" name="wind-has-background-color" v-model="settings.windHasBackgroundColor" >
           <label for="wind-has-background-color">Vents sur fond coloré par défaut</label>
         </div>
+        <div class="field">
+          <input class="is-checkradio is-info" id="wind-disabled" type="checkbox" name="wind-disabled" v-model="settings.windDisabled" >
+          <label for="wind-disabled">Vent désactivé par defaut</label>
+        </div>
         <label class="label">Horaires de nuit</label>
         <div class="field is-grouped">
           <p class="control has-icons-left">
