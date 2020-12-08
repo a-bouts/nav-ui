@@ -290,45 +290,68 @@ export default {
     background-color: #333;
 }
 
+.leaflet-div-icon.leaflet-editing-icon {
+  border: 8px solid transparent;
+  background-clip: padding-box;
+}
+.leaflet-div-icon.leaflet-editing-icon:hover {
+  border: 6px solid transparent;
+  background-clip: padding-box;
+}
+
 .leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.dark {
     background: "#cccccc";
     border-radius: 50%;
     color: "#777777";
     opacity: 0.4;
+    background-clip: padding-box;
 }
 
 .leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.standard {
     background: white;
-    border-radius: 50%;
+    /* border-radius: 50%; */
     color: "#ffffff";
 }
 
 .leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.night {
     background: red;
     color: "#ff0000";
+    background-clip: padding-box;
 }
 
 .leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.changed {
     background: blue;
-    border-radius: 50%;
+    /* border-radius: 50%; */
+    background-clip: padding-box;
 }
 
 .leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.night-changed {
     background: orange;
     color: "#ff0000";
-    border-radius: 50%;
+    /* border-radius: 50%; */
+    background-clip: padding-box;
 }
 
 .leaflet-div-icon.leaflet-bearingline-icon.leaflet-touch-icon {
     background: #3bdbd5;
     color: #3bdbd5;
     border-radius: 50%;
+    border: 8px solid transparent;
+    background-clip: padding-box;
+}
+.leaflet-div-icon.leaflet-bearingline-icon.leaflet-touch-icon:hover {
+  border: 6px solid transparent;
 }
 
 .leaflet-div-icon.leaflet-twaline-icon.leaflet-touch-icon {
     background: #ef1780;
     color: #ef1780;
     border-radius: 50%;
+    border: 8px solid transparent;
+    background-clip: padding-box;
+}
+.leaflet-div-icon.leaflet-twaline-icon.leaflet-touch-icon:hover {
+  border: 6px solid transparent;
 }
 
 .leaflet-tooltip.draw-tooltip .date {

@@ -20,8 +20,8 @@ export default {
     races: Object
   },
   data: function() {
-    const squareSize = 7
-    const roundSize = 9
+    const squareSize = 20
+    const roundSize = 20
     const _editIcon = new L.DivIcon({
                     iconSize: new L.Point(squareSize, squareSize),
                     shadowSize: new L.Point(squareSize + 4, squareSize + 4),
@@ -40,11 +40,11 @@ export default {
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon night-changed'
     })
     const _icon = new L.DivIcon({
-                    iconSize: new L.Point(7, 7),
+                    iconSize: new L.Point(20, 20),
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon standard'
     })
     const _darkIcon = new L.DivIcon({
-                    iconSize: new L.Point(7, 7),
+                    iconSize: new L.Point(20, 20),
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon dark'
     })
     return {

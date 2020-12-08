@@ -220,13 +220,13 @@ export default {
 
       var color = "#3bdbd5"
       var icon = new L.DivIcon({
-          iconSize: new L.Point(5, 5),
+          iconSize: new L.Point(20, 20),
           className: 'leaflet-div-icon leaflet-bearingline-icon leaflet-touch-icon'
       })
       if (isTwa) {
         color = "#ef1780"
         icon = new L.DivIcon({
-           iconSize: new L.Point(5, 5),
+           iconSize: new L.Point(20, 20),
            className: 'leaflet-div-icon leaflet-twaline-icon leaflet-touch-icon'
        })
      }
