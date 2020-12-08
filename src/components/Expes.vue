@@ -30,6 +30,12 @@
             </span>
           </p>
         </div>
+        <label class="label">Durée du serpent</label>
+        <div class="field is-grouped">
+          <p class="control has-icons-left">
+            <input class="input is-small" type="text" pattern="[0-9]{2}" placeholder="24" title="hours" style="width:80px" v-model.number="settings.sneakDuration" >
+          </p>
+        </div>
       </div>
     </div>
 

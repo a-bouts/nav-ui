@@ -128,9 +128,15 @@ export default {
         startTime.setMinutes(startTime.getMinutes()  - startTime.getMinutes()%10)
       }
 
+      var duration = 24
+      if (this.settings && this.settings.sneakDuration) {
+        duration = this.settings.sneakDuration
+      }
+
       const params = {
           params: {
-            expes: this.expes
+            expes: this.expes,
+            maxDuration: duration
           },
           startTime: startTime,
           start: {
