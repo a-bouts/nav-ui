@@ -122,7 +122,7 @@ export default {
       const it = this
 
       var startTime = new Date()
-      startTime.setHours(startTime.getHours() + this.current.delay) 
+      startTime.setHours(startTime.getHours() + this.current.delay)
       if (this.settings && this.settings.routeLastUpdate === true) {
         startTime.setMilliseconds(0)
         startTime.setSeconds(0)
@@ -270,12 +270,11 @@ export default {
       }
 
       var primary = "<i class='fa fa-compass'></i> " + wl.bearing + "° <i class='fa fa-location-arrow'></i> " + wl.twa.toFixed(1) + "° <span class='sail'>" + sails[wl.sail] + "</span>";
-      if(wl.foil > 0) {
-        //primary += "<span class='foil' style='color:rgb(255," + 255 * (wl.foil / 100) + "," + 255 * (wl.foil / 100) + ");'><i class='fa fa-fighter-jet'></i></span>"
-        primary += "<span class='foil' style='opacity:" + (wl.foil) + "%;'><i class='fa fa-fighter-jet'></i></span>"
-      }
       if(wl.ice) {
         primary += "<span class='ice'><i class='fas fa-igloo'></i></span>"
+      } else if(wl.foil > 0) {
+        //primary += "<span class='foil' style='color:rgb(255," + 255 * (wl.foil / 100) + "," + 255 * (wl.foil / 100) + ");'><i class='fa fa-fighter-jet'></i></span>"
+        primary += "<span class='foil' style='opacity:" + (wl.foil) + "%;'><i class='fa fa-fighter-jet'></i></span>"
       }
       const secondary = "<i class='fa fa-wind'></i> " + wl.wind.toFixed(1) + "° " + wl.windSpeed.toFixed(1) + "kt <i class='fa fa-ship'></i> " + wl.boatSpeed.toFixed(1) + "kt";
 
