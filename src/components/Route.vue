@@ -304,7 +304,7 @@ export default {
           else
             icon = this.nightIcon
         const pt = wl
-        var marker = L.marker([wl.lat, wl.lon], {icon: icon})
+        var marker = L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: 25})
           .bindTooltip(this.getTooltip(date, wl), {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
           .on('click', () => {
             this.$emit('select', pt)

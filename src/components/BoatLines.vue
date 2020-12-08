@@ -120,15 +120,13 @@ export default {
       if(!this.current || !this.current.position)
         return
 
-        var startTime = new Date()
-        startTime.setHours(startTime.getHours() + this.current.delay)
-        if (this.settings && this.settings.routeLastUpdate === true) {
-          startTime.setMilliseconds(0)
-          startTime.setSeconds(0)
-          startTime.setMinutes(startTime.getMinutes()  - startTime.getMinutes()%10)
-        }
-
-        console.log("RUN AT ", startTime.toString())
+      var startTime = new Date()
+      startTime.setHours(startTime.getHours() + this.current.delay)
+      if (this.settings && this.settings.routeLastUpdate === true) {
+        startTime.setMilliseconds(0)
+        startTime.setSeconds(0)
+        startTime.setMinutes(startTime.getMinutes()  - startTime.getMinutes()%10)
+      }
 
       const params = {
           params: {
@@ -155,7 +153,6 @@ export default {
         url = '/private/route/api/v1/sneak'
       }
       this.$http.post(url, params).then(response => {
-
         this.boatLines = response.body
         this.display()
       })
@@ -206,9 +203,9 @@ export default {
         //primary += "<span class='foil' style='color:rgb(255," + 255 * (wl.foil / 100) + "," + 255 * (wl.foil / 100) + ");'><i class='fa fa-fighter-jet'></i></span>"
         primary += "<span class='foil' style='opacity:" + (wl.foil) + "%;'><i class='fa fa-fighter-jet'></i></span>"
       }
-      const secondary = "<i class='fa fa-wind'></i> " + wl.wind.toFixed(1) + "° " + wl.windSpeed.toFixed(1) + "kt <i class='fa fa-ship'></i> " + wl.boatSpeed.toFixed(1) + "kt";
+      const secondary = "<i class='fa fa-wind'></i> " + wl.wind.toFixed(1) + "° " + wl.windSpeed.toFixed(1) + "kt <span style='padding-left: 10px'><i class='fa fa-ship'></i></span> " + wl.boatSpeed.toFixed(1) + "kt";
 
-      var res = '<div class="date"><span>' + d + '</span><span class="hour">' + hrs + ":" + min + '</span></div><div class="primary">' + primary + '</div>';
+      var res = '<div class="date"><span>' + d + '</span><span class="hour">' + hrs + ":" + min + '</span></div><div class="primary" style="display: inline">' + primary + '</div>';
       if(secondary)
           res += '<div class="secondary">' + secondary + '</div>';
 
@@ -234,7 +231,7 @@ export default {
       for(var i in boatLine) {
         var wl = boatLine[i]
         const pt = wl
-        L.marker([wl.lat, wl.lon], {icon: icon})
+        L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: isTwa ? 75 : 50})
           .bindTooltip(this.getTooltip(startTime, wl), {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
           .on('click', () => {
             this.$emit('select', pt)
