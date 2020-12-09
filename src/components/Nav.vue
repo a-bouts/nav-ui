@@ -5,7 +5,7 @@
         <button class="delete" @click="notification.active = false"></button>
         {{ notification.message }}
       </div>
-      <SideBar ref="sidebar" v-if="map != null" v-bind:boat="boat" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
+      <SideBar ref="sidebar" v-if="map != null" v-bind:boat="boat" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
     <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:map="map"></Geodesic>
@@ -253,6 +253,9 @@ export default {
         this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
         this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)]
       this.map.setView(pan)
+    },
+    go: function() {
+      this.$refs.route.go()
     },
     showTooltip: function() {
       this.$refs.route.showTooltip()
