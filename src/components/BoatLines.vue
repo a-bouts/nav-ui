@@ -22,19 +22,21 @@ export default {
       markerLayer: null,
       linesLayer: null,
       boatLines: null,
-      sneakPosition: null,
+      snakePosition: null,
+      start: null,
+      progs: [],
       expes: {}
     }
   },
   mounted: function() {
     const self = this
-    EventBus.$on('center-sneak', () => {this.center()})
+    EventBus.$on('center-snake', () => {this.center()})
     EventBus.$on('expes', (expes) => {this.expes = expes})
 
     this.layer = L.layerGroup().addTo(this.map)
     this.markerLayer = L.layerGroup().addTo(this.layer)
     this.linesLayer = L.layerGroup().addTo(this.layer)
-    this.layerControl.addOverlay(this.layer, "<i class='fa fa-route'></i> Sneak")
+    this.layerControl.addOverlay(this.layer, "<i class='fa fa-route'></i> Snake")
     this.map.on("overlayremove", function(event) {
       if (event.layer === self.layer) {
         self.$emit("move", null)
@@ -51,7 +53,7 @@ export default {
   },
   watch: {
     current: function() {
-      this.go()
+      this.go(this.current.position)
     }
   },
   methods: {
@@ -74,10 +76,16 @@ export default {
       L.marker(this.map.getCenter(),
         {icon: lineMarker, draggable: true, zIndexOffset: 5000}
       ).addTo(this.markerLayer).on('drag', function() {
-        it.sneakPosition = this.getLatLng();
+        it.snakePosition =  {
+          lat: this.getLatLng().lat,
+          lon: this.getLatLng().lng
+        }
         it.display()
       })
-      this.sneakPosition = this.map.getCenter()
+      this.snakePosition = {
+          lat: this.map.getCenter().lat,
+          lon: this.map.getCenter().lng
+      }
     },
     bearingTo: function(from, to) {
       const toRadians = (a) => a * π / 180.0
@@ -94,7 +102,7 @@ export default {
       const φ1 = toRadians(from.lat)
       const φ2 = toRadians(to.lat)
 
-      var Δλ = toRadians(to.lng - from.lng)
+      var Δλ = toRadians(to.lon - from.lon)
       if (Math.abs(Δλ) > π) {
         if (Δλ > 0) {
           Δλ = -(2*π - Δλ)
@@ -112,14 +120,39 @@ export default {
       return wrap360(b)
     },
     onMouseMove: function(e) {
-      this.sneakPosition = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))
+      var snakePosition = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))
+      this.snakePosition = {
+        lat: snakePosition.lat,
+        lon: snakePosition.lng
+      }
 
       this.display()
     },
-    go: function() {
-      if(!this.current || !this.current.position)
+    go: function(position) {
+      if(!position)
         return
 
+      this.start = {
+        lat: this.convertDMSToDD(position.lat.p, position.lat.d, position.lat.m, position.lat.s),
+        lon: this.convertDMSToDD(position.lng.p, position.lng.d, position.lng.m, position.lng.s)
+      }
+
+      if (!this.current || !this.current.id)
+        return
+
+      return this.startSnake()
+    },
+    evalSnake: function(params) {
+      var url = '/route/api/v1/sneak'
+      if (this.priv) {
+        url = '/private/route/api/v1/sneak'
+      }
+      this.$http.post(url, params).then(response => {
+        this.boatLines = response.body
+        this.display()
+      })
+    },
+    startSnake: function() {
       var startTime = new Date()
       startTime.setHours(startTime.getHours() + this.current.delay)
       if (this.settings && this.settings.routeLastUpdate === true) {
@@ -129,8 +162,8 @@ export default {
       }
 
       var duration = 24
-      if (this.settings && this.settings.sneakDuration) {
-        duration = this.settings.sneakDuration
+      if (this.settings && this.settings.snakeDuration) {
+        duration = this.settings.snakeDuration
       }
 
       const params = {
@@ -139,10 +172,7 @@ export default {
             maxDuration: duration
           },
           startTime: startTime,
-          start: {
-            lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-            lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
-          },
+          start: this.start,
           bearing: this.current.bearing,
           currentSail: this.current.sail,
           race: this.races[this.current.id],
@@ -154,22 +184,67 @@ export default {
           }
       }
 
-      var url = '/route/api/v1/sneak'
-      if (this.priv) {
-        url = '/private/route/api/v1/sneak'
-      }
-      this.$http.post(url, params).then(response => {
-        this.boatLines = response.body
-        this.display()
-      })
+      return this.evalSnake(params)
     },
-    getTooltip: function(startTime, wl) {
-      var date = new Date(startTime)
-      date.setMinutes(date.getMinutes() + wl.duration * 60)
+    addProg: function(from) {
+      var prog = {
+        isTwa: from.isTwa,
+        line: []
+      }
+      var line = this.boatLines.bearing[this.bearing]
+      if (from.isTwa) {
+        line = this.boatLines.twa[this.bearing]
+      }
+      prog.startTime = line[0].date
+      for (var i in line) {
+        prog.line.push(line[i])
+        if (line[i].duration == from.duration) {
+          break
+        }
+      }
 
+      this.progs.push(prog)
+
+      return this.nextSnake(from)
+    },
+    nextSnake: function(from) {
+
+      var startTime = from.date
+
+      var duration = 24
+      if (this.settings && this.settings.snakeDuration) {
+        duration = this.settings.snakeDuration
+      }
+
+      this.start = {
+        lat: from.lat,
+        lon: from.lon
+      }
+
+      const params = {
+          params: {
+            expes: this.expes,
+            maxDuration: duration
+          },
+          startTime: startTime,
+          start: this.start,
+          bearing: from.bearing,
+          currentSail: from.sail,
+          race: this.races[this.current.id],
+          options: {
+            sail: this.current.sails,
+            foil: this.current.foil,
+            hull: this.current.hull,
+            winch: this.current.winch
+          }
+      }
+
+      return this.evalSnake(params)
+    },
+    getTooltip: function(wl) {
       const sails = ["Jib", "Spi", "Stay", "LJ", "C0", "HG", "LG"];
 
-      const delta = Math.abs(date - new Date()) / 36e5;
+      const delta = Math.abs(wl.date - new Date()) / 36e5;
 
       var j = Math.floor(delta / 24)
       var h = Math.floor(delta % 24)
@@ -183,7 +258,7 @@ export default {
         j ++
       }
 
-      var d = date > new Date()?"+":"-"
+      var d = wl.date > new Date()?"+":"-"
       if(j > 0) {
         d += j + "j"
       }
@@ -196,8 +271,8 @@ export default {
         d += m + "m"
       }
 
-      var hrs = date.getHours();
-      var min = date.getMinutes();
+      var hrs = wl.date.getHours();
+      var min = wl.date.getMinutes();
       if (min < 10) {
         min = "0" + min;
       }
@@ -217,9 +292,9 @@ export default {
 
       return res;
     },
-    displayLine: function(startTime, line, isTwa) {
+    displayLine: function(startTime, line, isTwa, prog) {
       var path = [];
-      const boatLine = line[this.bearing]
+      const boatLine = line
 
       var color = "#3bdbd5"
       var icon = new L.DivIcon({
@@ -235,42 +310,69 @@ export default {
      }
 
       for(var i in boatLine) {
+        var nbProgToKeep = prog
+        if (i == 0 && !prog) {
+          nbProgToKeep = this.progs.length - 1
+        }
+
         var wl = boatLine[i]
+        wl.i = i
+        wl.isTwa = isTwa
+        wl.nbProgToKeep = nbProgToKeep
+        wl.date = new Date(startTime)
+        wl.date.setMinutes(wl.date.getMinutes() + wl.duration * 60)
+
         const pt = wl
         L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: isTwa ? 75 : 50})
-          .bindTooltip(this.getTooltip(startTime, wl), {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
+          .bindTooltip(this.getTooltip(wl), {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
           .on('click', () => {
-            this.$emit('select', pt)
+            if (pt.nbProgToKeep !== undefined) {
+              var prev = this.progs[pt.nbProgToKeep].line[pt.i]
+              if (pt.i > 0) {
+                this.progs = this.progs.slice(0, pt.nbProgToKeep - -1)
+                this.progs[pt.nbProgToKeep].line = this.progs[pt.nbProgToKeep].line.slice(0, pt.i - -1)
+              } else {
+                this.progs = this.progs.slice(0, pt.nbProgToKeep)
+              }
+              this.$emit('select', prev)
+              this.nextSnake(prev)
+            } else {
+              this.$emit('select', pt)
+              this.addProg(pt)
+            }
           })
           .addTo(this.linesLayer)
         path.push(new L.LatLng(wl.lat, wl.lon));
       }
       L.polyline(path, {color: color, weight: 1, smoothFactor: 2, lineJoin: 'round', opacity: 0.9}).addTo(this.linesLayer);
     },
+    displayProgs() {
+      for (var i in this.progs) {
+        this.displayLine(this.progs[i].startTime, this.progs[i].line, this.progs[i].isTwa, i)
+      }
+    },
     display: function() {
-      if(!this.sneakPosition || !this.current || !this.current.position) {
+      if(!this.snakePosition || !this.start) {
         this.$emit("move", null)
         return
       }
 
-      const start = {
-        lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-        lng: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
-      }
-
-      var b = Math.round(this.bearingTo(start, this.sneakPosition))
+      var b = Math.round(this.bearingTo(this.start, this.snakePosition))
       if(b == 360) b = 0
-      if(this.bearing == b) {
-        return
-      }
+      // if(this.bearing == b) {
+      //   return
+      // }
       this.bearing = b
 
       this.linesLayer.clearLayers()
 
-      this.$emit("move", {bearing: this.bearing, twa: this.boatLines.twa[this.bearing][0].twa})
+      if (this.boatLines && this.boatLines.twa) {
+        this.$emit("move", {bearing: this.bearing, twa: this.boatLines.twa[this.bearing][0].twa})
 
-      this.displayLine(this.boatLines.startTime, this.boatLines.bearing, false)
-      this.displayLine(this.boatLines.startTime, this.boatLines.twa, true)
+        this.displayProgs()
+        this.displayLine(this.boatLines.startTime, this.boatLines.bearing[this.bearing], false)
+        this.displayLine(this.boatLines.startTime, this.boatLines.twa[this.bearing], true)
+      }
     }
   }
 }

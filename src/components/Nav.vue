@@ -5,13 +5,13 @@
         <button class="delete" @click="notification.active = false"></button>
         {{ notification.message }}
       </div>
-      <SideBar ref="sidebar" v-if="map != null" v-bind:boat="boat" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
+      <SideBar ref="sidebar" v-if="map != null" v-bind:boat="boat" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
     <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:map="map"></Geodesic>
     <Race v-if="map != null" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:current="current" v-on:nextdoor="onNextDoor"></Race>
     <Route ref="route" v-if="map != null" v-bind:priv="priv" v-bind:debug="debug" v-bind:settings="settings" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
-    <BoatLines ref="boatlines" v-if="map != null" v-bind:settings="settings" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv" v-on:move="onSneakMove"></BoatLines>
+    <BoatLines ref="boatlines" v-if="map != null && races != null" v-bind:settings="settings" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv" v-on:move="onSnakeMove" v-on:select="selectPoint"></BoatLines>
   </div>
 </template>
 
@@ -66,7 +66,7 @@ export default {
       windControl: null,
       legend: null,
       cursor: null,
-      sneak: null,
+      snake: null,
       wind: null
     }
   },
@@ -144,16 +144,16 @@ export default {
       this.wind = this.windControl.getWindAt(this.cursor)
       this.displayLegend()
     },
-    onSneakMove: function(sneak) {
-      this.sneak = sneak
+    onSnakeMove: function(snake) {
+      this.snake = snake
       this.displayLegend()
     },
     displayLegend: function() {
       const pad = (num, places) => String(num).padStart(places, '0')
       if (this.legend) {
         var legend = ""
-        if (this.sneak) {
-          legend += "<div><strong><i class='fa fa-compass'></i></strong> " + this.sneak.bearing + "° <strong><i class='fa fa-location-arrow'></i></strong> " + this.sneak.twa.toFixed(1) + "°<div>"
+        if (this.snake) {
+          legend += "<div><strong><i class='fa fa-compass'></i></strong> " + this.snake.bearing + "° <strong><i class='fa fa-location-arrow'></i></strong> " + this.snake.twa.toFixed(1) + "°<div>"
         }
         if (this.wind) {
           legend += "<div><strong><i class='fa fa-wind'></i> </strong>" + this.wind.direction.toFixed(1) + "° " + this.wind.speed.toFixed(1) + "kt</div>"
@@ -225,7 +225,7 @@ export default {
         lat: current.position.lat,
         lng: current.position.lng
       }
-      this.$refs.boatlines.go()
+      this.$refs.boatlines.go(this.current.position)
 
       var pan = [
         this.convertDMSToDD(current.position.lat.p, current.position.lat.d, current.position.lat.m, current.position.lat.s),
@@ -245,7 +245,7 @@ export default {
           lat: it.convertDDToDMS(position.lat),
           lng: it.convertDDToDMS(position.lng)
         }
-        it.$refs.boatlines.go()
+        it.$refs.boatlines.go(it.current.position)
       });
     },
     center: function() {
@@ -253,9 +253,6 @@ export default {
         this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
         this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)]
       this.map.setView(pan)
-    },
-    go: function() {
-      this.$refs.route.go()
     },
     showTooltip: function() {
       this.$refs.route.showTooltip()

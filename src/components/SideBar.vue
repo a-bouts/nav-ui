@@ -8,7 +8,7 @@
           <li><a role="tab" @click="center"><i class="fa fa-dot-circle"></i></a></li>
           <li><a role="tab" @click="pan"><i class="fa fa-expand"></i></a></li>
           <li><a role="tab" @click="showTooltip" class="button is-white"><i class="fa fa-eye"></i></a></li>
-          <li><a role="tab" @click="centerSneak"><i class="fas fa-route"></i></a></li>
+          <li><a role="tab" @click="centerSnake"><i class="fas fa-route"></i></a></li>
           <li v-if="isNative()"><a role="tab" @click="geoloc"><i class="fas fa-globe-europe"></i></a></li>
           <li><a role="tab" @click="run" class="button is-white" v-bind:class="{ 'is-loading': loading }">GO</a></li>
         </ul>
@@ -459,8 +459,8 @@ export default {
         s :(0|D*60%1*6000)/100
       };
     },
-    centerSneak: function() {
-      EventBus.$emit('center-sneak')
+    centerSnake: function() {
+      EventBus.$emit('center-snake')
     },
     geoloc: function() {
       App.openUrl({ url: 'fr.phtheirichthys.geoloc://' }).then(ret => {
