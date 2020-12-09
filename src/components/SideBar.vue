@@ -271,8 +271,10 @@
               <div class="content">
                 Petite solution de routage. Si son nom ne vous revient pas, vous pouvez toujours l'appeler <strong>La Sardine</strong>
                 <br>
-                <a href="https://route.phtheirichthys.fr">https://route.phtheirichthys.fr</a>
+                <a href="https://route.phtheirichthys.fr">route.phtheirichthys.fr</a>
                 <br>
+                <br>
+                Application Android: <a href="https://www.phtheirichthys.fr/phtheirichthys.apk">phtheirichthys.apk</a>
                 <br>
 
               </div>
