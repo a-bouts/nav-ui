@@ -56,8 +56,8 @@
           <td v-else class="has-text-right">{{ l.duration }}</td>
           <td class="has-text-right">{{ l.date }}</td>
           <td class="has-text-right">{{ l.bearing }}°</td>
-          <td class="has-text-right">{{ l.twa }}°</td>
-          <td>{{ l.sail }}</td>
+          <td class="has-text-right" :class="{'has-text-danger': l.twa < 0, 'has-text-success': l.twa > 0}">{{ l.twa }}°</td>
+          <td :class="sailClass(l.sail)">{{ l.sail }}</td>
           <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
           <td class="has-text-right">{{ l.wind }}°</td>
           <td class="has-text-right">{{ l.windSpeed }} kt</td>
@@ -115,6 +115,9 @@ export default {
         m : 0|D%1*60,
         s : Math.round((0|D*60%1*6000)/100)
       };
+    },
+    sailClass: function(s) {
+      return s
     },
     formatHours: function(duration) {
       return Math.floor(duration / 24) * 24 + Math.round(duration % 24)
@@ -205,5 +208,26 @@ export default {
 }
 .outdated {
   background-color: #fafafa;
+}
+.Jib {
+  background-color: #ff9999;
+}
+.LJ {
+  background-color: #ffff99;
+}
+.Stay {
+  background-color: #99ff99;
+}
+.C0 {
+  background-color: #99ddff;
+}
+.HG {
+  background-color: #ff99ff;
+}
+.LG {
+  background-color: #ffdd99;
+}
+.Spi {
+  background-color: #9999ff;
 }
 </style>
