@@ -198,7 +198,7 @@ export default {
       prog.startTime = line[0].date
       for (var i in line) {
         prog.line.push(line[i])
-        if (line[i].duration == from.duration) {
+        if (line[i].d == from.d) {
           break
         }
       }
@@ -277,14 +277,14 @@ export default {
         min = "0" + min;
       }
 
-      var primary = "<i class='fa fa-compass'></i> " + wl.bearing + "° <i class='fa fa-location-arrow'></i> " + wl.twa.toFixed(1) + "° <span class='sail'>" + sails[wl.sail] + "</span>";
-      if(wl.ice) {
+      var primary = "<i class='fa fa-compass'></i> " + wl.b + "° <i class='fa fa-location-arrow'></i> " + wl.t.toFixed(1) + "° <span class='sail'>" + sails[wl.s] + "</span>";
+      if(wl.i) {
         primary += "<span class='ice'><i class='fas fa-igloo'></i></span>"
-      } else if(wl.foil > 0) {
+      } else if(wl.f > 0) {
         //primary += "<span class='foil' style='color:rgb(255," + 255 * (wl.foil / 100) + "," + 255 * (wl.foil / 100) + ");'><i class='fa fa-fighter-jet'></i></span>"
-        primary += "<span class='foil' style='opacity:" + (wl.foil) + "%;'><i class='fa fa-fighter-jet'></i></span>"
+        primary += "<span class='foil' style='opacity:" + (wl.f) + "%;'><i class='fa fa-fighter-jet'></i></span>"
       }
-      const secondary = "<i class='fa fa-wind'></i> " + wl.wind.toFixed(1) + "° " + wl.windSpeed.toFixed(1) + "kt <span style='padding-left: 10px'><i class='fa fa-ship'></i></span> " + wl.boatSpeed.toFixed(1) + "kt";
+      const secondary = "<i class='fa fa-wind'></i> " + wl.w.toFixed(1) + "° " + wl.ws.toFixed(1) + "kt <span style='padding-left: 10px'><i class='fa fa-ship'></i></span> " + wl.bs.toFixed(1) + "kt";
 
       var res = '<div class="date"><span>' + d + '</span><span class="hour">' + hrs + ":" + min + '</span></div><div class="primary" style="display: inline">' + primary + '</div>';
       if(secondary)
@@ -320,7 +320,7 @@ export default {
         wl.isTwa = isTwa
         wl.nbProgToKeep = nbProgToKeep
         wl.date = new Date(startTime)
-        wl.date.setMinutes(wl.date.getMinutes() + wl.duration * 60)
+        wl.date.setMinutes(wl.date.getMinutes() + wl.d * 60)
 
         const pt = wl
         L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: isTwa ? 75 : 50})
@@ -367,7 +367,7 @@ export default {
       this.linesLayer.clearLayers()
 
       if (this.boatLines && this.boatLines.twa) {
-        this.$emit("move", {bearing: this.bearing, twa: this.boatLines.twa[this.bearing][0].twa})
+        this.$emit("move", {bearing: this.bearing, twa: this.boatLines.twa[this.bearing][0].t})
 
         this.displayProgs()
         this.displayLine(this.boatLines.startTime, this.boatLines.bearing[this.bearing], false)
