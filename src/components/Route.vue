@@ -198,7 +198,7 @@ export default {
                            path.push(pt);
                       }
                       const myLayer = layer
-                      var poly = L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 0.3, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
+                      var poly = L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 0.5, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
                       if (this.priv) {
                         poly.on('click', function() {
                           this._latlngs.forEach(p => {

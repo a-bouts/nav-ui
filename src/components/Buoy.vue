@@ -80,7 +80,6 @@ export default {
       var markerIcon = L.ExtraMarkers.icon({icon: 'fa-number', number: this.buoy.name, shape: 'penta', markerColor: this.validated === true ? 'green-light' : 'yellow'});
 
       var m1 = L.marker([this.buoy.latlons[0].lat, this.buoy.latlons[0].lon + wrap], {buoy: this.buoy, icon: markerIcon, draggable: this.editable, zIndexOffset: 5000}).on('click', function() {
-        console.log("validate")
         it.$emit("validate", !it.validated)
       }).addTo(this.raceLayer).on('dragend', function() {
         var position = this.getLatLng();

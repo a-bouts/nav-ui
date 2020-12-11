@@ -205,7 +205,6 @@ export default {
       EventBus.$emit('buoys', this.buoys)
     },
     onValidate(buoy, validated) {
-      console.log("validate", buoy.id, validated)
       if(validated) {
         if(!this.validated) this.validated = []
         this.validated.push(buoy.id);
