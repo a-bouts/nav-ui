@@ -278,7 +278,7 @@ export default {
       }
 
       var primary = "<i class='fa fa-compass'></i> " + wl.b + "° <i class='fa fa-location-arrow'></i> " + wl.t.toFixed(1) + "° <span class='sail'>" + sails[wl.s] + "</span>";
-      if(wl.i) {
+      if(wl.i === true) {
         primary += "<span class='ice'><i class='fas fa-igloo'></i></span>"
       } else if(wl.f > 0) {
         //primary += "<span class='foil' style='color:rgb(255," + 255 * (wl.foil / 100) + "," + 255 * (wl.foil / 100) + ");'><i class='fa fa-fighter-jet'></i></span>"
