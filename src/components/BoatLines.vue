@@ -57,16 +57,12 @@ export default {
     }
   },
   methods: {
-    convertDMSToDD: function(p, d, m, s) {
-      return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
-    },
-    convertDDToDMS: function(D){
-      return {
-        p : D<0?-1:1,
-        d : 0|(D<0?D=-D:D),
-        m : 0|D%1*60,
-        s :(0|D*60%1*6000)/100
-      };
+    convertDMSToDD: function(p, d, m, s, wrap) {
+      var res = Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600)
+      if (wrap === true && res < 0) {
+        res += 360
+      }
+      return res
     },
     center: function() {
       const it = this
@@ -134,7 +130,7 @@ export default {
 
       this.start = {
         lat: this.convertDMSToDD(position.lat.p, position.lat.d, position.lat.m, position.lat.s),
-        lon: this.convertDMSToDD(position.lng.p, position.lng.d, position.lng.m, position.lng.s)
+        lon: this.convertDMSToDD(position.lng.p, position.lng.d, position.lng.m, position.lng.s, position.lng.wrap)
       }
 
       if (!this.current || !this.current.id)

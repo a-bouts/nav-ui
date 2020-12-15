@@ -137,7 +137,7 @@ export default {
     var date2 = new Date(date1)
     date1.setSeconds(0)
     date1.setMilliseconds(0)
-    date1.setMinutes(date1.getMinutes() + 2)
+    date1.setMinutes(date1.getMinutes() - date1.getMinutes()%10 + 10)
     window.setTimeout(() => { this.refresh()}, date1.getTime() - date2.getTime())
 
     date1 = new Date()
@@ -229,6 +229,11 @@ export default {
       return meters / 0.514;
     },
     initMergedForecasts: function(now) {
+      now = new Date(now.getTime())
+      now.setUTCMinutes(now.getUTCMinutes() - now.getUTCMinutes()%10)
+      now.setUTCSeconds(0)
+      now.setUTCMilliseconds(0)
+
       const mergedForecasts = []
       mergedForecasts.push({
         hour: 0,
@@ -372,21 +377,34 @@ export default {
       } else if (dateToLoad) {
         this.loadWindAt(dateToLoad, true)
       }
-      window.setTimeout(() => { this.refresh()}, 60000)
+      var date1 = new Date()
+      var date2 = new Date(date1)
+      date1.setSeconds(0)
+      date1.setMilliseconds(0)
+      date1.setMinutes(date1.getMinutes() - date1.getMinutes()%10 + 10)
+      window.setTimeout(() => { this.refresh()}, date1.getTime() - date2.getTime())
     },
     refreshWinds: function() {
       this.loadWinds()
       window.setTimeout(() => { this.refreshWinds()}, 300000)
     },
-    loadWindAsync: function(w) {
+    loadWindAsync: function(w, n) {
       const it = this
 
       return new Promise(function(resolve, reject) {
-        if(it.forecastsData[w.stamp + "-" + w.forecast]) {
-          resolve(it.forecastsData[w.stamp + "-" + w.forecast])
+        console.log("loadAsync", w, n)
+        var stamp = w.stamp
+        var i = 0
+        if (n === true && w.stamp2) {
+          stamp = w.stamp2
+          i = 1
+        }
+
+        if(it.forecastsData[stamp + "-" + w.forecast]) {
+          resolve(it.forecastsData[stamp + "-" + w.forecast])
         } else {
-          it.$http.get('/winds/'+w.forecast).then(response => {
-            it.forecastsData[w.stamp + "-" + w.forecast] = response.body
+          it.$http.get('/winds/'+w.forecast+'/'+i).then(response => {
+            it.forecastsData[stamp + "-" + w.forecast] = response.body
             resolve(response.body)
           }, () => {
             console.log("Error loading winds")
@@ -538,6 +556,7 @@ export default {
       }
 
       var date = new Date(d.getTime())
+      date.setMinutes(date.getMinutes() - date.getMinutes()%10)
       date.setSeconds(0)
       date.setMilliseconds(0)
       var forecast = {
@@ -574,6 +593,8 @@ export default {
         return
       }
 
+      console.log(mergedForecast)
+
       if (doNotLoadWinds !== true) {
         const timestamp = mergedForecast.date.getUTCFullYear() + ("00" + (mergedForecast.date.getUTCMonth() + 1)).slice(-2) + ("00" + mergedForecast.date.getUTCDate()).slice(-2) + ("00" + mergedForecast.date.getUTCHours()).slice(-2) + ("00" + mergedForecast.date.getUTCMinutes()).slice(-2)
 
@@ -607,16 +628,16 @@ export default {
             var d2 = it.getDateFromForecast(it.forecasts[i + 1].forecast)
 
             if(mergedForecast.date >= d1 && mergedForecast.date < d2) {
-              mergedForecast.w1 = {forecast: it.forecasts[i].forecast, stamp: it.forecasts[i].stamp}
-              mergedForecast.w2 = {forecast: it.forecasts[i + 1].forecast, stamp: it.forecasts[i + 1].stamp}
+              mergedForecast.w1 = {forecast: it.forecasts[i].forecast, stamp: it.forecasts[i].stamp, stamp2: it.forecasts[i].stamp2}
+              mergedForecast.w2 = {forecast: it.forecasts[i + 1].forecast, stamp: it.forecasts[i + 1].stamp, stamp2: it.forecasts[i + 1].stamp2}
               mergedForecast.h = (mergedForecast.date.getTime() - d1.getTime()) / (d2.getTime() - d1.getTime())
               break
             }
           }
 
           if(!mergedForecast.w1) {
-            mergedForecast.w1 = {forecast: it.forecasts[it.forecasts.length - 1].forecast, stamp: it.forecasts[it.forecasts.length - 1].stamp}
-            mergedForecast.w2 = {forecast: it.forecasts[it.forecasts.length - 1].forecast, stamp: it.forecasts[it.forecasts.length - 1].stamp}
+            mergedForecast.w1 = {forecast: it.forecasts[it.forecasts.length - 1].forecast, stamp: it.forecasts[it.forecasts.length - 1].stamp, stamp2: it.forecasts[it.forecasts.length - 1].stamp2}
+            mergedForecast.w2 = {forecast: it.forecasts[it.forecasts.length - 1].forecast, stamp: it.forecasts[it.forecasts.length - 1].stamp, stamp2: it.forecasts[it.forecasts.length - 1].stamp2}
             mergedForecast.h = 1
           }
 
@@ -625,8 +646,8 @@ export default {
             it.loading = false
             resolve()
           } else {
-            it.loadWindAsync(mergedForecast.w1, 0).then(w1 => {
-              it.loadWindAsync(mergedForecast.w2, 0).then(w2 => {
+            it.loadWindAsync(mergedForecast.w1, true).then(w1 => {
+              it.loadWindAsync(mergedForecast.w2, false).then(w2 => {
                 it.selectedForecast = mergedForecast.hour
                 mergedForecast.data = it.mergeWinds(w1, w2, mergedForecast.h)
                 it.velocityLayer.setData(mergedForecast.data)

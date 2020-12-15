@@ -169,16 +169,29 @@ export default {
     onLoading: function(loading) {
       this.loading = loading
     },
-    convertDMSToDD: function(p, d, m, s) {
-      return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
+    convertDMSToDD: function(p, d, m, s, wrap) {
+      var res = Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600)
+      if (wrap === true && res < 0) {
+        res += 360
+      }
+      return res
     },
     convertDDToDMS: function(D){
-      return {
+      var wrap = false
+      if (D > 180) {
+        D -= 360
+        wrap = true
+      }
+      const res = {
         p : D<0?-1:1,
         d : 0|(D<0?D=-D:D),
         m : 0|D%1*60,
         s :(0|D*60%1*6000)/100
-      };
+      }
+      if (wrap === true) {
+        res.wrap = true
+      }
+      return res
     },
     zoomend: function() {
       localStorage.setItem('zoom', this.map.getZoom());
@@ -229,7 +242,7 @@ export default {
 
       var pan = [
         this.convertDMSToDD(current.position.lat.p, current.position.lat.d, current.position.lat.m, current.position.lat.s),
-        this.convertDMSToDD(current.position.lng.p, current.position.lng.d, current.position.lng.m, current.position.lng.s)]
+        this.convertDMSToDD(current.position.lng.p, current.position.lng.d, current.position.lng.m, current.position.lng.s, current.position.lng.wrap)]
 
       var boatMarker = L.ExtraMarkers.icon({ icon: 'fa-anchor', markerColor: 'red', shape: 'square', prefix: 'fa' })
 
@@ -251,7 +264,7 @@ export default {
     center: function() {
       var pan = [
         this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-        this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)]
+        this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap)]
       this.map.setView(pan)
     },
     go: function() {

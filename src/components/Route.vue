@@ -106,16 +106,12 @@ export default {
     }
   },
   methods: {
-    convertDMSToDD: function(p, d, m, s) {
-      return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
-    },
-    convertDDToDMS: function(D){
-      return {
-        p : D<0?-1:1,
-        d : 0|(D<0?D=-D:D),
-        m : 0|D%1*60,
-        s :(0|D*60%1*6000)/100
-      };
+    convertDMSToDD: function(p, d, m, s, wrap) {
+      var res = Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600)
+      if (wrap === true && res < 0) {
+        res += 360
+      }
+      return res
     },
     go: function() {
 
@@ -135,7 +131,7 @@ export default {
           expes: this.expes,
           start: {
             lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-            lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)
+            lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap)
           },
           bearing: this.current.bearing,
           currentSail: this.current.sail,

@@ -147,6 +147,10 @@
                   <a class="button is-small" :class="{'is-static': lonPasteStatus === 0, 'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">''</a>
                 </p>
               </div>
+              <div class="field">
+                <input class="is-checkradio is-info" id="wrap-longitude" type="checkbox" name="wrap-longitude" v-model="current.position.lng.wrap" >
+                <label for="wrap-longitude">+360</label>
+              </div>
             </div>
             <div class="columns is-gapless is-multiline is-mobile">
               <div class="column is-one-third">
@@ -448,16 +452,27 @@ export default {
     isNative: function() {
       return Capacitor.isNative
     },
-    convertDMSToDD: function(p, d, m, s) {
-      return Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600);
+    convertDMSToDD: function(p, d, m, s, wrap) {
+      var res = Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600)
+      if (wrap === true && res < 0) {
+        res += 360
+      }
+      return res
     },
     convertDDToDMS: function(D){
-      return {
+      if (D > 180) {
+        D -= 360
+      }
+      const res = {
         p : D<0?-1:1,
         d : 0|(D<0?D=-D:D),
         m : 0|D%1*60,
         s :(0|D*60%1*6000)/100
-      };
+      }
+      if (D > 180) {
+        res.wrap = true
+      }
+      return res
     },
     centerSnake: function() {
       EventBus.$emit('center-snake')
@@ -504,6 +519,11 @@ export default {
     submit: function() {
       this.sidebar.close();
 
+      console.log([
+        this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
+        this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap)
+      ])
+
       localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
 
       this.$emit('configure', this.current)
@@ -511,7 +531,7 @@ export default {
     center: function() {
       var pan = [
         this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-        this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s)]
+        this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap)]
       this.map.flyTo(pan, 11)
     },
     pan: function() {
@@ -648,6 +668,7 @@ export default {
       this.selectRace(race, false)
     },
     position: function() {
+      console.log(this.position)
       this.current.position = this.position
       localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
     },

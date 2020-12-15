@@ -25,7 +25,11 @@ export default {
   },
   methods: {
     convertDMSToDD: function(coord) {
-      return Number(coord.p) * (Number(coord.d) + Number(coord.m)/60 + Number(coord.s)/3600);
+      var res = Number(coord.p) * (Number(coord.d) + Number(coord.m)/60 + Number(coord.s)/3600);
+      if (coord.wrap === true && res < 0) {
+        res += 360
+      }
+      return res
     },
     onBuoys: function(buoys) {
       this.buoys = buoys
@@ -36,8 +40,10 @@ export default {
 
       if(!this.from) return
 
-      var from = {lat: this.convertDMSToDD(this.from.lat), lon: this.convertDMSToDD(this.from.lng), wrap: 0}
-      
+      const lon = this.convertDMSToDD(this.from.lng)
+
+      var from = {lat: this.convertDMSToDD(this.from.lat), lon: lon, wrap: lon.wrap === true ? 1 : 0}
+
       this.buoys.forEach(b => {
         if(b.type != "START" && !b.validated) {
           var to = b.latlons[0]

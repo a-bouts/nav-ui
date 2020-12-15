@@ -109,12 +109,21 @@ export default {
   },
   methods: {
     convertDDToDMS: function(D){
-      return {
+      var wrap = false
+      if (D > 180) {
+        D -= 360
+        wrap = true
+      }
+      const res = {
         p : D<0?-1:1,
         d : 0|(D<0?D=-D:D),
         m : 0|D%1*60,
-        s : Math.round((0|D*60%1*6000)/100)
-      };
+        s :(0|D*60%1*6000)/100
+      }
+      if (wrap === true) {
+        res.wrap = true
+      }
+      return res
     },
     sailClass: function(s) {
       return s
