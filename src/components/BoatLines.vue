@@ -150,7 +150,7 @@ export default {
     },
     startSnake: function() {
       var startTime = new Date()
-      startTime.setHours(startTime.getHours() + this.current.delay)
+      startTime.setMinutes(startTime.getMinutes() + this.current.delay*60)
       if (this.settings && this.settings.routeLastUpdate === true) {
         startTime.setMilliseconds(0)
         startTime.setSeconds(0)
