@@ -1,19 +1,32 @@
 <template>
   <div>
-    <svg id="polar" :width="width" :height="height" v-on:click="setTwa" @mousedown="startDragTwa" @mouseup="stopDragTwa" @mousemove="dragTwa">
-      <g id="degrees"></g>
-      <g id="speed"></g>
-      <g id="path"></g>
-      <g id="vmg"></g>
-      <g id="foil"></g>
-      <g id="current"></g>
-    </svg>
-    <input id="windSpeed" class="slider has-output is-fullwidth" step="0.1" min="0" max="70" v-model="ws" type="range">
-    <output for="windSpeed">{{ws}}</output>
+    <div class="tabs">
+      <ul>
+        <li :class="{'is-active': display == 'polars'}"><a @click="display = 'polars'">Polars</a></li>
+        <li :class="{'is-active': display == 'limits'}"><a @click="display = 'limits'">Limits</a></li>
+      </ul>
+    </div>
+    <div v-show="display == 'polars'">
+      <svg id="polar" :width="width" :height="height" v-on:click="setTwa" @mousedown="startDragTwa" @mouseup="stopDragTwa" @mousemove="dragTwa">
+        <g id="degrees"></g>
+        <g id="speed"></g>
+        <g id="path"></g>
+        <g id="vmg"></g>
+        <g id="foil"></g>
+        <g id="current"></g>
+      </svg>
+      <input id="windSpeed" class="slider has-output is-fullwidth" step="0.1" min="0" max="70" v-model="ws" type="range">
+      <output for="windSpeed">{{ws}}</output>
+    </div>
+    <div v-show="display == 'limits'">
+      <Limits ref="limits" v-bind:races="races" v-bind:current="current"></Limits>
+    </div>
   </div>
 </template>
 
 <script>
+import Limits from './polars/Limits.vue'
+
 import * as d3 from 'd3';
 import bulmaSlider from 'bulma-slider/dist/js/bulma-slider.min.js'
 
@@ -32,11 +45,15 @@ export default {
     races: Object,
     current: Object,
   },
+  components: {
+    Limits
+  },
   data: function() {
     return {
       width: 0,
       height: 0,
       ws: 20,
+      display: 'polars',
       polar: undefined,
       radialLineGenerator: d3.radialLine(),
       twa: 70,
@@ -89,6 +106,7 @@ export default {
       this.width = this.$el.parentElement.parentElement.clientWidth - 10
       this.height = this.$el.parentElement.parentElement.clientHeight - 80
       this.update()
+      this.$refs.limits.onResize()
     },
     drawDegrees() {
       const degrees = d3.select("#polar").select("#degrees")
@@ -361,20 +379,30 @@ export default {
     drawSailPath(polar, points, sail) {
       if(!sail) return
 
+      // const colors = {
+      //   "Jib"      : "#cd0342",
+      //   "Spi"      : "#00ff00",
+      //   "Staysail"    : "#0000ff",
+      //   "LightJib"    : "#f67876",
+      //   "Code0"    : "#00a000",
+      //   "HeavyGnk"    : "#b00000",
+      //   "LightGnk"    : "#d77900"
+      // }
+
       const colors = {
-        "Jib"      : "#cd0342",
-        "Spi"      : "#00ff00",
-        "Staysail"    : "#0000ff",
-        "LightJib"    : "#f67876",
-        "Code0"    : "#00a000",
-        "HeavyGnk"    : "#b00000",
-        "LightGnk"    : "#d77900"
+        1: "#ff9999", // jib
+        2: "#9999ff", // Spi
+        3: "#99ff99", // staysail
+        4: "#ffff99", // lightjib
+        5: "#99ddff", // code0
+        6: "#ff99ff", // heavygnk
+        7: "#ffdd99", // lightgnk
       }
 
       polar.append("path")
         .attr("transform", "translate(25," + this.height / 2 + ")")
         .attr('d', this.radialLineGenerator(points))
-        .style("stroke", colors[sail.name])
+        .style("stroke", colors[sail.id])
         .style("stroke-width", 2)
         .style("fill", "none")
     },
