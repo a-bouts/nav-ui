@@ -16,10 +16,10 @@
 </template>
 
 <script>
+import windService from '../lib/wind.js';
 import L from 'leaflet'
 import {EventBus} from '../event-bus.js';
 import 'leaflet-velocity'
-const moment = require('moment');
 
 export default {
   name: 'WindControl',
@@ -61,7 +61,6 @@ export default {
       windTileLayerControl: null,
       windTileLayer: null,
       forecasts: [],
-      forecastsData: {},
       selectedForecast: "",
       lastForecast: now,
       lastStamp: this.initLastStamp(now),
@@ -123,14 +122,6 @@ export default {
 
     this.loadWinds().then(() => {
       this.loadMergedWind(this.mergedForecasts[0])
-
-      var forecastsData = {}
-      for (var i= 0 ; i < this.forecasts.length ; i++) {
-        if (this.forecastsData[this.forecasts[i].stamp + "-" + this.forecasts[i].forecast]) {
-          forecastsData[this.forecasts[i].stamp + "-" + this.forecasts[i].forecast] = this.forecastsData[this.forecasts[i].stamp + "-" + this.forecasts[i].forecast]
-        }
-      }
-      this.forecastsData = forecastsData
     })
 
     var date1 = new Date()
@@ -218,7 +209,7 @@ export default {
       }
       if (gridValue && !isNaN(gridValue[0]) && !isNaN(gridValue[1]) && gridValue[2]) {
         var velocityAbs = Math.sqrt(Math.pow(gridValue[0], 2) + Math.pow(gridValue[1], 2));
-        var direction = this.vectorToDegrees(gridValue[0], gridValue[1], velocityAbs)
+        var direction = windService.vectorToDegrees(gridValue[0], gridValue[1], velocityAbs)
         var speed = this.meterSec2Knots(velocityAbs)
         return {direction: direction, speed: speed}
       } else {
@@ -316,9 +307,8 @@ export default {
 
       const it = this
       return new Promise(function(resolve, reject) {
-        it.$http.get('/winds').then(response => {
-          it.forecasts = response.body
-          it.forecasts.sort((a, b) => a.hour - b.hour)
+        windService.loadWinds().then(forecasts => {
+          it.forecasts = forecasts
 
           var d = new Date()
           d.setUTCFullYear(it.forecasts[0].forecast.substr(0, 4))
@@ -387,135 +377,6 @@ export default {
     refreshWinds: function() {
       this.loadWinds()
       window.setTimeout(() => { this.refreshWinds()}, 300000)
-    },
-    loadWindAsync: function(w, n) {
-      const it = this
-
-      return new Promise(function(resolve, reject) {
-        console.log("loadAsync", w, n)
-        var stamp = w.stamp
-        var i = 0
-        if (n === true && w.stamp2) {
-          stamp = w.stamp2
-          i = 1
-        }
-
-        if(it.forecastsData[stamp + "-" + w.forecast]) {
-          resolve(it.forecastsData[stamp + "-" + w.forecast])
-        } else {
-          it.$http.get('/winds/'+w.forecast+'/'+i).then(response => {
-            it.forecastsData[stamp + "-" + w.forecast] = response.body
-            resolve(response.body)
-          }, () => {
-            console.log("Error loading winds")
-            reject()
-          })
-        }
-      })
-    },
-    findWinds: function(now) {
-      const stamp = now.format("YYYYMMDDHH")
-
-      var keys = []
-      for(var i in this.forecasts) {
-        keys.push(this.forecasts[i].stamp + "-" + this.forecasts[i].forecast)
-      }
-      keys.sort()
-      if (keys[0] > stamp) {
-        return [this.getWind(keys[0]), null, 0]
-      }
-      for (i in keys) {
-        if (keys[i] > stamp) {
-          const m_i_1 = moment(keys[i-1], "YYYYMMDDHH")
-          const m_i = moment(keys[i], "YYYYMMDDHH")
-          const h = moment.duration(now.diff(m_i_1)).asMinutes();
-          const delta = moment.duration(m_i.diff(m_i_1)).asMinutes();
-          return [this.getWind(keys[i-1]), this.getWind(keys[i]), h / delta]
-        }
-      }
-      return [this.getWind(keys[length(keys)-1]), null, 0]
-
-    },
-    getWind: function(w) {
-      for (var i in this.forecastsData[w]) {
-        const h = this.forecastsData[w][i].header
-        if(h.discipline == 0 && h.parameterCategory == 2) {
-          const w = {
-            Lat0: h.La1 / 1e6,
-            Lon0: h.Lo1 / 1e6,
-            ΔLat: h.Di / 1e6,
-            ΔLon: h.Dj / 1e6,
-            NLat: h.Nj,
-            NLon: h.Ni
-          }
-          if(this.forecastsData[w][i].header.parameterNumber == 2)
-            w.U = this.forecastsData[w][i].data
-          else if(this.forecastsData[w][i].header.parameterNumber == 3)
-            w.V = this.forecastsData[w][i].data
-        }
-      }
-      return w
-    },
-    bilinearInterpolate: function(x, y, g00, g10, g01, g11) {
-      const rx = (1 - x)
-      const ry = (1 - y)
-
-      const a = rx * ry
-      const b = x * ry
-      const c = rx * y
-      const d = x * y
-
-      const u = g00[0]*a + g10[0]*b + g01[0]*c + g11[0]*d
-      const v = g00[1]*a + g10[1]*b + g01[1]*c + g11[1]*d
-
-      return [u, v, Math.sqrt(u*u + v*v)]
-    },
-    floorMod: function(a, n) {
-      return a - n*Math.floor(a/n)
-    },
-    locInterpolate: function(w, lat, lon) {
-      const i = Math.abs((lat - w.Lat0) / w.ΔLat)
-      const j = this.floorMod(lon-w.Lon0, 360.0) / w.ΔLon
-
-      const fi = Math.floor(i)
-      const fj = Math.floor(j)
-
-      const u00 = w.U[fi][fj]
-      const v00 = w.V[fi][fj]
-
-      const u01 = w.U[fi+1][fj]
-      const v01 = w.V[fi+1][fj]
-
-      const u10 = w.U[fi][fj+1]
-      const v10 = w.V[fi][fj+1]
-
-      const u11 = w.U[fi+1][fj+1]
-      const v11 = w.V[fi+1][fj+1]
-
-      return this.bilinearInterpolate(j-fj, i-fi, [u00, v00], [u10, v10], [u01, v01], [u11, v11])
-    },
-    vectorToDegrees: function(u, v, d) {
-      const velocityDir = Math.atan2(u/d, v/d)
-      const velocityDirToDegrees = velocityDir*180/Math.PI + 180
-      return velocityDirToDegrees
-    },
-    interpolate: function(w, w1, lat, lon, h) {
-      const uvd = this.interpolate(w, lat, lon)
-      var u = uvd[0]
-      var v = uvd[1]
-      var d = uvd[2]
-
-      if (w1) {
-        const uvd1 = this.interpolate(w1, lat, lon)
-        const u1 = uvd1[0]
-        const v1 = uvd1[1]
-
-        u = u1*h + u*(1-h)
-        v = v1*h + v*(1-h)
-        d = Math.sqrt(u*u + v*v)
-      }
-
-      return [this.vectorToDegrees(u, v, d), d]
     },
     mergeWinds: function(w1, w2, h) {
       var w = []
@@ -646,8 +507,8 @@ export default {
             it.loading = false
             resolve()
           } else {
-            it.loadWindAsync(mergedForecast.w1, true).then(w1 => {
-              it.loadWindAsync(mergedForecast.w2, false).then(w2 => {
+            windService.loadWindAsync(mergedForecast.w1, true).then(w1 => {
+              windService.loadWindAsync(mergedForecast.w2, false).then(w2 => {
                 it.selectedForecast = mergedForecast.hour
                 mergedForecast.data = it.mergeWinds(w1, w2, mergedForecast.h)
                 it.velocityLayer.setData(mergedForecast.data)

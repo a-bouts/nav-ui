@@ -229,10 +229,12 @@ export default {
         this.$emit('loading', false)
       })
     },
-    getTooltip: function(date, wl) {
+    getTooltip: function(marker) {
       const sails = ["Jib", "Spi", "Stay", "LJ", "C0", "HG", "LG"];
 
-      const delta = Math.abs(date - new Date()) / 36e5;
+      let wl = marker.options.wl
+
+      const delta = Math.abs(wl.date - new Date()) / 36e5;
 
       var j = Math.floor(delta / 24)
       var h = Math.floor(delta % 24)
@@ -246,7 +248,7 @@ export default {
         j ++
       }
 
-      var d = date > new Date()?"+":"-"
+      var d = wl.date > new Date()?"+":"-"
       if(j > 0) {
         d += j + "j"
       }
@@ -259,8 +261,8 @@ export default {
         d += m + "m"
       }
 
-      var hrs = date.getHours();
-      var min = date.getMinutes();
+      var hrs = wl.date.getHours();
+      var min = wl.date.getMinutes();
       if (min < 10) {
         min = "0" + min;
       }
@@ -300,8 +302,8 @@ export default {
           else
             icon = this.nightIcon
         const pt = wl
-        var marker = L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: 25})
-          .bindTooltip(this.getTooltip(date, wl), {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
+        var marker = L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: 25, wl: pt})
+          .bindTooltip(this.getTooltip, {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
           .on('click', () => {
             this.$emit('select', pt)
           })
@@ -332,8 +334,8 @@ export default {
         }
         var icon = this.darkIcon
         const pt = wl
-        L.marker([wl.lat, wl.lon], {icon: icon})
-          .bindTooltip(this.getTooltip(date, wl), {permanent: false, opacity: 0.7, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
+        L.marker([wl.lat, wl.lon], {icon: icon, wl: pt})
+          .bindTooltip(this.getTooltip, {permanent: false, opacity: 0.7, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
           .on('click', () => {
             this.$emit('select', pt)
           })

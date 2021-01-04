@@ -16,6 +16,7 @@
 <script>
 import * as d3 from 'd3';
 import bulmaSlider from 'bulma-slider/dist/js/bulma-slider.min.js'
+import polarService from '../lib/polar.js';
 
 export default {
   name: 'Polar',
@@ -64,24 +65,32 @@ export default {
         if(!this.races || (oldCurrent &&  newCurrent.id == oldCurrent.id)) {
           return
         }
-        this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
-          this.polar = response.body
+        polarService.load(this.races[this.current.id].boat).then(polar => {
+          this.polar = polar
           this.onResize()
-        }, () => {
-          console.log("Error loading polars")
         })
+        // this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
+        //   this.polar = response.body
+        //   this.onResize()
+        // }, () => {
+        //   console.log("Error loading polars")
+        // })
       }
     },
     races: function () {
       if(!this.current) {
         return
       }
-      this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
-        this.polar = response.body
+      polarService.load(this.races[this.current.id].boat).then(polar => {
+        this.polar = polar
         this.onResize()
-      }, () => {
-        console.log("Error loading polars")
       })
+      // this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
+      //   this.polar = response.body
+      //   this.onResize()
+      // }, () => {
+      //   console.log("Error loading polars")
+      // })
     },
   },
   methods: {
