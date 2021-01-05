@@ -25,6 +25,7 @@
     "leaflet-sidebar-v2": "^3.2.3",
     "leaflet-velocity": "^1.7.0",
     "leaflet.geodesic": "^2.5.5-0",
+    "lz-string": "^1.4.4",
     "moment": "^2.29.0",
     "uuid": "^8.3.1",
     "vconsole": "^3.3.4",

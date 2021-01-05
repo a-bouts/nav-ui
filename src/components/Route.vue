@@ -5,7 +5,8 @@
 <script>
 import L from 'leaflet'
 import dateFormat from 'dateformat'
-import {EventBus} from '../event-bus.js';
+import {EventBus} from '../event-bus.js'
+import { compress as lzStringCompress, decompress as lzStringDecompress } from 'lz-string'
 
 export default {
   name: 'Route',
@@ -53,6 +54,7 @@ export default {
         dawn: 7*60
       },
       last: null,
+      isochrones: null,
       previous: null,
       isoLayer: null,
       previousLayer: null,
@@ -86,6 +88,11 @@ export default {
       this.isoLayer.clearLayers()
 
       this.last = JSON.parse(localStorage.getItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id))
+      try {
+        this.isochrones = JSON.parse(lzStringDecompress(localStorage.getItem("_last_isochrones_" + (this.boat ? this.boat + "_" : "") + this.current.id)))
+      } catch (e)  {
+        console.log("error loading isochrones", e)
+      }
 
       if(this.last) {
         this.last.date = new Date(this.last.date)
@@ -175,9 +182,9 @@ export default {
         this.last = {
           date: startTime,
           sumup: response.body.sumup,
-          windline: windline,
-          isochrones: navs
+          windline: windline
         }
+        this.isochrones = navs
         this.saveRoute()
         this.drawRoute()
         if (this.previous) {
@@ -247,7 +254,7 @@ export default {
       return res;
     },
     drawRoute: function() {
-      this.drawIsochrones(this.last.isochrones)
+      this.drawIsochrones(this.isochrones)
 
       this.markers.splice(0, this.markers.length);
       for(var w in this.last.windline) {
@@ -365,11 +372,15 @@ export default {
       if(previous) {
         this.previous = previous
         this.previous.date = new Date(this.previous.date)
-        delete this.previous.isochrones
         localStorage.setItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify([this.previous]))
       }
 
       localStorage.setItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.last))
+      try {
+        localStorage.setItem("_last_isochrones_" + (this.boat ? this.boat + "_" : "") + this.current.id, lzStringCompress(JSON.stringify(this.isochrones)))
+      } catch (e)  {
+        console.log("error loading isochrones", e)
+      }
 
       EventBus.$emit('route', this.last)
     },
