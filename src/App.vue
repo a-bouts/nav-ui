@@ -53,7 +53,6 @@ export default {
       let vars = uri[1].split('&');
       vars.forEach(function(v){
         if(v == 'debug') {
-          new VConsole()
           it.debug = true
         } else if(v == 'private') {
           new VConsole()

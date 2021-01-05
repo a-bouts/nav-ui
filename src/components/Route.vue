@@ -115,8 +115,6 @@ export default {
     },
     go: function() {
 
-      const it = this
-
       var startTime = new Date()
       startTime.setMinutes(startTime.getMinutes() + this.current.delay*60)
       if (this.settings && this.settings.routeLastUpdate === true) {
@@ -172,47 +170,13 @@ export default {
 
         var navs = response.body.navs
 
-        var first = true
-        for(var d in navs) {
-          var layer = L.layerGroup().addTo(this.isoLayer);
-          this.layerControl.addOverlay(layer, "<i class='fas fa-map-marker-alt'></i> " + navs[d].name);
-          if (!first) {
-            this.map.removeLayer(layer)
-          }
-          first = false
-          for(var iso in navs[d].isochrones) {
-              for(var i in navs[d].isochrones[iso].paths) {
-                  var path = [];
-                  // if(false && iso >= 19 && iso <= 20) {
-                  //     for(var j in navs[d].isochrones[iso].paths[i]) {
-                  //          path.push(navs[d].isochrones[iso].paths[i][j].latlon);
-                  //     }
-                  //     L.Polyline.Plotter(path, {color: navs[d].isochrones[iso].color, weight: 1, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
-                  // } else {
-                      for(var j in navs[d].isochrones[iso].paths[i]) {
-                           var pt = new L.LatLng(navs[d].isochrones[iso].paths[i][j].latlon.lat, navs[d].isochrones[iso].paths[i][j].latlon.lon);
-                           path.push(pt);
-                      }
-                      const myLayer = layer
-                      var poly = L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 0.5, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
-                      if (this.priv) {
-                        poly.on('click', function() {
-                          this._latlngs.forEach(p => {
-                            L.marker([p.lat, p.lng], {icon: it.icon}).addTo(myLayer)
-                          })
-                        })
-                      }
-                  // }
-              }
-          }
-        }
-
         var windline = response.body.windline
 
         this.last = {
           date: startTime,
           sumup: response.body.sumup,
-          windline: windline
+          windline: windline,
+          isochrones: navs
         }
         this.saveRoute()
         this.drawRoute()
@@ -283,6 +247,8 @@ export default {
       return res;
     },
     drawRoute: function() {
+      this.drawIsochrones(this.last.isochrones)
+
       this.markers.splice(0, this.markers.length);
       for(var w in this.last.windline) {
         var wl = this.last.windline[w];
@@ -350,6 +316,42 @@ export default {
       }
       L.polyline(this.previous.windline, polylineOptions).addTo(this.previousLayer)
     },
+    drawIsochrones: function(navs) {
+      var first = true
+      for(var d in navs) {
+        var layer = L.layerGroup().addTo(this.isoLayer);
+        this.layerControl.addOverlay(layer, "<i class='fas fa-map-marker-alt'></i> " + navs[d].name);
+        if (!first) {
+          this.map.removeLayer(layer)
+        }
+        first = false
+        for(var iso in navs[d].isochrones) {
+            for(var i in navs[d].isochrones[iso].paths) {
+                var path = [];
+                // if(false && iso >= 19 && iso <= 20) {
+                //     for(var j in navs[d].isochrones[iso].paths[i]) {
+                //          path.push(navs[d].isochrones[iso].paths[i][j].latlon);
+                //     }
+                //     L.Polyline.Plotter(path, {color: navs[d].isochrones[iso].color, weight: 1, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
+                // } else {
+                    for(var j in navs[d].isochrones[iso].paths[i]) {
+                         var pt = new L.LatLng(navs[d].isochrones[iso].paths[i][j].latlon.lat, navs[d].isochrones[iso].paths[i][j].latlon.lon);
+                         path.push(pt);
+                    }
+                    const myLayer = layer
+                    var poly = L.polyline(path, {color: navs[d].isochrones[iso].color, weight: 0.5, smoothFactor: 2, lineJoin: 'round'}).addTo(layer);
+                    if (this.priv) {
+                      poly.on('click', function() {
+                        this._latlngs.forEach(p => {
+                          L.marker([p.lat, p.lng], {icon: this.icon}).addTo(myLayer)
+                        })
+                      })
+                    }
+                // }
+            }
+        }
+      }
+    },
     showTooltip: function() {
       for(var m in this.markers) {
         if(this.map.getBounds().contains(this.markers[m].getLatLng())) {
@@ -363,6 +365,7 @@ export default {
       if(previous) {
         this.previous = previous
         this.previous.date = new Date(this.previous.date)
+        delete this.previous.isochrones
         localStorage.setItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify([this.previous]))
       }
 
