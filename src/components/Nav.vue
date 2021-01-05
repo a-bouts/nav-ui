@@ -48,7 +48,7 @@ export default {
     return {
       settings: null,
       notification: {
-        active: true,
+        active: false,
         message: "NOAA toujours en panne... mais les vents sont là, pour peu que l'on soit patient",
         level: "warning"
       },
