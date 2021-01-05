@@ -253,6 +253,8 @@ export default {
 
       this.params = params
 
+      this.boatLines = null
+
       return this.evalSnake()
     },
     getTooltip: function(marker) {
