@@ -454,8 +454,6 @@ export default {
         return
       }
 
-      console.log(mergedForecast)
-
       if (doNotLoadWinds !== true) {
         const timestamp = mergedForecast.date.getUTCFullYear() + ("00" + (mergedForecast.date.getUTCMonth() + 1)).slice(-2) + ("00" + mergedForecast.date.getUTCDate()).slice(-2) + ("00" + mergedForecast.date.getUTCHours()).slice(-2) + ("00" + mergedForecast.date.getUTCMinutes()).slice(-2)
 

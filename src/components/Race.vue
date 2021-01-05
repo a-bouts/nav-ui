@@ -219,7 +219,6 @@ export default {
     },
     onEditBuoy(buoy) {
       const it = this
-      console.log(buoy)
       this.customBuoys.forEach(b => {
         if(b.id == buoy.id) {
           b.name = buoy.name

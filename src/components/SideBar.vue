@@ -372,7 +372,6 @@ export default {
         } else {
           this.current.sails = this.current.sails - (this.current.sails & 1)
         }
-        console.log(this.current.sails)
       }
     },
     c0: {
@@ -385,7 +384,6 @@ export default {
         } else {
           this.current.sails = this.current.sails - (this.current.sails & 2)
         }
-        console.log(this.current.sails)
       }
     },
     gt: {
@@ -398,7 +396,6 @@ export default {
         } else {
           this.current.sails = this.current.sails - (this.current.sails & 4)
         }
-        console.log(this.current.sails)
       }
     }
   },
@@ -560,7 +557,6 @@ export default {
             max_lat = max_lat > latlon.lat ? max_lat : latlon.lat
             min_lon = min_lon < latlon.lon + w ? min_lon : latlon.lon + w
             max_lon = max_lon > latlon.lon + w ? max_lon : latlon.lon + w
-            console.log(min_lat, min_lon, max_lat, max_lon, latlon, w)
           }
         }
         this.map.flyToBounds([[min_lat, min_lon], [max_lat, max_lon]])
@@ -669,7 +665,6 @@ export default {
       this.selectRace(race, false)
     },
     position: function() {
-      console.log(this.position)
       this.current.position = this.position
       localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
     },
