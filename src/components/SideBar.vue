@@ -507,6 +507,7 @@ export default {
         }
 
         localStorage.setItem('current_race', this.current.id)
+        EventBus.$emit('select-race', race)
 
         if(pan) this.pan()
         this.$nextTick(() => {

@@ -17,6 +17,7 @@
 import * as d3 from 'd3';
 import bulmaSlider from 'bulma-slider/dist/js/bulma-slider.min.js'
 import polarService from '../lib/polar.js';
+import {EventBus} from '../event-bus.js';
 
 export default {
   name: 'Polar',
@@ -44,10 +45,21 @@ export default {
       bs: []
     }
   },
+  created: function() {
+    EventBus.$on('select-race', race => {
+      if(!this.races) {
+        return
+      }
+      polarService.load(this.races[race].boat).then(polar => {
+        this.polar = polar
+        this.onResize()
+      })
+    })
+  },
   mounted: function() {
-    window.addEventListener('resize', this.onResize);
+    window.addEventListener('resize', this.onResize)
     this.onResize()
-    bulmaSlider.attach();
+    bulmaSlider.attach()
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize);
@@ -58,24 +70,6 @@ export default {
     },
     ws: function () {
       this.update()
-    },
-    current: {
-      deep: true,
-      handler(newCurrent, oldCurrent) {
-        if(!this.races || (oldCurrent &&  newCurrent.id == oldCurrent.id)) {
-          return
-        }
-        polarService.load(this.races[this.current.id].boat).then(polar => {
-          this.polar = polar
-          this.onResize()
-        })
-        // this.$http.get('polars/' + this.races[this.current.id].boat + '.json').then(response => {
-        //   this.polar = response.body
-        //   this.onResize()
-        // }, () => {
-        //   console.log("Error loading polars")
-        // })
-      }
     },
     races: function () {
       if(!this.current) {
