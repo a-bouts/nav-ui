@@ -51,10 +51,8 @@ class Wind {
     const self = this
 
     var stamp = w.stamp
-    var i = 0
     if (n === true && w.stamp2) {
       stamp = w.stamp2
-      i = 1
     }
 
     if (this.loadingForecastsData[stamp + "-" + w.forecast]) {
@@ -70,7 +68,7 @@ class Wind {
     this.loadingForecastsData[stamp + "-" + w.forecast] = new Promise(function(resolve, reject) {
 
       self.loadingForecastsData[stamp + "-" + w.forecast] = this
-      fetch('/winds/'+w.forecast+'/'+i)
+      fetch('/winds/api/v1/winds/'+w.forecast+'/'+stamp)
         .then(response => response.json())
         .then(response => {
           self.forecastsData[stamp + "-" + w.forecast] = response
