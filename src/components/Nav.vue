@@ -48,7 +48,7 @@ export default {
     return {
       settings: null,
       notification: {
-        active: false,
+        active: true,
         message: "NOAA toujours en panne... mais les vents sont là, pour peu que l'on soit patient",
         level: "warning"
       },
@@ -126,6 +126,21 @@ export default {
         return new L.Control.Legend(opts)
     }
     L.control.legend({ position: 'bottomleft' }).addTo(this.map)
+
+    L.Control.Title = L.Control.extend({
+      onAdd: function() {
+        it.title = L.DomUtil.create("div", "race-title")
+        it.title.id = "title"
+        return it.title
+      },
+      onRemove: function() {
+      }
+    })
+    L.control.title = function(opts) {
+        return new L.Control.Title(opts)
+    }
+    L.control.title({ position: 'topleft' }).addTo(this.map)
+
     this.map.on("mousemove", this.onMouseMove, this)
   },
   computed: {
@@ -239,6 +254,8 @@ export default {
         lng: current.position.lng
       }
       this.$refs.boatlines.go(this.current.position)
+
+      document.getElementById("title").innerHTML = this.races[this.current.id].name
 
       var pan = [
         this.convertDMSToDD(current.position.lat.p, current.position.lat.d, current.position.lat.m, current.position.lat.s),
@@ -525,4 +542,15 @@ svg text::selection {
     width: 860px; /*460*/
     max-width: 860px; } }
 
+.race-title {
+  color: white;
+  font-weight: bolder;
+  font-size: 15px;
+  float: left;
+  clear: right !important;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  padding: 4px 10px 3px 10px;
+}
 </style>
