@@ -75,7 +75,7 @@ export default {
         {icon: lineMarker, draggable: true, zIndexOffset: 5000}
       ).addTo(this.markerLayer).on('drag', function() {
         it.moveSnake(this.getLatLng())
-        it.evalSnake()
+        it.startSnake()
       })
       this.moveSnake(this.map.getCenter())
     },
@@ -123,6 +123,7 @@ export default {
       if (!this.current || !this.current.id)
         return
 
+      this.progs = []
       return this.startSnake()
     },
     moveSnake: function(snakePosition) {
