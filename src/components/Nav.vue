@@ -200,7 +200,12 @@ export default {
   },
   methods: {
     setTitle: function() {
-      document.title = this.races[this.race].shortName ? this.races[this.race].shortName : this.race + " - " + this.boat + " - " + "Phtheirichthys"
+      var title = this.races[this.race].shortName ? this.races[this.race].shortName : this.race
+      if (this.boat && this.boat != "-") {
+        title += " - " + this.boat
+      }
+      title += " - " + "Phtheirichthys"
+      document.title = title
     },
     onMouseMove: function(e) {
       this.cursor = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))

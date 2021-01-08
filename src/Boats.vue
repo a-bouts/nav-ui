@@ -16,7 +16,7 @@
       </div>
       <button class="modal-close is-large" aria-label="close"></button>
     </div>
-    <router-view></router-view>
+    <router-view :debug="debug" :priv="priv"></router-view>
   </div>
 </template>
 
@@ -29,6 +29,8 @@ export default {
   },
   props: {
     boat: String,
+    debug: Boolean,
+    priv: Boolean
   },
   data : function() {
     return {
