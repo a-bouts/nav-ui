@@ -73,7 +73,13 @@ export default {
       if (this.race == race)
         return
 
-      this.$router.push({ path: `/${this.boat}/${race}` })
+      let query = {}
+      if (this.debug)
+        query.debug = this.debug
+      if (this.priv)
+        query['private'] = this.priv
+
+      this.$router.push({ path: `/${this.boat}/${race}`, query: query })
     },
     checkRace() {
       return this.race && this.races[this.race] !== undefined

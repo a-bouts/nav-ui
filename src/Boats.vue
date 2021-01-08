@@ -73,10 +73,17 @@ export default {
       if (this.boat == boat)
         return
 
+      let query = {}
+
+      if (this.debug)
+        query.debug = this.debug
+      if (this.priv)
+        query['private'] = this.priv
+
       if (race) {
-        this.$router.push({ path: `/${boat}/${this.race}` })
+        this.$router.push({ path: `/${boat}/${this.race}`, query: query })
       } else {
-        this.$router.push({ path: `/${boat}` })
+        this.$router.push({ path: `/${boat}`, query: query })
       }
     },
     checkBoat() {
