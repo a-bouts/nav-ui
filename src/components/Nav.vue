@@ -5,22 +5,23 @@
         <button class="delete" @click="notification.active = false"></button>
         {{ notification.message }}
       </div>
-      <SideBar ref="sidebar" v-if="map != null" v-bind:boat="boat" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
+      <SideBar ref="sidebar" v-bind:settings="settings" v-if="map != null" v-bind:boat="boat" v-bind:race="race" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
-    <Geodesic ref="geodesic" v-if="map != null" v-bind:from="current.position" v-bind:map="map"></Geodesic>
-    <Race v-if="map != null" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:current="current" v-on:nextdoor="onNextDoor"></Race>
-    <Route ref="route" v-if="map != null" v-bind:priv="priv" v-bind:debug="debug" v-bind:settings="settings" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
-    <BoatLines ref="boatlines" v-if="map != null && races != null" v-bind:settings="settings" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv" v-on:move="onSnakeMove" v-on:select="selectPoint"></BoatLines>
+    <Race v-if="map != null" v-bind:boat="boat" v-bind:race="race" v-bind:map="map" v-bind:races="races" v-on:nextdoor="onNextDoor"></Race>
+    <Route ref="route" v-if="map != null" v-bind:priv="priv" v-bind:debug="debug" v-bind:settings="settings" v-bind:race="race" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
+    <BoatLines v-if="map != null" v-bind:settings="settings" v-bind:map="map" v-bind:race="race" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv" v-on:move="onSnakeMove" v-on:select="selectPoint"></BoatLines>
+    <Geodesic v-if="map != null" v-bind:map="map"></Geodesic>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import {EventBus} from '../event-bus.js';
+import {EventBus} from '../event-bus.js'
 import L from 'leaflet'
 import * as esri from "esri-leaflet"
 import 'leaflet-extra-markers'
+import TitleControl from './TitleControl.vue'
 import WindControl from './WindControl.vue'
 import SideBar from './SideBar.vue'
 import Graticule from './Graticule.vue'
@@ -34,7 +35,8 @@ export default {
   props: {
     boat: String,
     debug: Boolean,
-    priv: Boolean
+    priv: Boolean,
+    race: String
   },
   components: {
     SideBar,
@@ -55,14 +57,13 @@ export default {
       loading: false,
       map: null,
       tileLayer: null,
-      boatLayer: null,
+      boatMarker: null,
       boatLineLayer: null,
       layerControl: null,
       layers: [],
       races: null,
       current: {},
       nextDoor: null,
-      boatLines: null,
       windControl: null,
       legend: null,
       cursor: null,
@@ -70,19 +71,58 @@ export default {
       wind: null
     }
   },
+  beforeRouteEnter (to, from, next) {
+    fetch('races/races.json', {headers: {'Cache-Control': 'no-cache'}})
+      .then(response => response.json())
+      .then(response => {
+        next(vm => {
+          vm.races = response
+        })
+      })
+  },
+  watch: {
+    boat: function() {
+      this.titleControl.boat = this.boat
+      this.setTitle()
+
+      var zoom;
+      var pan;
+      zoom = localStorage.getItem('_zoom_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race)
+      pan = JSON.parse(localStorage.getItem('_pan_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      if(!zoom)
+        zoom = 3;
+      if(!pan)
+        pan = [0, 0];
+      this.map.setView(pan, zoom)
+    },
+    race: function() {
+      this.titleControl.race = this.race
+      this.setTitle()
+
+      var zoom;
+      var pan;
+      zoom = localStorage.getItem('_zoom_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race)
+      pan = JSON.parse(localStorage.getItem('_pan_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      if(!zoom)
+        zoom = 3;
+      if(!pan)
+        pan = [0, 0];
+      this.map.setView(pan, zoom)
+    }
+  },
   created: function() {
     this.settings = JSON.parse(localStorage.getItem("_settings_"))
-
-    this.$http.get('races/races.json').then(response => {
-      this.races = response.body
-    }, () => {
-      console.log("Error loading races")
-    })
   },
   mounted: function() {
+    this.setTitle()
+
     const it = this
 
-    EventBus.$on('settings', (settings) => {console.log("nav received settings", settings); it.settings = settings})
+    EventBus.$on('settings', (settings) => {it.settings = settings})
+    EventBus.$on('boat', (latlon) => {
+      console.log([latlon.lat, latlon.lon, latlon.startTime, latlon.wrap])
+      this.boatMarker.setLatLng(latlon)
+    })
 
     this.map = L.map('map', {zoomControl: true, worldCopyJump: false}).setView([51.505, -0.09], 13)
 
@@ -96,18 +136,17 @@ export default {
 
     this.layerControl = L.control.layers(baseLayers).addTo(this.map)
 
-    this.boatLayer = L.layerGroup().addTo(this.map)
     this.boatLineLayer = L.layerGroup().addTo(this.map)
 
     var zoom;
     var pan;
-    zoom = localStorage.getItem('zoom');
-    pan = JSON.parse(localStorage.getItem('pan'));
+    zoom = localStorage.getItem('_zoom_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race)
+    pan = JSON.parse(localStorage.getItem('_pan_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
     if(!zoom)
       zoom = 3;
     if(!pan)
       pan = [0, 0];
-    this.map.setView(pan, zoom);
+    this.map.setView(pan, zoom)
 
     this.map.on('zoomend', this.zoomend);
     this.map.on('moveend', this.zoomend);
@@ -127,21 +166,28 @@ export default {
     }
     L.control.legend({ position: 'bottomleft' }).addTo(this.map)
 
-    L.Control.Title = L.Control.extend({
-      onAdd: function() {
-        it.title = L.DomUtil.create("div", "race-title")
-        it.title.id = "title"
-        return it.title
-      },
-      onRemove: function() {
-      }
-    })
-    L.control.title = function(opts) {
-        return new L.Control.Title(opts)
-    }
-    L.control.title({ position: 'topleft' }).addTo(this.map)
+    this.initTitle()
 
     this.map.on("mousemove", this.onMouseMove, this)
+
+    var boatMarkerIcon = L.ExtraMarkers.icon({ icon: 'fa-anchor', markerColor: 'red', shape: 'square', prefix: 'fa' })
+
+    this.boatMarker = L.marker(pan,
+      {icon: boatMarkerIcon, draggable: true, zIndexOffset: 5000}
+    ).addTo(this.map).on('dragend', function() {
+      var position = this.getLatLng();
+
+      var startTime = new Date()
+      startTime.setMinutes(startTime.getMinutes() - 3 + it.current.delay*60)
+      if (it.settings && it.settings.routeLastUpdate === true) {
+        startTime.setMilliseconds(0)
+        startTime.setSeconds(0)
+        startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%10)
+      }
+
+      EventBus.$emit("boat", {lat: position.lat, lon: position.lng, startTime: startTime})
+    })
+
   },
   computed: {
     level: function() {
@@ -153,6 +199,9 @@ export default {
     }
   },
   methods: {
+    setTitle: function() {
+      document.title = this.races[this.race].shortName ? this.races[this.race].shortName : this.race + " - " + this.boat + " - " + "Phtheirichthys"
+    },
     onMouseMove: function(e) {
       this.cursor = this.map.containerPointToLatLng(L.point(e.containerPoint.x, e.containerPoint.y))
 
@@ -209,8 +258,33 @@ export default {
       return res
     },
     zoomend: function() {
-      localStorage.setItem('zoom', this.map.getZoom());
-      localStorage.setItem('pan', JSON.stringify([this.map.getCenter().lat, this.map.getCenter().lng]));
+      localStorage.setItem('_zoom_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, this.map.getZoom());
+      localStorage.setItem('_pan_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify([this.map.getCenter().lat, this.map.getCenter().lng]));
+    },
+    initTitle: function() {
+      const it = this
+      const map = this.map
+      L.Control.TitleControl = L.Control.extend({
+        onAdd: function() {
+          const TitleControlConstructor = Vue.extend(TitleControl)
+          it.titleControl = new TitleControlConstructor({
+            propsData: { races: it.races, race: it.race, boat: it.boat, map: map, debug: it.debug }
+          })
+          it.titleControl.$mount()
+
+          L.DomEvent
+              .disableClickPropagation(it.titleControl.$el)
+              .disableScrollPropagation(it.titleControl.$el)
+
+          return it.titleControl.$el;
+        },
+        onRemove: function() {
+        }
+      })
+      L.control.titlecontrol = function(opts) {
+          return new L.Control.TitleControl(opts)
+      }
+      L.control.titlecontrol({ position: 'topleft' }).addTo(this.map)
     },
     initWindControls: function() {
       const it = this
@@ -243,40 +317,14 @@ export default {
       L.control.windcontrol({ position: 'topright' }).addTo(map);
     },
     save: function() {
-      localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
+      localStorage.setItem(((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify(this.current))
     },
     configure: function(current) {
-      this.boatLayer.clearLayers()
-
       this.current = current
       this.current.position = {
         lat: current.position.lat,
         lng: current.position.lng
       }
-      this.$refs.boatlines.go(this.current.position)
-
-      document.getElementById("title").innerHTML = this.races[this.current.id].name
-
-      var pan = [
-        this.convertDMSToDD(current.position.lat.p, current.position.lat.d, current.position.lat.m, current.position.lat.s),
-        this.convertDMSToDD(current.position.lng.p, current.position.lng.d, current.position.lng.m, current.position.lng.s, current.position.lng.wrap)]
-
-      var boatMarker = L.ExtraMarkers.icon({ icon: 'fa-anchor', markerColor: 'red', shape: 'square', prefix: 'fa' })
-
-      this.$refs.geodesic.setGeodesic()
-
-      const it = this
-      L.marker(pan,
-        {icon: boatMarker, draggable: true, zIndexOffset: 5000}
-      ).addTo(this.boatLayer).on('dragend', function() {
-        var position = this.getLatLng();
-        console.log([position.lat, position.lng])
-        it.current.position = {
-          lat: it.convertDDToDMS(position.lat),
-          lng: it.convertDDToDMS(position.lng)
-        }
-        it.$refs.boatlines.go(it.current.position)
-      });
     },
     center: function() {
       var pan = [
@@ -510,13 +558,13 @@ svg text::selection {
 
 @media (min-width: 1200px) {
   .leaflet-sidebar-left.extended ~ .leaflet-control-container .leaflet-left {
-    left: 870px;
+    left: 900px;
   }
   .leaflet-sidebar-left.extended ~ .notification {
-    left: 926px;
+    left: 956px;
   }
   .leaflet-sidebar-left ~ .notification {
-    left: 526px;
+    left: 556px;
   }
 }
 
@@ -539,18 +587,7 @@ svg text::selection {
     max-width: 590px; } }
 @media (min-width: 1200px) {
   .leaflet-sidebar.extended {
-    width: 860px; /*460*/
-    max-width: 860px; } }
+    width: 890px; /*460*/
+    max-width: 890px; } }
 
-.race-title {
-  color: white;
-  font-weight: bolder;
-  font-size: 15px;
-  float: left;
-  clear: right !important;
-  background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(0,0,0,0.2);
-  border-radius: 4px;
-  padding: 4px 10px 3px 10px;
-}
 </style>

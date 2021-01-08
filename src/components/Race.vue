@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Buoy v-for="(buoy, index) in buoys" :key="current.id + buoy.id" v-bind:raceLayer="raceLayer" v-bind:buoy="buoy" v-bind:editable="buoy.custom" v-bind:validated="isValidated(buoy.id)" v-on:move-buoy="onMoveBuoy(index, $event)" v-on:validate="onValidate(buoy, $event)"></Buoy>
+    <Buoy v-for="(buoy, index) in buoys" :key="race + buoy.id" v-bind:raceLayer="raceLayer" v-bind:buoy="buoy" v-bind:editable="buoy.custom" v-bind:validated="isValidated(buoy.id)" v-on:move-buoy="onMoveBuoy(index, $event)" v-on:validate="onValidate(buoy, $event)"></Buoy>
   </div>
 </template>
 
@@ -14,9 +14,9 @@ import { v4 as uuidv4 } from 'uuid'
 export default {
   name: 'Race',
   props: {
+    race: String,
     boat: String,
     map: Object,
-    current: Object,
     races: Object
   },
   components: {
@@ -30,8 +30,8 @@ export default {
       validated: []
     }
   },
-  mounted: function() {
-    this.raceLayer = L.layerGroup().addTo(this.map)
+  created() {
+    this.raceLayer = L.layerGroup()
     this.iceLimitsLayer = L.layerGroup().addTo(this.raceLayer)
     EventBus.$on('add-buoy', this.onAddBuoy)
     EventBus.$on('clear-buoy', this.onClearBuoy)
@@ -39,13 +39,16 @@ export default {
     EventBus.$on('down-buoy', this.onDownBuoy)
     EventBus.$on('remove-buoy', this.onRemoveBuoy)
     EventBus.$on('edit-buoy', this.onEditBuoy)
-
+  },
+  mounted: function() {
+    this.raceLayer.addTo(this.map)
+    this.load()
   },
   computed: {
     buoys: function() {
       const it = this
 
-      if(!this.races || !this.current || !this.current.id)  return
+      if(!this.races || !this.race)  return
 
       if(this.customBuoys && this.customBuoys.length > 0) {
         this.customBuoys.forEach(b => {
@@ -56,9 +59,9 @@ export default {
       }
 
       var buoys = []
-      buoys.push({id: "start", name: "start", type: "START", wrap: 0, latlons: [this.races[this.current.id].start], custom: false})
+      buoys.push({id: "start", name: "start", type: "START", wrap: 0, latlons: [this.races[this.race].start], custom: false})
 
-      this.races[this.current.id].waypoints.forEach(w => {
+      this.races[this.race].waypoints.forEach(w => {
         var type = "WAYPOINT"
         if (w.latlons.length > 1)
           type = "DOOR"
@@ -71,16 +74,21 @@ export default {
     }
   },
   watch: {
-    current: function() {
-      //this.raceLayer.clearLayers()
-      this.customBuoys = JSON.parse(localStorage.getItem("_buoys_" + this.current.id))
-      this.validated = JSON.parse(localStorage.getItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id))
-      EventBus.$emit('buoys', this.buoys)
-      this.drawRace()
-      this.drawIceLimits()
+    race: function() {
+      this.load()
+    },
+    boat: function() {
+      this.load()
     }
   },
   methods: {
+    load() {
+      this.customBuoys = JSON.parse(localStorage.getItem("_buoys_" + this.race))
+      this.validated = JSON.parse(localStorage.getItem("_validated_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      EventBus.$emit('buoys', this.buoys)
+      this.drawRace()
+      this.drawIceLimits()
+    },
     isValidated(id) {
       if(this.validated && this.validated.indexOf(id) >= 0) {
         return true
@@ -90,18 +98,18 @@ export default {
     drawIceLimits() {
       this.iceLimitsLayer.clearLayers()
 
-      if(!this.races[this.current.id].ice_limits) {
+      if(!this.races[this.race].ice_limits) {
         return
       }
 
       var latlngs = []
       for(var n = -1 ; n <= 1 ; n++) {
-        this.races[this.current.id].ice_limits.south.forEach((item, i) => {
+        this.races[this.race].ice_limits.south.forEach((item, i) => {
           if (n == -1 && i == 0) {
             latlngs.push([-90, item.lon + n * 360])
           }
           latlngs.push([item.lat, item.lon + n * 360])
-          if (n == 1 && i == this.races[this.current.id].ice_limits.south.length - 1) {
+          if (n == 1 && i == this.races[this.race].ice_limits.south.length - 1) {
             latlngs.push([-90, item.lon + n * 360])
           }
         })
@@ -110,12 +118,12 @@ export default {
 
       latlngs = []
       for(n = -1 ; n <= 1 ; n++) {
-        this.races[this.current.id].ice_limits.north.forEach((item, i) => {
+        this.races[this.race].ice_limits.north.forEach((item, i) => {
           if (n == -1 && i == 0) {
             latlngs.push([90, item.lon + n * 360])
           }
           latlngs.push([item.lat, item.lon + n * 360])
-          if (n == 1 && i == this.races[this.current.id].ice_limits.north.length - 1) {
+          if (n == 1 && i == this.races[this.race].ice_limits.north.length - 1) {
             latlngs.push([90, item.lon + n * 360])
           }
         })
@@ -134,10 +142,6 @@ export default {
         }
       }
     },
-    redraw() {
-      this.raceLayer.clearLayers()
-      this.$forceUpdate()
-    },
     validateBuoy(marker) {
       marker.options.door.validated = !marker.options.door.validated;
 
@@ -147,13 +151,13 @@ export default {
       } else {
         this.validated.splice(this.validated.indexOf(marker.options.door.name), 1);
       }
-      localStorage.setItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.validated))
+      localStorage.setItem("_validated_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify(this.validated))
 
       this.drawRace()
     },
     onClearBuoy() {
       this.customBuoys = []
-      localStorage.removeItem("_buoys_" + this.current.id)
+      localStorage.removeItem("_buoys_" + this.race)
       EventBus.$emit('buoys', this.buoys)
     },
     onAddBuoy() {
@@ -201,7 +205,7 @@ export default {
       this.saveBuoys()
     },
     saveBuoys() {
-      localStorage.setItem("_buoys_" + this.current.id, JSON.stringify(this.customBuoys))
+      localStorage.setItem("_buoys_" + this.race, JSON.stringify(this.customBuoys))
       EventBus.$emit('buoys', this.buoys)
     },
     onValidate(buoy, validated) {
@@ -212,7 +216,7 @@ export default {
         this.validated.splice(this.validated.indexOf(buoy.id), 1);
       }
       buoy.validated = validated
-      localStorage.setItem("_validated_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.validated))
+      localStorage.setItem("_validated_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify(this.validated))
       EventBus.$emit('buoys', this.buoys)
 
       this.drawRace()

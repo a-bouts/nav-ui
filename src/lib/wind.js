@@ -94,7 +94,6 @@ class Wind {
   }
 
   loadAll(from, to) {
-
     let res = []
 
     const fromStamp = from.format("YYYYMMDDHH")
@@ -102,7 +101,7 @@ class Wind {
 
     for (var i in this.forecasts) {
       if (this.forecasts[i].forecast < fromStamp) {
-        if (i < this.forecasts.length && this.forecasts[i - -1].forecast > fromStamp) {
+        if (i < this.forecasts.length - 1 && this.forecasts[i - -1].forecast > fromStamp) {
           res.push(this.loadWindAsync2(this.forecasts[i]))
         }
         continue

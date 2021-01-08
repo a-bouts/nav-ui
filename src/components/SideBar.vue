@@ -29,28 +29,10 @@
       <div class="leaflet-sidebar-content">
         <div class="leaflet-sidebar-pane" id="home">
           <h1 class="leaflet-sidebar-header">
-            Current Race
+            {{ title }}
             <div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div>
           </h1>
           <section class="section">
-            <label class="label">Race</label>
-            <div class="field is-grouped">
-              <div class="control has-icons-left">
-                <div class="select is-small">
-                  <select v-model="current.id" @change="selectRace(current.id, true)">
-                    <option v-for="(race, id) in races" :key="id" v-bind:value="id">
-                      {{ race.name }}
-                    </option>
-                  </select>
-                </div>
-                <span class="icon is-left">
-                  <i class="fa fa-globe"></i>
-                </span>
-              </div>
-              <p class="control">
-                <a class="button is-small" v-bind:class="{'is-loading': polarsLoading}" @click="refreshPolars"><i class="fa fa-kiwi-bird"></i></a>
-              </p>
-            </div>
             <div class="field is-grouped">
               <div class="field">
                 <label class="label">Cap</label>
@@ -250,7 +232,7 @@
           <Boats></Boats>
         </div>
         <div class="leaflet-sidebar-pane polars" id="polars">
-          <Polar ref="polars" v-bind:races="races" v-bind:current="current"></Polar>
+          <Polar ref="polars" v-bind:race="race" v-bind:races="races" v-bind:current="current"></Polar>
         </div>
         <div class="leaflet-sidebar-pane" id="buoys">
           <Buoys v-bind:races="races" v-bind:current="current"></Buoys>
@@ -311,6 +293,8 @@ const { Clipboard } = Plugins;
 export default {
   name: 'SideBar',
   props: {
+    settings: Object,
+    race: String,
     boat: String,
     map: Object,
     races: Object,
@@ -397,12 +381,27 @@ export default {
           this.current.sails = this.current.sails - (this.current.sails & 4)
         }
       }
+    },
+    title() {
+      var title = this.races[this.race].name
+      if (this.boat && this.boat != "-")
+        title = this.boat + " - " + title
+      return title
     }
   },
   mounted: function() {
     const it = this
 
-    //this.handlePermission()
+    EventBus.$on('boat', (latlon) => {
+      this.current.position = {
+        lat: this.convertDDToDMS(latlon.lat),
+        lng: this.convertDDToDMS(latlon.lon),
+        startTime: latlon.startTime
+      }
+      this.save()
+    })
+
+    it.load()
 
     this.sidebar = L.control.sidebar({
         autopan: false,       // whether to maintain the centered map point when opening the sidebar
@@ -456,42 +455,43 @@ export default {
       }
       return res
     },
-    convertDDToDMS: function(D){
-      if (D > 180) {
-        D -= 360
-      }
-      const res = {
-        p : D<0?-1:1,
-        d : 0|(D<0?D=-D:D),
-        m : 0|D%1*60,
-        s :(0|D*60%1*6000)/100
-      }
+    convertDDToDMS: function(D) {
+      const res = {}
       if (D > 180) {
         res.wrap = true
+        D -= 360
       }
+
+      res.p = D<0?-1:1
+      res.d = 0|(D<0?D=-D:D)
+      res.m = 0|D%1*60
+      res.s = (0|D*60%1*6000)/100
+
       return res
     },
-    centerSnake: function() {
-      EventBus.$emit('center-snake')
-    },
-    geoloc: function() {
-      App.openUrl({ url: 'fr.phtheirichthys.geoloc://' }).then(ret => {
-        console.log('Open url response: ', ret);
-      })
-    },
-    selectRace: function(race, pan) {
+    load() {
       try {
-        var current = JSON.parse(localStorage.getItem((this.boat ? this.boat + "_" : "") + race))
+        var current = JSON.parse(localStorage.getItem(((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
         if(current) {
           this.current = current
+          if (this.current.position.startTime)
+            this.current.position.startTime = new Date(this.current.position.startTime)
         } else {
+          var startTime = new Date()
+          startTime.setMinutes(startTime.getMinutes() - 3 + this.current.delay*60)
+          if (this.settings && this.settings.routeLastUpdate === true) {
+            startTime.setMilliseconds(0)
+            startTime.setSeconds(0)
+            startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%10)
+          }
+
           this.current = {
-            id: race,
             bearing: 180,
             sail: 0,
             position: {
-              lat: this.convertDDToDMS(this.races[race].start.lat),
-              lng: this.convertDDToDMS(this.races[race].start.lon)
+              lat: this.convertDDToDMS(this.races[this.race].start.lat),
+              lng: this.convertDDToDMS(this.races[this.race].start.lon),
+              startTime: startTime
             },
             winch: false,
             foil: false,
@@ -503,10 +503,13 @@ export default {
           }
         }
 
-        localStorage.setItem('current_race', this.current.id)
-        EventBus.$emit('select-race', race)
+        EventBus.$emit('boat', {
+          lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
+          lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap),
+          startTime: this.current.startTime
+        })
 
-        if(pan) this.pan()
+        //this.pan()
         this.$nextTick(() => {
           this.$emit('configure', this.current)
         });
@@ -514,15 +517,39 @@ export default {
         console.log(e)
       }
     },
-    submit: function() {
+    save() {
+      localStorage.setItem(((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify(this.current))
+    },
+    centerSnake: function() {
+      EventBus.$emit('center-snake')
+    },
+    geoloc: function() {
+      App.openUrl({ url: 'fr.phtheirichthys.geoloc://' }).then(ret => {
+        console.log('Open url response: ', ret);
+      })
+    },
+    submit: function(keepStartTime) {
       this.sidebar.close();
 
-      console.log([
-        this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-        this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap)
-      ])
+      if (keepStartTime !== true || !this.current.startTime) {
+        var startTime = new Date()
+        startTime.setMinutes(startTime.getMinutes() - 3 + this.current.delay*60)
+        if (this.settings && this.settings.routeLastUpdate === true) {
+          startTime.setMilliseconds(0)
+          startTime.setSeconds(0)
+          startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%10)
+        }
+      }
 
-      localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
+      this.current.startTime = startTime
+
+      EventBus.$emit('boat', {
+        lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
+        lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap),
+        startTime: startTime
+      })
+
+      this.save()
 
       this.$emit('configure', this.current)
     },
@@ -534,22 +561,13 @@ export default {
     },
     pan: function() {
       if(this.current) {
-        var min_lat = this.races[this.current.id].start.lat
-        var max_lat = this.races[this.current.id].start.lat
-        var min_lon = this.races[this.current.id].start.lon
-        var max_lon = this.races[this.current.id].start.lon
+        var min_lat = this.races[this.race].start.lat
+        var max_lat = this.races[this.race].start.lat
+        var min_lon = this.races[this.race].start.lon
+        var max_lon = this.races[this.race].start.lon
 
-        // if(this.current.last) {
-        //   for(var w in this.current.last) {
-        //     var wl = this.current.last[w];
-        //     min_lat = min_lat < wl.lat ? min_lat : wl.lat
-        //     max_lat = max_lat > wl.lat ? max_lat : wl.lat
-        //     min_lon = min_lon < wl.lon ? min_lon : wl.lon
-        //     max_lon = max_lon > wl.lon ? max_lon : wl.lon
-        //   }
-        // }
-        for(var d in this.races[this.current.id].waypoints) {
-          var door = this.races[this.current.id].waypoints[d];
+        for(var d in this.races[this.race].waypoints) {
+          var door = this.races[this.race].waypoints[d];
           for(var ll in door.latlons) {
             var w = door.wrap ? door.wrap * 360 : 0
             var latlon = door.latlons[ll]
@@ -563,7 +581,7 @@ export default {
       }
     },
     run: function() {
-      this.submit()
+      this.submit(true)
       this.$emit('run')
     },
     showTooltip: function() {
@@ -571,7 +589,7 @@ export default {
     },
     refreshPolars: function() {
       this.polarsLoading = true
-      this.$http.get('/polars/' + this.races[this.current.id].polars).then(() => {
+      this.$http.get('/polars/' + this.races[this.race].polars).then(() => {
         this.polarsLoading = false
       }, () => {
         this.polarsLoading = false
@@ -583,20 +601,6 @@ export default {
         console.log("Error loading polars")
       })
     },
-    /*handlePermission: function() {
-      navigator.permissions.query({name:'clipboardRead'}).then(function(result) {
-        if (result.state == 'granted') {
-          this.enablePaste = true
-        } else if (result.state == 'prompt') {
-          this.enablePaste = true
-        } else if (result.state == 'denied') {
-          this.enablePaste = false
-        }
-        result.onchange = function() {
-          console.log(result.state);
-        }
-      });
-    },*/
     paste: function(event) {
       var clipboard = event.clipboardData.getData("text/plain")
       this.pasteData(clipboard)
@@ -660,13 +664,11 @@ export default {
     }
   },
   watch: {
-    races: function() {
-      var race = localStorage.getItem('current_race')
-      this.selectRace(race, false)
+    race: function() {
+      this.load()
     },
-    position: function() {
-      this.current.position = this.position
-      localStorage.setItem((this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.current))
+    boat: function() {
+      this.load()
     },
   }
 }
@@ -697,8 +699,8 @@ export default {
     max-width: 590px; } }
 @media (min-width: 1200px) {
   .leaflet-sidebar.extended {
-    width: 860px;
-    max-width: 860px; } }
+    width: 890px;
+    max-width: 890px; } }
 
 .leaflet-sidebar-tabs .button {
   padding: 0px;

@@ -14,6 +14,7 @@ export default {
     settings: Object,
     debug: Boolean,
     priv: Boolean,
+    race: String,
     boat: String,
     map: Object,
     layerControl: Object,
@@ -66,11 +67,12 @@ export default {
       icon: _icon,
       darkIcon: _darkIcon,
       routeBuoys: null,
-      expes: {}
+      expes: {},
+      position: null
     }
   },
-  mounted: function() {
-    this.isoLayer = L.layerGroup().addTo(this.map)
+  created() {
+    this.isoLayer = L.layerGroup()
 
     if (this.settings && this.settings.sunset && this.settings.dawn) {
       this.night.sunset = this.settings.sunset.split(":")[0] * 60 - -1*this.settings.sunset.split(":")[1]
@@ -79,20 +81,32 @@ export default {
 
     EventBus.$on('buoys', (buoys) => {this.routeBuoys = buoys})
     EventBus.$on('expes', (expes) => {this.expes = expes})
+
+    EventBus.$on('boat', (position) => {this.position = position})
+  },
+  mounted: function() {
+    this.isoLayer.addTo(this.map)
+    this.load()
+    setTimeout(() => this.loadIsochones())
   },
   watch: {
-    current: function() {
+    race: function() {
+      this.load()
+      setTimeout(() => this.loadIsochones())
+    },
+    boat: function() {
+      this.load()
+      setTimeout(() => this.loadIsochones())
+    }
+  },
+  methods: {
+    load() {
       this.isoLayer.eachLayer((layer) => {
         this.layerControl.removeLayer(layer)
       })
       this.isoLayer.clearLayers()
 
-      this.last = JSON.parse(localStorage.getItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id))
-      try {
-        this.isochrones = JSON.parse(lzStringDecompress(localStorage.getItem("_last_isochrones_" + (this.boat ? this.boat + "_" : "") + this.current.id)))
-      } catch (e)  {
-        console.log("error loading isochrones", e)
-      }
+      this.last = JSON.parse(localStorage.getItem("_last_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
 
       if(this.last) {
         this.last.date = new Date(this.last.date)
@@ -100,7 +114,7 @@ export default {
         EventBus.$emit('route', this.last)
       }
 
-      var previous = JSON.parse(localStorage.getItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.current.id))
+      var previous = JSON.parse(localStorage.getItem("_previous_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
 
       if(previous && previous.length > 0) {
         this.previousLayer = L.layerGroup().addTo(this.isoLayer)
@@ -110,9 +124,17 @@ export default {
         this.previous.date = new Date(this.previous.date)
         this.drawPreviousRoute()
       }
-    }
-  },
-  methods: {
+    },
+    loadIsochones() {
+      try {
+        this.isochrones = JSON.parse(lzStringDecompress(localStorage.getItem("_last_isochrones_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race)))
+        if(this.isochrones) {
+          this.drawIsochrones()
+        }
+      } catch (e)  {
+        console.log("error loading isochrones", e)
+      }
+    },
     convertDMSToDD: function(p, d, m, s, wrap) {
       var res = Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600)
       if (wrap === true && res < 0) {
@@ -122,29 +144,20 @@ export default {
     },
     go: function() {
 
-      var startTime = new Date()
-      startTime.setMinutes(startTime.getMinutes() + this.current.delay*60)
-      if (this.settings && this.settings.routeLastUpdate === true) {
-        startTime.setMilliseconds(0)
-        startTime.setSeconds(0)
-        startTime.setMinutes(startTime.getMinutes()  - startTime.getMinutes()%10)
-      }
-
-      console.log("RUN AT ", startTime.toString())
+      console.log("RUN AT ", this.position.startTime.toString())
 
       const params = {
           expes: this.expes,
           start: {
-            lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
-            lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap)
+            lat: this.position.lat,
+            lon: this.position.lon
           },
           bearing: this.current.bearing,
           currentSail: this.current.sail,
-          race: {...this.races[this.current.id]},
+          race: {...this.races[this.race]},
           delta: this.current.delta,
           maxDuration: 1728.0,
-          delay: this.current.delay,
-          startTime: startTime,
+          startTime: this.position.startTime,
           sail: this.current.sails,
           foil: this.current.foil,
           hull: this.current.hull,
@@ -180,13 +193,14 @@ export default {
         var windline = response.body.windline
 
         this.last = {
-          date: startTime,
+          date: this.position.startTime,
           sumup: response.body.sumup,
           windline: windline
         }
         this.isochrones = navs
         this.saveRoute()
         this.drawRoute()
+        this.drawIsochrones()
         if (this.previous) {
           this.drawPreviousRoute()
         }
@@ -254,8 +268,6 @@ export default {
       return res;
     },
     drawRoute: function() {
-      this.drawIsochrones(this.isochrones)
-
       this.markers.splice(0, this.markers.length);
       for(var w in this.last.windline) {
         var wl = this.last.windline[w];
@@ -323,7 +335,8 @@ export default {
       }
       L.polyline(this.previous.windline, polylineOptions).addTo(this.previousLayer)
     },
-    drawIsochrones: function(navs) {
+    drawIsochrones: function() {
+      const navs = this.isochrones
       var first = true
       for(var d in navs) {
         var layer = L.layerGroup().addTo(this.isoLayer);
@@ -367,17 +380,17 @@ export default {
       }
     },
     saveRoute: function() {
-      var previous = JSON.parse(localStorage.getItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id))
+      var previous = JSON.parse(localStorage.getItem("_last_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
 
       if(previous) {
         this.previous = previous
         this.previous.date = new Date(this.previous.date)
-        localStorage.setItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify([this.previous]))
+        localStorage.setItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.race, JSON.stringify([this.previous]))
       }
 
-      localStorage.setItem("_last_" + (this.boat ? this.boat + "_" : "") + this.current.id, JSON.stringify(this.last))
+      localStorage.setItem("_last_" + (this.boat ? this.boat + "_" : "") + this.race, JSON.stringify(this.last))
       try {
-        localStorage.setItem("_last_isochrones_" + (this.boat ? this.boat + "_" : "") + this.current.id, lzStringCompress(JSON.stringify(this.isochrones)))
+        localStorage.setItem("_last_isochrones_" + (this.boat ? this.boat + "_" : "") + this.race, lzStringCompress(JSON.stringify(this.isochrones)))
       } catch (e)  {
         console.log("error loading isochrones", e)
       }

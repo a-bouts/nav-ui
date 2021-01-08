@@ -10,6 +10,7 @@ import {EventBus} from '../event-bus.js';
 export default {
   name: 'BoatLines',
   props: {
+    race: String,
     settings: Object,
     map: Object,
     layerControl: Object,
@@ -30,15 +31,20 @@ export default {
       expes: {}
     }
   },
-  mounted: function() {
-    const self = this
-    EventBus.$on('center-snake', () => {this.center()})
-    EventBus.$on('expes', (expes) => {this.expes = expes})
-
-    this.layer = L.layerGroup().addTo(this.map)
+  created: function() {
+    this.layer = L.layerGroup()
     this.markerLayer = L.layerGroup().addTo(this.layer)
     this.linesLayer = L.layerGroup().addTo(this.layer)
     this.layerControl.addOverlay(this.layer, "<i class='fa fa-route'></i> Snake")
+
+    EventBus.$on('center-snake', () => {this.center()})
+    EventBus.$on('expes', (expes) => {this.expes = expes})
+    EventBus.$on('boat', this.onBoat)
+  },
+  mounted: function() {
+    const self = this
+
+    this.layer.addTo(this.map)
     this.map.on("overlayremove", function(event) {
       if (event.layer === self.layer) {
         self.$emit("move", null)
@@ -53,11 +59,6 @@ export default {
 
     this.center()
   },
-  watch: {
-    current: function() {
-      this.go(this.current.position)
-    }
-  },
   methods: {
     convertDMSToDD: function(p, d, m, s, wrap) {
       var res = Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600)
@@ -65,6 +66,9 @@ export default {
         res += 360
       }
       return res
+    },
+    onBoat(latlon) {
+      this.go(latlon)
     },
     center: function() {
       const it = this
@@ -111,20 +115,14 @@ export default {
 
       return wrap360(b)
     },
-    go: function(position) {
-      if(!position)
+    go: function(latlon) {
+      if(!latlon)
         return
 
-      this.start = {
-        lat: this.convertDMSToDD(position.lat.p, position.lat.d, position.lat.m, position.lat.s),
-        lon: this.convertDMSToDD(position.lng.p, position.lng.d, position.lng.m, position.lng.s, position.lng.wrap)
-      }
-
-      if (!this.current || !this.current.id)
-        return
+      this.start = {lat: latlon.lat, lon: latlon.lon}
 
       this.progs = []
-      return this.startSnake()
+      return this.startSnake(latlon.startTime)
     },
     moveSnake: function(snakePosition) {
       this.snakePosition = {
@@ -161,15 +159,7 @@ export default {
         this.display()
       })
     },
-    startSnake: function() {
-      var startTime = new Date()
-      startTime.setMinutes(startTime.getMinutes() + this.current.delay*60)
-      if (this.settings && this.settings.routeLastUpdate === true) {
-        startTime.setMilliseconds(0)
-        startTime.setSeconds(0)
-        startTime.setMinutes(startTime.getMinutes()  - startTime.getMinutes()%10)
-      }
-
+    startSnake: function(startTime) {
       var duration = 24
       if (this.settings && this.settings.snakeDuration) {
         duration = this.settings.snakeDuration
@@ -184,7 +174,7 @@ export default {
           start: this.start,
           bearing: this.current.bearing,
           currentSail: this.current.sail,
-          race: this.races[this.current.id],
+          race: this.races[this.race],
           options: {
             sail: this.current.sails,
             foil: this.current.foil,
@@ -243,7 +233,7 @@ export default {
           start: this.start,
           bearing: from.bearing,
           currentSail: from.sail,
-          race: this.races[this.current.id],
+          race: this.races[this.race],
           options: {
             sail: this.current.sails,
             foil: this.current.foil,

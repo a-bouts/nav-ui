@@ -10,18 +10,22 @@ import {EventBus} from '../event-bus.js';
 export default {
   name: 'Geodesic',
   props: {
-    map: Object,
-    from: Object
+    map: Object
   },
   data: function() {
     return {
       layer: null,
-      buoys: []
+      buoys: [],
+      from: null
     }
   },
-  mounted: function() {
-    this.layer = L.layerGroup().addTo(this.map)
+  created: function() {
+    this.layer = L.layerGroup()
     EventBus.$on('buoys', this.onBuoys)
+    EventBus.$on('boat', this.onBoat)
+  },
+  mounted: function() {
+    this.layer.addTo(this.map)
   },
   methods: {
     convertDMSToDD: function(coord) {
@@ -35,14 +39,17 @@ export default {
       this.buoys = buoys
       this.setGeodesic()
     },
+    onBoat: function(latlon) {
+      this.from = latlon
+      this.setGeodesic()
+    },
     setGeodesic: function() {
       this.layer.clearLayers()
 
       if(!this.from) return
 
-      const lon = this.convertDMSToDD(this.from.lng)
-
-      var from = {lat: this.convertDMSToDD(this.from.lat), lon: lon, wrap: lon.wrap === true ? 1 : 0}
+      var from = this.from
+      from.wrap = 0
 
       this.buoys.forEach(b => {
         if(b.type != "START" && !b.validated) {
@@ -54,6 +61,7 @@ export default {
             }
           }
           to.wrap = b.wrap || 0
+          console.log("geodesic", from, b.name, to)
           this.addGeodesic(from, to)
           from = to
         }
@@ -63,11 +71,6 @@ export default {
       const fromLatLng = new L.LatLng(from.lat, from.lon + from.wrap * 360)
       const toLatLng = new L.LatLng(to.lat, to.lon + to.wrap * 360)
       L.geodesic([fromLatLng, toLatLng], {wrap: false, weight: 1, opacity: 0.7}).addTo(this.layer)
-    }
-  },
-  watch: {
-    from: function() {
-      this.setGeodesic()
     }
   }
 }
