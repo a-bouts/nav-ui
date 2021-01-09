@@ -34,8 +34,6 @@ export default {
   name: 'Nav',
   props: {
     boat: String,
-    debug: Boolean,
-    priv: Boolean,
     race: String
   },
   components: {
@@ -48,6 +46,8 @@ export default {
   },
   data: function() {
     return {
+      debug: this.boat === 'Stoub',
+      priv: this.boat === 'Stoub',
       settings: null,
       notification: {
         active: false,

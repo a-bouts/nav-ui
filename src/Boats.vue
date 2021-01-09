@@ -16,7 +16,7 @@
       </div>
       <button class="modal-close is-large" aria-label="close"></button>
     </div>
-    <router-view :debug="debug" :priv="priv"></router-view>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -75,15 +75,10 @@ export default {
 
       let query = {}
 
-      if (this.debug)
-        query.debug = this.debug
-      if (this.priv)
-        query['private'] = this.priv
-
       if (race) {
-        this.$router.push({ path: `/${boat}/${this.race}`, query: query })
+        this.$router.push({ path: `/${boat}/${this.race}` })
       } else {
-        this.$router.push({ path: `/${boat}`, query: query })
+        this.$router.push({ path: `/${boat}` })
       }
     },
     checkBoat() {

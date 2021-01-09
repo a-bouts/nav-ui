@@ -1,6 +1,6 @@
 <template>
   <div>
-    <router-view :debug="debug" :priv="priv"></router-view>
+    <router-view></router-view>
   </div>
 </template>
 
