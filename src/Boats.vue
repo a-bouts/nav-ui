@@ -73,8 +73,6 @@ export default {
       if (this.boat == boat)
         return
 
-      let query = {}
-
       if (race) {
         this.$router.push({ path: `/${boat}/${this.race}` })
       } else {

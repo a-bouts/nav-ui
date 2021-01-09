@@ -29,6 +29,7 @@ import Geodesic from './Geodesic.vue'
 import Race from './Race.vue'
 import Route from './Route.vue'
 import BoatLines from './BoatLines.vue'
+import VConsole from 'vconsole'
 
 export default {
   name: 'Nav',
@@ -111,6 +112,9 @@ export default {
     }
   },
   created: function() {
+    if (this.priv) {
+      new VConsole()
+    }
     this.settings = JSON.parse(localStorage.getItem("_settings_"))
   },
   mounted: function() {
