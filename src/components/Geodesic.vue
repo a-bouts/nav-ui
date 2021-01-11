@@ -61,7 +61,6 @@ export default {
             }
           }
           to.wrap = b.wrap || 0
-          console.log("geodesic", from, b.name, to)
           this.addGeodesic(from, to)
           from = to
         }

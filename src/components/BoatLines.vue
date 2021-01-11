@@ -31,6 +31,14 @@ export default {
       expes: {}
     }
   },
+  watch: {
+    current: {
+      deep: true,
+      handler() {
+        this.startSnake(this.params.startTime)
+      }
+    }
+  },
   created: function() {
     this.layer = L.layerGroup()
     this.markerLayer = L.layerGroup().addTo(this.layer)
@@ -79,7 +87,7 @@ export default {
         {icon: lineMarker, draggable: true, zIndexOffset: 5000}
       ).addTo(this.markerLayer).on('drag', function() {
         it.moveSnake(this.getLatLng())
-        it.startSnake()
+        it.evalSnake()
       })
       this.moveSnake(this.map.getCenter())
     },

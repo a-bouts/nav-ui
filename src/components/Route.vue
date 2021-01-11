@@ -132,7 +132,7 @@ export default {
           this.drawIsochrones()
         }
       } catch (e)  {
-        console.log("error loading isochrones", e)
+        console.log("error loading isochrones")
       }
     },
     convertDMSToDD: function(p, d, m, s, wrap) {
@@ -392,7 +392,7 @@ export default {
       try {
         localStorage.setItem("_last_isochrones_" + (this.boat ? this.boat + "_" : "") + this.race, lzStringCompress(JSON.stringify(this.isochrones)))
       } catch (e)  {
-        console.log("error loading isochrones", e)
+        console.log("error loading isochrones")
       }
 
       EventBus.$emit('route', this.last)

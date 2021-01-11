@@ -124,7 +124,7 @@ export default {
 
     EventBus.$on('settings', (settings) => {it.settings = settings})
     EventBus.$on('boat', (latlon) => {
-      console.log([latlon.lat, latlon.lon, latlon.startTime, latlon.wrap])
+      console.log([latlon.lat, latlon.lon, latlon.startTime])
       this.boatMarker.setLatLng(latlon)
     })
 

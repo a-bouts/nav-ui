@@ -506,7 +506,7 @@ export default {
         EventBus.$emit('boat', {
           lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
           lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap),
-          startTime: this.current.startTime
+          startTime: this.current.position.startTime
         })
 
         //this.pan()
@@ -531,7 +531,7 @@ export default {
     submit: function(keepStartTime) {
       this.sidebar.close();
 
-      if (keepStartTime !== true || !this.current.startTime) {
+      if (keepStartTime !== true || !this.current.position.startTime) {
         var startTime = new Date()
         startTime.setMinutes(startTime.getMinutes() - 3 + this.current.delay*60)
         if (this.settings && this.settings.routeLastUpdate === true) {
@@ -539,9 +539,9 @@ export default {
           startTime.setSeconds(0)
           startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%10)
         }
-      }
 
-      this.current.startTime = startTime
+        this.current.position.startTime = startTime
+      }
 
       EventBus.$emit('boat', {
         lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
