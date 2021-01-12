@@ -1,8 +1,8 @@
 <template>
   <div class="container" style="overflow-x:scroll;">
 
-    <div v-if="display" style="display: inline-block">
-      <nav class="level is-mobile">
+    <div v-if="display && !loading" style="display: inline-block">
+      <nav v-if="route" class="level is-mobile">
         <div class="level-item has-text-centered">
           <div>
             <p class="heading">Standard</p>
@@ -35,7 +35,14 @@
         </div>
       </nav>
 
-      <table class="table is-fullwidth is-narrow is-bordered monospace" style="white-space: nowrap;">
+      <div class="tabs">
+        <ul>
+          <li v-if="lines && lines.length > 0" :class="{'is-active': table == 'route'}"><a @click="displayRoute">Route</a></li>
+          <li v-if="progs && progs.length > 0" :class="{'is-active': table == 'progs'}"><a @click="displayProgs">Programmations</a></li>
+        </ul>
+      </div>
+
+      <table v-show="table == 'route'" class="table is-fullwidth is-narrow is-bordered monospace" style="white-space: nowrap;">
         <thead>
           <tr>
             <th v-if="eta" class="is-clickable has-text-centered" @click="eta = !eta">ETA</th>
@@ -52,6 +59,38 @@
           </tr>
         </thead>
         <tr v-for="(l) in lines" :key="l.timeshift" v-bind:class="{'has-background-primary-light': l.current, 'has-background-grey-lighter': l.outdated && !l.current}">
+          <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
+          <td v-else class="has-text-right">{{ l.duration }}</td>
+          <td class="has-text-right">{{ l.date }}</td>
+          <td class="has-text-right">{{ l.bearing }}°</td>
+          <td class="has-text-right" :class="{'has-text-danger': l.twa < 0, 'has-text-success': l.twa > 0}">{{ l.twa }}°</td>
+          <td :class="sailClass(l.sail)">{{ l.sail }}</td>
+          <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
+          <td class="has-text-right">{{ l.wind }}°</td>
+          <td class="has-text-right">{{ l.windSpeed }} kt</td>
+          <td class="has-text-right">{{ l.boatSpeed }} kt</td>
+          <td>{{ l.lat }}</td>
+          <td>{{ l.lon }}</td>
+        </tr>
+      </table>
+
+      <table v-show="table == 'progs'" class="table is-fullwidth is-narrow is-bordered monospace" style="white-space: nowrap;">
+        <thead>
+          <tr>
+            <th v-if="eta" class="is-clickable has-text-centered" @click="eta = !eta">ETA</th>
+            <th v-else class="is-clickable has-text-centered" @click="eta = !eta">Duration</th>
+            <th class="has-text-centered">Date</th>
+            <th class="has-text-centered"><i class='fa fa-compass'></i></th>
+            <th class="has-text-centered"><i class='fa fa-location-arrow'></i></th>
+            <th></th>
+            <th></th>
+            <th class="has-text-centered" colspan="2"><i class='fa fa-wind'></i></th>
+            <th class="has-text-centered"><i class='fa fa-ship'></i></th>
+            <th class="has-text-centered">Latitude</th>
+            <th class="has-text-centered">Longitude</th>
+          </tr>
+        </thead>
+        <tr v-for="(l) in progs" :key="l.timeshift" v-bind:class="{'has-background-primary-light': l.current, 'has-background-grey-lighter': l.outdated && !l.current}">
           <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
           <td v-else class="has-text-right">{{ l.duration }}</td>
           <td class="has-text-right">{{ l.date }}</td>
@@ -83,13 +122,17 @@ export default {
   },
   data: function() {
     return {
-      route: {},
+      route: null,
       lines: [],
-      eta: true
+      progs: [],
+      eta: true,
+      table: "route",
+      loading: false
     }
   },
   mounted: function() {
     EventBus.$on('route', this.onRoute)
+    EventBus.$on('progs', this.onProgs)
   },
   computed: {
     //
@@ -159,12 +202,12 @@ export default {
 
       return d
     },
-    setLines: function(route) {
+    addLines: function(route, lines) {
+      this.loading = true
       const pad = (num, places) => String(num).padStart(places, '0')
 
       const sails = ["Jib", "Spi", "Stay", "LJ", "C0", "HG", "LG"];
 
-      this.lines = []
       for (var i = 0 ; i < Math.min(500, route.windline.length) ; i++) {
         const wl = route.windline[i]
 
@@ -182,9 +225,9 @@ export default {
         var lat = this.convertDDToDMS(wl.lat)
         var lon = this.convertDDToDMS(wl.lon)
 
-        this.lines.unshift({
+        lines.unshift({
           outdated: delta < 0,
-          current:  delta <= 0 && !this.lines[0].outdated,
+          current:  delta <= 0 ,//&& !this.lines[0].outdated,
           duration: this.formatEta(wl.duration),
           eta: this.formatEta(delta),
           date: year + "-" + month + "-" + day + " " + hrs + ":" + min,
@@ -199,13 +242,47 @@ export default {
           boatSpeed: wl.boatSpeed.toFixed(1)
         })
       }
+      this.loading = false
     },
     onRoute(route) {
       this.route = route
-      this.setLines(route)
+      this.lines = []
+      this.addLines(route, this.lines)
+    },
+    onProgs(progs) {
+      this.progs = progs
+      this.progs = []
+      for(var p = progs.length - 1; p >= 0; p--) {
+        var progLine = []
+        for(var j = 0; j < progs[p].line.length - 1; j++) {
+          progLine.unshift(progs[p].line[j])
+        }
+        this.addLines({date: progs[p].line[0].date, windline: progLine}, this.progs)
+      }
     },
     refresh() {
-      this.setLines(this.route)
+      if(this.table == "route") {
+        this.displayRoute()
+        this.lines = []
+        this.addLines(this.route, this.lines)
+      } else if(this.table == "progs") {
+        this.displayProgs()
+      }
+    },
+    displayRoute() {
+      this.loading = true
+      if (this.route) {
+        this.table = "route"
+        //this.lines = []
+        //this.addLines(this.route, this.lines)
+      }
+      this.loading = false
+    },
+    displayProgs() {
+      if (this.progs) {
+        this.table = "progs"
+        //this.onProgs(this.progs)
+      }
     }
   }
 }

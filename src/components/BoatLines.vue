@@ -216,6 +216,8 @@ export default {
 
       this.progs.push(prog)
 
+      EventBus.$emit('progs', this.progs)
+
       return this.nextSnake(from)
     },
     nextSnake: function(from) {
@@ -357,6 +359,7 @@ export default {
               } else {
                 this.progs = this.progs.slice(0, pt.nbProgToKeep)
               }
+              EventBus.$emit('progs', this.progs)
               this.$emit('select', prev)
               this.nextSnake(prev)
             } else {
