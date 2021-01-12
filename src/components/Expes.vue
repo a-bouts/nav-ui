@@ -40,6 +40,23 @@
             <input class="input is-small" type="text" pattern="[0-9]{2}" placeholder="24" title="hours" style="width:80px" v-model.number="settings.snakeDuration" >
           </p>
         </div>
+        <label class="label">Précision</label>
+        <div class="field is-grouped">
+          <div class="control has-icons-left">
+            <div class="select is-small">
+              <select v-model.number="settings.accuracy">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <span class="icon is-small is-left">
+              <i class="fas fa-screwdriver"></i>
+            </span>
+          </div>
+        </div>
       </div>
     </div>
 

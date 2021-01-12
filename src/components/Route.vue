@@ -141,23 +141,27 @@ export default {
       console.log("RUN AT ", this.position.startTime.toString())
 
       const params = {
+        params: {
           expes: this.expes,
-          start: {
-            lat: this.position.lat,
-            lon: this.position.lon
-          },
-          bearing: this.current.bearing,
-          currentSail: this.current.sail,
-          race: {...this.races[this.race]},
+          stop: this.current.stop,
           delta: this.current.delta,
-          maxDuration: 1728.0,
-          startTime: this.position.startTime,
+          accuracy: this.settings && this.settings.accuracy ? this.settings.accuracy : "3",
+          maxDuration: 1728.0
+        },
+        startTime: this.position.startTime,
+        start: {
+          lat: this.position.lat,
+          lon: this.position.lon
+        },
+        bearing: this.current.bearing,
+        currentSail: this.current.sail,
+        race: {...this.races[this.race]},
+        options: {
           sail: this.current.sails,
           foil: this.current.foil,
           hull: this.current.hull,
-          winch: this.current.winch,
-          malus: 1.0,
-          stop: this.current.stop
+          winch: this.current.winch
+        }
       }
 
       if(this.routeBuoys) {
@@ -165,9 +169,9 @@ export default {
       }
 
       this.$emit('loading', true)
-      var url = '/debug/nav/run'
+      var url = '/route/api/v1/route'
       if (this.priv) {
-        url = '/private/nav/run'
+        url = '/private/route/api/v1/route'
       }
       this.$http.post(url, params).then(response => {
 
@@ -246,7 +250,7 @@ export default {
         min = "0" + min;
       }
 
-      var primary = "<i class='fa fa-compass'></i> " + wl.bearing + "° <i class='fa fa-location-arrow'></i> " + wl.twa.toFixed(1) + "° <span class='sail'>" + sails[wl.sail] + "</span>";
+      var primary = "<i class='fa fa-compass'></i> " + wl.bearing.toFixed(1) + "° <i class='fa fa-location-arrow'></i> " + wl.twa.toFixed(1) + "° <span class='sail'>" + sails[wl.sail] + "</span>";
       if(wl.ice) {
         primary += "<span class='ice'><i class='fas fa-igloo'></i></span>"
       } else if(wl.foil > 0) {
@@ -330,6 +334,7 @@ export default {
       L.polyline(this.previous.windline, polylineOptions).addTo(this.previousLayer)
     },
     drawIsochrones: function() {
+      const it = this
       const navs = this.isochrones
       var first = true
       for(var d in navs) {
@@ -357,7 +362,7 @@ export default {
                     if (this.priv) {
                       poly.on('click', function() {
                         this._latlngs.forEach(p => {
-                          L.marker([p.lat, p.lng], {icon: this.icon}).addTo(myLayer)
+                          L.marker([p.lat, p.lng], {icon: it.icon}).addTo(myLayer)
                         })
                       })
                     }
