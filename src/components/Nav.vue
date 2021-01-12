@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import dataService from '../lib/data.js';
 import Vue from 'vue'
 import {EventBus} from '../event-bus.js'
 import L from 'leaflet'
@@ -88,8 +89,8 @@ export default {
 
       var zoom;
       var pan;
-      zoom = localStorage.getItem('_zoom_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race)
-      pan = JSON.parse(localStorage.getItem('_pan_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      zoom = dataService.getZoom(this.boat, this.race)
+      pan = dataService.getPan(this.boat, this.race)
       if(!zoom)
         zoom = 3;
       if(!pan)
@@ -102,8 +103,8 @@ export default {
 
       var zoom;
       var pan;
-      zoom = localStorage.getItem('_zoom_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race)
-      pan = JSON.parse(localStorage.getItem('_pan_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      zoom = dataService.getZoom(this.boat, this.race)
+      pan = dataService.getPan(this.boat, this.race)
       if(!zoom)
         zoom = 3;
       if(!pan)
@@ -115,9 +116,11 @@ export default {
     if (this.priv) {
       new VConsole()
     }
-    this.settings = JSON.parse(localStorage.getItem("_settings_"))
+    this.settings = dataService.getSettings()
   },
   mounted: function() {
+    dataService.clean(this.races)
+
     this.setTitle()
 
     const it = this
@@ -144,8 +147,8 @@ export default {
 
     var zoom;
     var pan;
-    zoom = localStorage.getItem('_zoom_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race)
-    pan = JSON.parse(localStorage.getItem('_pan_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+    zoom = dataService.getZoom(this.boat, this.race)
+    pan = dataService.getPan(this.boat, this.race)
     if(!zoom)
       zoom = 3;
     if(!pan)
@@ -267,8 +270,8 @@ export default {
       return res
     },
     zoomend: function() {
-      localStorage.setItem('_zoom_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, this.map.getZoom());
-      localStorage.setItem('_pan_' + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify([this.map.getCenter().lat, this.map.getCenter().lng]));
+      dataService.saveZoom(this.boat, this.race, this.map.getZoom())
+      dataService.savePan(this.boat, this.race, [this.map.getCenter().lat, this.map.getCenter().lng])
     },
     initTitle: function() {
       const it = this
@@ -326,7 +329,7 @@ export default {
       L.control.windcontrol({ position: 'topright' }).addTo(map);
     },
     save: function() {
-      localStorage.setItem(((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify(this.current))
+      dataService.saveOptions(this.current)
     },
     configure: function(current) {
       this.current = current

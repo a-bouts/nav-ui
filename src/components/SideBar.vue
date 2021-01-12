@@ -275,6 +275,7 @@
 
 
 <script>
+import dataService from '../lib/data.js'
 import L from 'leaflet'
 import 'leaflet-sidebar-v2'
 import Polar from './Polar.vue'
@@ -471,7 +472,7 @@ export default {
     },
     load() {
       try {
-        var current = JSON.parse(localStorage.getItem(((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+        var current = dataService.getOptions(this.boat, this.race)
         if(current) {
           this.current = current
           if (this.current.position.startTime)
@@ -518,7 +519,7 @@ export default {
       }
     },
     save() {
-      localStorage.setItem(((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify(this.current))
+      dataService.saveOptions(this.boat, this.race, this.current)
     },
     centerSnake: function() {
       EventBus.$emit('center-snake')

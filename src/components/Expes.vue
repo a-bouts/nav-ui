@@ -60,6 +60,7 @@
 </template>
 
 <script>
+import dataService from '../lib/data.js';
 import {EventBus} from '../event-bus.js';
 
 export default {
@@ -85,11 +86,11 @@ export default {
   },
   mounted: function() {
     const it = this
-    var settings = JSON.parse(localStorage.getItem("_settings_"))
+    var settings = dataService.getSettings()
     if (settings) {
       this.settings = settings
     }
-    this.expes = JSON.parse(localStorage.getItem("_expes_"))
+    this.expes = dataService.getExpes()
     var url = '/debug/nav/expes'
     if (this.priv) {
       url = '/private/nav/expes'
@@ -110,13 +111,13 @@ export default {
   methods: {
     save(expe, value) {
       this.expes[expe] = value
-      localStorage.setItem("_expes_", JSON.stringify(this.expes))
+      dataService.saveExpes(this.expes)
       if (this.debug) {
         EventBus.$emit('expes', this.expes)
       }
     },
     saveSettings() {
-      localStorage.setItem("_settings_", JSON.stringify(this.settings))
+      dataService.saveSettings(this.settings)
       EventBus.$emit('settings', this.settings)
     }
   }

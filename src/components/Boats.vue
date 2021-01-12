@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import dataService from '../lib/data.js';
 import {EventBus} from '../event-bus.js'
 
 export default {
@@ -37,7 +38,7 @@ export default {
     }
   },
   mounted: function() {
-    this.boats = JSON.parse(localStorage.getItem("_boats_"))
+    this.boats = dataService.getBoats()
     if (!this.boats) {
       this.boats = []
     }
@@ -55,10 +56,10 @@ export default {
     },
     add() {
       this.boats.push({name: ""})
-      this.edit =this.boats.length - 1
+      this.edit = this.boats.length - 1
     },
     save() {
-      localStorage.setItem("_boats_", JSON.stringify(this.boats))
+      dataService.saveBoats(this.boats)
       this.edit = null
       EventBus.$emit("set-boats", this.boats)
     }

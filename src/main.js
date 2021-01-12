@@ -35,11 +35,6 @@ const router = new VueRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
-  console.log(to, from)
-  next()
-})
-
 new Vue({
   render: h => h(App),
   router

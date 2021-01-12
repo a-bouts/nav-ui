@@ -3,10 +3,10 @@
 </template>
 
 <script>
+import dataService from '../lib/data.js';
 import L from 'leaflet'
 import dateFormat from 'dateformat'
 import {EventBus} from '../event-bus.js'
-import { compress as lzStringCompress, decompress as lzStringDecompress } from 'lz-string'
 
 export default {
   name: 'Route',
@@ -106,33 +106,27 @@ export default {
       })
       this.isoLayer.clearLayers()
 
-      this.last = JSON.parse(localStorage.getItem("_last_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      this.last = dataService.getLast(this.boat, this.race)
 
       if(this.last) {
-        this.last.date = new Date(this.last.date)
         this.drawRoute()
         EventBus.$emit('route', this.last)
       }
 
-      var previous = JSON.parse(localStorage.getItem("_previous_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      var previous = dataService.getPrevious(this.boat, this.race)
 
       if(previous && previous.length > 0) {
         this.previousLayer = L.layerGroup().addTo(this.isoLayer)
         this.layerControl.addOverlay(this.previousLayer, "<i class='fas fa-history'></i> History");
 
         this.previous = previous[0]
-        this.previous.date = new Date(this.previous.date)
         this.drawPreviousRoute()
       }
     },
     loadIsochones() {
-      try {
-        this.isochrones = JSON.parse(lzStringDecompress(localStorage.getItem("_last_isochrones_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race)))
-        if(this.isochrones) {
-          this.drawIsochrones()
-        }
-      } catch (e)  {
-        console.log("error loading isochrones")
+      this.isochrones = dataService.getIsochrones(this.boat, this.race)
+      if(this.isochrones) {
+        this.drawIsochrones()
       }
     },
     convertDMSToDD: function(p, d, m, s, wrap) {
@@ -380,20 +374,9 @@ export default {
       }
     },
     saveRoute: function() {
-      var previous = JSON.parse(localStorage.getItem("_last_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      this.previous = dataService.saveLast(this.boat, this.race, this.last)
 
-      if(previous) {
-        this.previous = previous
-        this.previous.date = new Date(this.previous.date)
-        localStorage.setItem("_previous_" + (this.boat ? this.boat + "_" : "") + this.race, JSON.stringify([this.previous]))
-      }
-
-      localStorage.setItem("_last_" + (this.boat ? this.boat + "_" : "") + this.race, JSON.stringify(this.last))
-      try {
-        localStorage.setItem("_last_isochrones_" + (this.boat ? this.boat + "_" : "") + this.race, lzStringCompress(JSON.stringify(this.isochrones)))
-      } catch (e)  {
-        console.log("error loading isochrones")
-      }
+      dataService.saveIsochrones(this.boat, this.race, this.isochrones)
 
       EventBus.$emit('route', this.last)
     },

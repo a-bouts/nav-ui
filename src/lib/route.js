@@ -20,7 +20,6 @@ class Route {
     return (Route._instance == null) ? Route._instance = new Route() : Route._instance;
   }
 
-
   twa(heading, wind) {
     var twa = wind - heading
     if (twa <= -180) {

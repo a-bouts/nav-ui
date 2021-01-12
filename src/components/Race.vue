@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import dataService from '../lib/data.js'
 import L from 'leaflet'
 import 'leaflet-extra-markers'
 import Buoy from './Buoy.vue'
@@ -67,7 +68,14 @@ export default {
           type = "DOOR"
         if (w.name == "end")
           type = "END"
-        buoys.push({id: w.name, name: w.name, type: type, wrap: w.wrap, latlons: w.latlons, radius: w.radius, custom: false, validated: it.isValidated(w.name)})
+
+        let latlons = []
+        for(var l in w.latlons) {
+          let lat = w.latlons[l].lat
+          let lon = w.latlons[l].lon + (w.wrap ? w.wrap * 360 : 0)
+          latlons.push({lat: lat, lon: lon})
+        }
+        buoys.push({id: w.name, name: w.name, type: type, wrap: 0, latlons: latlons, radius: w.radius, custom: false, validated: it.isValidated(w.name)})
       });
 
       return buoys
@@ -83,8 +91,8 @@ export default {
   },
   methods: {
     load() {
-      this.customBuoys = JSON.parse(localStorage.getItem("_buoys_" + this.race))
-      this.validated = JSON.parse(localStorage.getItem("_validated_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race))
+      this.customBuoys = dataService.getBuoys(this.race)
+      this.validated = dataService.getValidated(this.boat, this.race)
       EventBus.$emit('buoys', this.buoys)
       this.drawRace()
       this.drawIceLimits()
@@ -151,13 +159,13 @@ export default {
       } else {
         this.validated.splice(this.validated.indexOf(marker.options.door.name), 1);
       }
-      localStorage.setItem("_validated_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify(this.validated))
+      dataService.saveValidated(this.boat, this.race, this.validated)
 
       this.drawRace()
     },
     onClearBuoy() {
       this.customBuoys = []
-      localStorage.removeItem("_buoys_" + this.race)
+      dataService.cleanBuoys(this.race)
       EventBus.$emit('buoys', this.buoys)
     },
     onAddBuoy() {
@@ -205,7 +213,7 @@ export default {
       this.saveBuoys()
     },
     saveBuoys() {
-      localStorage.setItem("_buoys_" + this.race, JSON.stringify(this.customBuoys))
+      dataService.saveBuoys(this.race, this.customBuoys)
       EventBus.$emit('buoys', this.buoys)
     },
     onValidate(buoy, validated) {
@@ -216,7 +224,7 @@ export default {
         this.validated.splice(this.validated.indexOf(buoy.id), 1);
       }
       buoy.validated = validated
-      localStorage.setItem("_validated_" + ((this.boat && this.boat != "-") ? this.boat + "_" : "") + this.race, JSON.stringify(this.validated))
+      dataService.saveValidated(this.boat, this.race, this.validated)
       EventBus.$emit('buoys', this.buoys)
 
       this.drawRace()
