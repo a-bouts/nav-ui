@@ -207,11 +207,11 @@ class Data {
   // ***************
 
   getValidated(boat, race) {
-    return localStorage.getItem(this.VALIDATED + this.suffix(boat, race))
+    return JSON.parse(localStorage.getItem(this.VALIDATED + this.suffix(boat, race)))
   }
 
   saveValidated(boat, race, validated) {
-    localStorage.setItem(this.VALIDATED + this.suffix(boat, race), validated)
+    localStorage.setItem(this.VALIDATED + this.suffix(boat, race), JSON.stringify(validated))
   }
 
   // ***************
