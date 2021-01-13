@@ -35,7 +35,7 @@
         </div>
       </nav>
 
-      <div class="tabs">
+      <div v-if="progs && progs.length > 0 || table == 'progs'" class="tabs is-toggle">
         <ul>
           <li v-if="lines && lines.length > 0" :class="{'is-active': table == 'route'}"><a @click="displayRoute">Route</a></li>
           <li v-if="progs && progs.length > 0" :class="{'is-active': table == 'progs'}"><a @click="displayProgs">Programmations</a></li>
