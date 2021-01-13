@@ -94,8 +94,11 @@ class Data {
         }
       }
       if(infos.context.boat) {
+        if ((!boats || boats.length == 0) && !infos.boat) {
+          continue
+        }
         if (!boats && infos.boat || boats && boats.length > 0 && !infos.boat) {
-          console.log("should delete (unknown boat)", infos.boat, key)
+          console.log("should delete (unknown boat)", infos.boat, key, boats)
           localStorage.removeItem(key)
           continue
         }
@@ -106,7 +109,7 @@ class Data {
           }
         }
         if (!found) {
-          console.log("should delete (unknown boat)", infos.boat, key)
+          console.log("should delete (unknown boat)", infos.boat, key, boats)
           localStorage.removeItem(key)
           continue
         }

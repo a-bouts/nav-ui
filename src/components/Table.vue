@@ -1,7 +1,7 @@
 <template>
   <div class="container" style="overflow-x:scroll;">
 
-    <div v-if="display && !loading" style="display: inline-block">
+    <div v-if="display" style="display: inline-block">
       <nav v-if="route" class="level is-mobile">
         <div class="level-item has-text-centered">
           <div>
@@ -90,7 +90,7 @@
             <th class="has-text-centered">Longitude</th>
           </tr>
         </thead>
-        <tr v-for="(l) in progs" :key="l.timeshift" v-bind:class="{'has-background-primary-light': l.current, 'has-background-grey-lighter': l.outdated && !l.current}">
+        <tr v-for="(l) in progsLine" :key="l.timeshift" v-bind:class="{'has-background-primary-light': l.current, 'has-background-grey-lighter': l.outdated && !l.current}">
           <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
           <td v-else class="has-text-right">{{ l.duration }}</td>
           <td class="has-text-right">{{ l.date }}</td>
@@ -124,10 +124,10 @@ export default {
     return {
       route: null,
       lines: [],
-      progs: [],
+      progs: null,
+      progsLine: [],
       eta: true,
-      table: "route",
-      loading: false
+      table: "route"
     }
   },
   mounted: function() {
@@ -227,7 +227,7 @@ export default {
 
         lines.unshift({
           outdated: delta < 0,
-          current:  delta <= 0 ,//&& !this.lines[0].outdated,
+          current:  delta <= 0 && (!lines[0] || !lines[0].outdated),
           duration: this.formatEta(wl.duration),
           eta: this.formatEta(delta),
           date: year + "-" + month + "-" + day + " " + hrs + ":" + min,
@@ -251,37 +251,36 @@ export default {
     },
     onProgs(progs) {
       this.progs = progs
-      this.progs = []
+      this.progsLine = []
       for(var p = progs.length - 1; p >= 0; p--) {
         var progLine = []
         for(var j = 0; j < progs[p].line.length - 1; j++) {
           progLine.unshift(progs[p].line[j])
         }
-        this.addLines({date: progs[p].line[0].date, windline: progLine}, this.progs)
+        this.addLines({date: progs[p].line[0].date, windline: progLine}, this.progsLine)
       }
     },
     refresh() {
       if(this.table == "route") {
         this.displayRoute()
         this.lines = []
-        this.addLines(this.route, this.lines)
+        if (this.route)
+          this.addLines(this.route, this.lines)
       } else if(this.table == "progs") {
         this.displayProgs()
+        if (this.progs)
+          this.onProgs(this.progs)
+        
       }
     },
     displayRoute() {
-      this.loading = true
       if (this.route) {
         this.table = "route"
-        //this.lines = []
-        //this.addLines(this.route, this.lines)
       }
-      this.loading = false
     },
     displayProgs() {
       if (this.progs) {
         this.table = "progs"
-        //this.onProgs(this.progs)
       }
     }
   }
