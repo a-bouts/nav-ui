@@ -94,8 +94,8 @@
           <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
           <td v-else class="has-text-right">{{ l.duration }}</td>
           <td class="has-text-right">{{ l.date }}</td>
-          <td class="has-text-right">{{ l.bearing }}°</td>
-          <td class="has-text-right" :class="{'has-text-danger': l.twa < 0, 'has-text-success': l.twa > 0}">{{ l.twa }}°</td>
+          <td class="has-text-right" :class="{'has-background-warning-light': !l.outdated && !l.isTwa}">{{ l.bearing }}°</td>
+          <td class="has-text-right" :class="{'has-background-warning-light': !l.outdated && l.isTwa, 'has-text-danger': l.twa < 0, 'has-text-success': l.twa > 0}">{{ l.twa }}°</td>
           <td :class="sailClass(l.sail)">{{ l.sail }}</td>
           <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
           <td class="has-text-right">{{ l.wind }}°</td>
@@ -202,7 +202,7 @@ export default {
 
       return d
     },
-    addLines: function(route, lines) {
+    addLines: function(route, lines, isTwa) {
       this.loading = true
       const pad = (num, places) => String(num).padStart(places, '0')
 
@@ -225,9 +225,10 @@ export default {
         var lat = this.convertDDToDMS(wl.lat)
         var lon = this.convertDDToDMS(wl.lon)
 
+        var current = delta <= 0 && (!lines[0] || !lines[0].outdated && !lines[0].current)
         lines.unshift({
-          outdated: delta < 0,
-          current:  delta <= 0 && (!lines[0] || !lines[0].outdated),
+          outdated: delta < 0 && !current,
+          current:  current,
           duration: this.formatEta(wl.duration),
           eta: this.formatEta(delta),
           date: year + "-" + month + "-" + day + " " + hrs + ":" + min,
@@ -239,7 +240,8 @@ export default {
           foil: wl.foil,
           wind: wl.wind.toFixed(1),
           windSpeed: wl.windSpeed.toFixed(1),
-          boatSpeed: wl.boatSpeed.toFixed(1)
+          boatSpeed: wl.boatSpeed.toFixed(1),
+          isTwa: isTwa
         })
       }
       this.loading = false
@@ -250,6 +252,7 @@ export default {
       this.addLines(route, this.lines)
     },
     onProgs(progs) {
+      console.log(progs)
       this.progs = progs
       this.progsLine = []
       for(var p = progs.length - 1; p >= 0; p--) {
@@ -257,7 +260,7 @@ export default {
         for(var j = 0; j < progs[p].line.length - 1; j++) {
           progLine.unshift(progs[p].line[j])
         }
-        this.addLines({date: progs[p].line[0].date, windline: progLine}, this.progsLine)
+        this.addLines({date: progs[p].line[0].date, windline: progLine}, this.progsLine, progs[p].isTwa)
       }
     },
     refresh() {
