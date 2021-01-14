@@ -49,7 +49,7 @@ class Polar {
     return {i0: 0, i1: 0, p0: 0}
   }
 
-  foil(twa) {
+  foil(twa, ws) {
     var ct = 0.0
     var cv = 0.0
     if (twa <= this.polar.foil.twaMin-this.polar.foil.twaMerge) {
@@ -63,14 +63,14 @@ class Polar {
     } else {
       return 1.0
     }
-    if (this.ws <= this.polar.foil.twsMin-this.polar.foil.twsMerge) {
+    if (ws <= this.polar.foil.twsMin-this.polar.foil.twsMerge) {
       return 1.0
-    } else if (this.ws < this.polar.foil.twsMin) {
-      cv = (this.ws - (this.polar.foil.twsMin - this.polar.foil.twsMerge)) / this.polar.foil.twsMerge
-    } else if (this.ws < this.polar.foil.twsMax) {
+    } else if (ws < this.polar.foil.twsMin) {
+      cv = (ws - (this.polar.foil.twsMin - this.polar.foil.twsMerge)) / this.polar.foil.twsMerge
+    } else if (ws < this.polar.foil.twsMax) {
       cv = 1
-    } else if (this.ws < this.polar.foil.twsMax+this.polar.foil.twsMerge) {
-      cv = (this.polar.foil.twsMax + this.polar.foil.twsMerge - this.ws) / this.polar.foil.twsMerge
+    } else if (ws < this.polar.foil.twsMax+this.polar.foil.twsMerge) {
+      cv = (this.polar.foil.twsMax + this.polar.foil.twsMerge - ws) / this.polar.foil.twsMerge
     } else {
       return 1.0
     }
@@ -122,7 +122,7 @@ class Polar {
       maxBs *= this.polar.hull.speedRatio
     }
 
-    var foil = this.foil(t)
+    var foil = this.foil(t, ws)
     if(options.foil) {
       maxBs *= foil
     }
