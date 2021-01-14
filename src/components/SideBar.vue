@@ -562,23 +562,10 @@ export default {
     },
     pan: function() {
       if(this.current) {
-        var min_lat = this.races[this.race].start.lat
-        var max_lat = this.races[this.race].start.lat
-        var min_lon = this.races[this.race].start.lon
-        var max_lon = this.races[this.race].start.lon
-
-        for(var d in this.races[this.race].waypoints) {
-          var door = this.races[this.race].waypoints[d];
-          for(var ll in door.latlons) {
-            var w = door.wrap ? door.wrap * 360 : 0
-            var latlon = door.latlons[ll]
-            min_lat = min_lat < latlon.lat ? min_lat : latlon.lat
-            max_lat = max_lat > latlon.lat ? max_lat : latlon.lat
-            min_lon = min_lon < latlon.lon + w ? min_lon : latlon.lon + w
-            max_lon = max_lon > latlon.lon + w ? max_lon : latlon.lon + w
-          }
-        }
-        this.map.flyToBounds([[min_lat, min_lon], [max_lat, max_lon]])
+        EventBus.$emit('pan', {
+          lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
+          lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap)
+        })
       }
     },
     run: function() {

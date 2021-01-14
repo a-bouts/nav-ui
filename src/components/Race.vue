@@ -40,6 +40,7 @@ export default {
     EventBus.$on('down-buoy', this.onDownBuoy)
     EventBus.$on('remove-buoy', this.onRemoveBuoy)
     EventBus.$on('edit-buoy', this.onEditBuoy)
+    EventBus.$on('pan', this.onPan)
   },
   mounted: function() {
     this.raceLayer.addTo(this.map)
@@ -246,6 +247,27 @@ export default {
         }
       });
       this.saveBuoys()
+    },
+    onPan(boat) {
+      var min_lat = boat.lat
+      var max_lat = boat.lat
+      var min_lon = boat.lon
+      var max_lon = boat.lon
+
+      this.buoys.forEach(buoy => {
+        if (buoy.type == "START" || buoy.validated) {
+          return
+        }
+        let w = buoy.wrap ? buoy.wrap * 360 : 0
+        buoy.latlons.forEach(latlon => {
+          min_lat = min_lat < latlon.lat ? min_lat : latlon.lat
+          max_lat = max_lat > latlon.lat ? max_lat : latlon.lat
+          min_lon = min_lon < latlon.lon + w ? min_lon : latlon.lon + w
+          max_lon = max_lon > latlon.lon + w ? max_lon : latlon.lon + w
+        })
+      })
+
+      this.map.flyToBounds([[min_lat, min_lon], [max_lat, max_lon]])
     }
   }
 }

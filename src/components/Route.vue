@@ -41,6 +41,23 @@ export default {
                     iconSize: new L.Point(roundSize, roundSize),
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon night-changed'
     })
+    const _editIconHighlighted = new L.DivIcon({
+                    iconSize: new L.Point(squareSize, squareSize),
+                    shadowSize: new L.Point(squareSize + 4, squareSize + 4),
+                    className: 'leaflet-div-icon leaflet-editing-icon highlighted leaflet-touch-icon'
+    })
+    const _changedIconHighlighted = new L.DivIcon({
+                    iconSize: new L.Point(roundSize, roundSize),
+                    className: 'leaflet-div-icon leaflet-editing-icon highlighted leaflet-touch-icon changed'
+    })
+    const _nightIconHighlighted = new L.DivIcon({
+                    iconSize: new L.Point(squareSize, squareSize),
+                    className: 'leaflet-div-icon leaflet-editing-icon highlighted leaflet-touch-icon night'
+    })
+    const _nightChangedIconHighlighted = new L.DivIcon({
+                    iconSize: new L.Point(roundSize, roundSize),
+                    className: 'leaflet-div-icon leaflet-editing-icon highlighted leaflet-touch-icon night-changed'
+    })
     const _icon = new L.DivIcon({
                     iconSize: new L.Point(20, 20),
                     className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon standard'
@@ -64,6 +81,10 @@ export default {
       changedIcon: _changedIcon,
       nightIcon: _nightIcon,
       nightChangedIcon: _nightChangedIcon,
+      editIconHighlighted: _editIconHighlighted,
+      changedIconHighlighted: _changedIconHighlighted,
+      nightIconHighlighted: _nightIconHighlighted,
+      nightChangedIconHighlighted: _nightChangedIconHighlighted,
       icon: _icon,
       darkIcon: _darkIcon,
       routeBuoys: null,
@@ -83,6 +104,9 @@ export default {
     EventBus.$on('expes', (expes) => {this.expes = expes})
 
     EventBus.$on('boat', (position) => {this.position = position})
+
+    EventBus.$on('highlight', this.onHighlight)
+    EventBus.$on('unhighlight', this.onUnhighlight)
   },
   mounted: function() {
     this.isoLayer.addTo(this.map)
@@ -277,15 +301,23 @@ export default {
             wl.night = true
         }
         var icon = this.editIcon
-        if(wl.change === true)
+        var iconHighlighted = this.editIconHighlighted
+        if(wl.change === true) {
           icon = this.changedIcon
-        if(wl.night === true)
-          if(wl.change === true)
+          iconHighlighted = this.changedIconHighlighted
+        }
+        if(wl.night === true) {
+          if(wl.change === true) {
             icon = this.nightChangedIcon
-          else
+            iconHighlighted = this.nightChangedIconHighlighted
+          }
+          else {
             icon = this.nightIcon
+            iconHighlighted = this.nightIconHighlighted
+          }
+        }
         const pt = wl
-        var marker = L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: 25, wl: pt})
+        var marker = L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: 25, wl: pt, iconNormal: icon, iconHighlighted: iconHighlighted})
           .bindTooltip(this.getTooltip, {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
           .on('click', () => {
             this.$emit('select', pt)
@@ -425,7 +457,149 @@ export default {
           duration: 60000,
           message: title + ' --- ' + message
       })
+    },
+    onHighlight(date) {
+      for(var m in this.markers) {
+        let marker = this.markers[m]
+        if (marker.options.wl.date === date) {
+          marker.setIcon(marker.options.iconHighlighted)
+          marker.openTooltip()
+          break
+        }
+      }
+    },
+    onUnhighlight(date) {
+      for(var m in this.markers) {
+        let marker = this.markers[m]
+        if (marker.options.wl.date === date) {
+          marker.setIcon(marker.options.iconNormal)
+          marker.closeTooltip()
+          break
+        }
+      }
     }
   }
 }
 </script>
+
+<style>
+.leaflet-div-icon.leaflet-editing-icon {
+  border: 8px solid transparent;
+  background-clip: padding-box;
+}
+.leaflet-div-icon.leaflet-editing-icon.highlighted,
+.leaflet-div-icon.leaflet-editing-icon:hover {
+  border: 6px solid transparent;
+  background-clip: padding-box;
+}
+
+.leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.dark {
+    background: "#cccccc";
+    border-radius: 50%;
+    color: "#777777";
+    opacity: 0.4;
+    background-clip: padding-box;
+}
+
+.leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.standard {
+    background: white;
+    /* border-radius: 50%; */
+    color: "#ffffff";
+}
+
+.leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.night {
+    background: red;
+    color: "#ff0000";
+    background-clip: padding-box;
+}
+
+.leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.changed {
+    background: blue;
+    /* border-radius: 50%; */
+    background-clip: padding-box;
+}
+
+.leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.night-changed {
+    background: orange;
+    color: "#ff0000";
+    /* border-radius: 50%; */
+    background-clip: padding-box;
+}
+
+.leaflet-div-icon.leaflet-bearingline-icon.leaflet-touch-icon {
+    background: #3bdbd5;
+    color: #3bdbd5;
+    border-radius: 50%;
+    border: 8px solid transparent;
+    background-clip: padding-box;
+}
+.leaflet-div-icon.leaflet-bearingline-icon.leaflet-touch-icon:hover {
+  border: 6px solid transparent;
+}
+
+.leaflet-div-icon.leaflet-twaline-icon.leaflet-touch-icon {
+    background: #ef1780;
+    color: #ef1780;
+    border-radius: 50%;
+    border: 8px solid transparent;
+    background-clip: padding-box;
+}
+.leaflet-div-icon.leaflet-twaline-icon.leaflet-touch-icon:hover {
+  border: 6px solid transparent;
+}
+
+.leaflet-tooltip.draw-tooltip .date {
+  color: #c0d7f9;
+  font-weight: bold;
+}
+
+.leaflet-tooltip.draw-tooltip .date .hour {
+  float: right;
+}
+
+.leaflet-tooltip.draw-tooltip .primary {
+  color: #ffffff;
+}
+
+.leaflet-tooltip.draw-tooltip .primary .sail {
+  font-weight: bold;
+}
+
+.leaflet-tooltip.draw-tooltip .primary .foil {
+  float: right;
+}
+
+.leaflet-tooltip.draw-tooltip .primary .ice {
+  float: right;
+}
+
+.leaflet-tooltip.draw-tooltip .secondary {
+  color: #f8d5e4;
+}
+
+.leaflet-tooltip.draw-tooltip {
+    background: rgb(54, 54, 54);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid transparent;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    color: #fff;
+    font: 12px/18px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    margin-left: 10px;
+    margin-top: -21px;
+    padding: 4px 8px;
+    white-space: nowrap;
+    z-index: 6;
+    box-shadow: 0 0 0;
+}
+
+.leaflet-tooltip.draw-tooltip:before {
+    border-right: 6px solid black;
+    border-right-color: rgba(0, 0, 0, 0.5);
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    content: "";
+    position: absolute;
+    top: 22px;
+}
+</style>

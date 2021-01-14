@@ -58,7 +58,12 @@
             <th class="has-text-centered">Longitude</th>
           </tr>
         </thead>
-        <tr v-for="(l) in lines" :key="l.timeshift" v-bind:class="{'has-background-primary-light': l.current, 'has-background-grey-lighter': l.outdated && !l.current}">
+        <tr
+            v-for="(l) in lines"
+            :key="l.timeshift"
+            v-bind:class="{'has-background-primary-light': l.current, 'has-background-grey-lighter': l.outdated && !l.current}"
+            @mouseover="highlight(l.wl)"
+            @mouseleave="unhighlight(l.wl)">
           <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
           <td v-else class="has-text-right">{{ l.duration }}</td>
           <td class="has-text-right">{{ l.date }}</td>
@@ -111,7 +116,6 @@
 
 <script>
 import {EventBus} from '../event-bus.js';
-
 
 export default {
   name: 'Table',
@@ -241,7 +245,8 @@ export default {
           wind: wl.wind.toFixed(1),
           windSpeed: wl.windSpeed.toFixed(1),
           boatSpeed: wl.boatSpeed.toFixed(1),
-          isTwa: isTwa
+          isTwa: isTwa,
+          wl: wl
         })
       }
       this.loading = false
@@ -285,6 +290,12 @@ export default {
       if (this.progs) {
         this.table = "progs"
       }
+    },
+    highlight(wl) {
+      EventBus.$emit('highlight', wl.date)
+    },
+    unhighlight(wl) {
+      EventBus.$emit('unhighlight', wl.date)
     }
   }
 }
