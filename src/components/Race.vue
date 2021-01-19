@@ -76,7 +76,7 @@ export default {
           let lon = w.latlons[l].lon + (w.wrap ? w.wrap * 360 : 0)
           latlons.push({lat: lat, lon: lon})
         }
-        buoys.push({id: w.name, name: w.name, type: type, wrap: 0, latlons: latlons, radius: w.radius, custom: false, validated: it.isValidated(w.name)})
+        buoys.push({id: w.name, name: w.name, type: type, wrap: 0, latlons: latlons, toAvoid: w.toAvoid, radius: w.radius, custom: false, validated: it.isValidated(w.name)})
       });
 
       return buoys
