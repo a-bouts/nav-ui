@@ -390,9 +390,7 @@ export default {
       return title
     }
   },
-  mounted: function() {
-    const it = this
-
+  created: function() {
     EventBus.$on('boat', (latlon) => {
       this.current.position = {
         lat: this.convertDDToDMS(latlon.lat),
@@ -401,6 +399,60 @@ export default {
       }
       this.save()
     })
+    EventBus.$on('current', (current) => {
+      let sails = [0, 0, 1, 2, 3, 4, 5, 6, 8, 9, -1, 0, 1, 2, 3, 4, 5, 6]
+      this.current.bearing = Math.round(current.bearing),
+      this.current.sail = sails[current.sail]
+      this.save()
+      this.$emit('configure', this.current)
+    })
+    EventBus.$on('options', (options) => {
+      this.current.winch = false
+      this.current.foil = false
+      this.current.hull = false
+      this.pt = false
+      this.c0 = false
+      this.gt = false
+      for(var o in options) {
+        switch(options[o]) {
+          case "winch":
+            this.current.winch = true
+            break
+          case "foil":
+            this.current.foil = true
+            break
+          case "hull":
+            this.current.hull = true
+            break
+          case "light":
+            this.pt = true
+            break
+          case "reach":
+            this.c0 = true
+            break
+          case "heavy":
+            this.gt = true
+            break
+        }
+      }
+      this.save()
+      this.$emit('configure', this.current)
+    })
+  },
+  mounted: function() {
+    const it = this
+
+    if (this.$route.query && this.$route.query.lat && this.$route.query.lon) {
+      let goto = {lat: this.$route.query.lat, lon: this.$route.query.lon, startTime: this.$route.query.time}
+
+      EventBus.$emit("boat", goto)
+
+      delete this.$route.query.lat
+      delete this.$route.query.lon
+      delete this.$route.query.time
+
+      this.$router.replace({path: `/${this.boat}/${this.race}/`})
+    }
 
     it.load()
 
@@ -507,7 +559,8 @@ export default {
         EventBus.$emit('boat', {
           lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
           lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap),
-          startTime: this.current.position.startTime
+          startTime: this.current.position.startTime,
+          heading: this.current.bearing
         })
 
         //this.pan()
@@ -547,7 +600,8 @@ export default {
       EventBus.$emit('boat', {
         lat: this.convertDMSToDD(this.current.position.lat.p, this.current.position.lat.d, this.current.position.lat.m, this.current.position.lat.s),
         lon: this.convertDMSToDD(this.current.position.lng.p, this.current.position.lng.d, this.current.position.lng.m, this.current.position.lng.s, this.current.position.lng.wrap),
-        startTime: startTime
+        startTime: startTime,
+        heading: this.current.bearing
       })
 
       this.save()

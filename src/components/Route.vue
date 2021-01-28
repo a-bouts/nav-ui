@@ -4,6 +4,7 @@
 
 <script>
 import dataService from '../lib/data.js';
+import windService from '../lib/wind.js';
 import L from 'leaflet'
 import dateFormat from 'dateformat'
 import {EventBus} from '../event-bus.js'
@@ -165,6 +166,7 @@ export default {
       console.log("RUN AT ", this.position.startTime.toString())
 
       const params = {
+        provider: windService.provider,
         params: {
           expes: this.expes,
           stop: this.current.stop,
@@ -193,9 +195,9 @@ export default {
       }
 
       this.$emit('loading', true)
-      var url = '/route/api/v1/route'
+      var url = '/route/api/v2/route'
       if (this.priv) {
-        url = '/private/route/api/v1/route'
+        url = '/private/route/api/v2/route'
       }
       this.$http.post(url, params).then(response => {
 
@@ -594,10 +596,10 @@ export default {
 }
 
 .leaflet-tooltip.draw-tooltip:before {
-    border-right: 6px solid black;
+    border-right: 5px solid black;
     border-right-color: rgba(0, 0, 0, 0.5);
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
     content: "";
     position: absolute;
     top: 22px;

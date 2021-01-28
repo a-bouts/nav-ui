@@ -1,15 +1,68 @@
 const moment = require('moment');
+import {EventBus} from '../event-bus.js';
 
 class Wind {
   constructor() {
-    this.forecasts = null
+    this.provider = null
+    this.providers = null
+    this.winds = null
     this.forecastsData = []
+    this.loadingProviders = null
     this.loadingForecasts = null
     this.loadingForecastsData = {}
+
+    EventBus.$on('set-provider', provider => {
+      this.selectProvider(provider)
+      this.winds = null
+      this.forecastsData = []
+      this.loadingProviders = null
+      this.loadingForecasts = null
+      this.loadingForecastsData = {}
+
+      EventBus.$emit('provider', provider)
+    })
   }
 
   static get instance() {
       return (Wind._instance == null) ? Wind._instance = new Wind() : Wind._instance;
+  }
+
+  selectProvider(provider) {
+    this.provider = provider
+    console.log("set provider", provider)
+  }
+
+  loadProviders() {
+    if (this.loadingProviders) {
+      return this.loadingProviders
+    }
+
+    const self = this
+    this.loadingProviders = new Promise(function(resolve, reject) {
+
+      fetch('/winds/api/v2/providers')
+        .then(response => response.json())
+        .then(providers => {
+          self.providers = {}
+
+          providers.forEach(provider => {
+            self.providers[provider.id] = provider
+          })
+
+          self.selectProvider("meteo-france")
+          self.selectProvider("noaa")
+
+          resolve(self.providers)
+        })
+        .catch((error) => {
+          console.error('Error:', error)
+          reject()
+        }).finally(function() {
+          self.loadingProviders = null
+        })
+    })
+
+    return this.loadingProviders
   }
 
   loadWinds() {
@@ -20,21 +73,40 @@ class Wind {
     const self = this
     this.loadingForecasts = new Promise(function(resolve, reject) {
 
-      fetch('/winds')
+      fetch('/winds/api/v2/providers/' + self.provider + "/winds")
         .then(response => response.json())
-        .then(forecasts => {
-          self.forecasts = forecasts
-          self.forecasts.sort((a, b) => a.hour - b.hour)
+        .then(winds => {
+
+          self.winds = winds
+
+          self.winds.forecasts.sort((a, b) => {
+            if (a.forecast == b.forecast)
+              return 0
+
+            if (a.forecast < b.forecast)
+              return -1
+
+            return 1
+          })
 
           var forecastsData = {}
-          for (var i= 0 ; i < self.forecasts.length ; i++) {
-            if (self.forecastsData[self.forecasts[i].stamp + "-" + self.forecasts[i].forecast]) {
-              forecastsData[self.forecasts[i].stamp + "-" + self.forecasts[i].forecast] = self.forecastsData[self.forecasts[i].stamp + "-" + self.forecasts[i].forecast]
+          for (var i= 0 ; i < self.winds.forecasts.length ; i++) {
+            self.winds.maxForecastTime = moment(self.winds.forecasts[i].forecast).add(3, 'h').toDate()
+
+            self.winds.forecasts[i].stamp = moment(self.winds.forecasts[i].stamps[0].refTime).utc().format("YYYYMMDDHH")
+            if (self.winds.forecasts[i].stamps.length > 1) {
+              self.winds.forecasts[i].stamp2 = moment(self.winds.forecasts[i].stamps[1].refTime).utc().format("YYYYMMDDHH")
             }
+            self.winds.forecasts[i].forecast = moment(self.winds.forecasts[i].forecast).utc().format("YYYYMMDDHH")
+
+            if (self.forecastsData[self.winds.forecasts[i].stamp + "-" + self.winds.forecasts[i].forecast]) {
+              forecastsData[self.winds.forecasts[i].stamp + "-" + self.winds.forecasts[i].forecast] = self.forecastsData[self.winds.forecasts[i].stamp + "-" + self.winds.forecasts[i].forecast]
+            }
+
           }
           self.forecastsData = forecastsData
 
-          resolve(self.forecasts)
+          resolve(self.winds)
         })
         .catch((error) => {
           console.error('Error:', error)
@@ -68,7 +140,7 @@ class Wind {
     this.loadingForecastsData[stamp + "-" + w.forecast] = new Promise(function(resolve, reject) {
 
       self.loadingForecastsData[stamp + "-" + w.forecast] = this
-      fetch('/winds/api/v1/winds/'+w.forecast+'/'+stamp)
+      fetch('/winds/api/v2/providers/' + self.provider + '/winds/'+w.forecast+'/'+stamp)
         .then(response => response.json())
         .then(response => {
           self.forecastsData[stamp + "-" + w.forecast] = response
@@ -99,21 +171,21 @@ class Wind {
     const fromStamp = from.format("YYYYMMDDHH")
     const toStamp = to.format("YYYYMMDDHH")
 
-    for (var i in this.forecasts) {
-      if (this.forecasts[i].forecast < fromStamp) {
-        if (i < this.forecasts.length - 1 && this.forecasts[i - -1].forecast > fromStamp) {
-          res.push(this.loadWindAsync2(this.forecasts[i]))
+    for (var i in this.winds.forecasts) {
+      if (this.winds.forecasts[i].forecast < fromStamp) {
+        if (i < this.winds.forecasts.length - 1 && this.winds.forecasts[i - -1].forecast > fromStamp) {
+          res.push(this.loadWindAsync2(this.winds.forecasts[i]))
         }
         continue
       }
-      if (this.forecasts[i].forecast > toStamp) {
-        if (i > 0 && this.forecasts[i - 1].forecast < toStamp) {
-          res.push(this.loadWindAsync2(this.forecasts[i]))
+      if (this.winds.forecasts[i].forecast > toStamp) {
+        if (i > 0 && this.winds.forecasts[i - 1].forecast < toStamp) {
+          res.push(this.loadWindAsync2(this.winds.forecasts[i]))
         }
         break
       }
 
-      res.push(this.loadWindAsync2(this.forecasts[i]))
+      res.push(this.loadWindAsync2(this.winds.forecasts[i]))
     }
 
     return Promise.all(res)
@@ -126,28 +198,28 @@ class Wind {
 
     return new Promise(function(resolve) {
 
-      if (self.forecasts[0].forecast > stamp) {
-        self.loadWindAsync2(self.forecasts[0]).then(() => {
-          resolve([self.getWinds(self.forecasts[0]), null, 0])
+      if (self.winds.forecasts[0].forecast > stamp) {
+        self.loadWindAsync2(self.winds.forecasts[0]).then(() => {
+          resolve([self.getWinds(self.winds.forecasts[0]), null, 0])
         })
         return
       }
-      for (var i in self.forecasts) {
-        if (self.forecasts[i].forecast > stamp) {
-          const m_i_1 = moment.utc(self.forecasts[i-1].forecast, "YYYYMMDDHH")
-          const m_i = moment.utc(self.forecasts[i].forecast, "YYYYMMDDHH")
+      for (var i in self.winds.forecasts) {
+        if (self.winds.forecasts[i].forecast > stamp) {
+          const m_i_1 = moment.utc(self.winds.forecasts[i-1].forecast, "YYYYMMDDHH")
+          const m_i = moment.utc(self.winds.forecasts[i].forecast, "YYYYMMDDHH")
           const h = moment.duration(now.diff(m_i_1)).asMinutes();
           const delta = moment.duration(m_i.diff(m_i_1)).asMinutes();
-          self.loadWindAsync2(self.forecasts[i-1]).then(() => {
-            self.loadWindAsync2(self.forecasts[i]).then(() => {
-              resolve([self.getWinds(self.forecasts[i-1]), self.getWinds(self.forecasts[i]), h / delta])
+          self.loadWindAsync2(self.winds.forecasts[i-1]).then(() => {
+            self.loadWindAsync2(self.winds.forecasts[i]).then(() => {
+              resolve([self.getWinds(self.winds.forecasts[i-1]), self.getWinds(self.winds.forecasts[i]), h / delta])
             })
           })
           return
         }
       }
-      self.loadWindAsync2(self.forecasts[i-1]).then(() => {
-        resolve([self.getWinds(self.forecasts[self.forecasts.length-1]), null, 0])
+      self.loadWindAsync2(self.winds.forecasts[i-1]).then(() => {
+        resolve([self.getWinds(self.winds.forecasts[self.winds.forecasts.length-1]), null, 0])
       })
     })
   }

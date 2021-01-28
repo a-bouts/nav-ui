@@ -57,6 +57,15 @@
             </span>
           </div>
         </div>
+        <label class="label">Modèle</label>
+        <div class="field is-grouped">
+          <div class="select is-small">
+            <select @change="selectProvider" v-model="provider">
+              <option value="noaa">Noaa</option>
+              <option value="meteo-france">Meteo-France</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -88,6 +97,7 @@ export default {
   },
   data: function() {
     return {
+      provider: "noaa",
       settings: {
       },
       expes: {}
@@ -126,6 +136,9 @@ export default {
     })
   },
   methods: {
+    selectProvider() {
+      EventBus.$emit('set-provider', this.provider)
+    },
     save(expe, value) {
       this.expes[expe] = value
       dataService.saveExpes(this.expes)

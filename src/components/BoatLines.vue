@@ -48,6 +48,13 @@ export default {
     EventBus.$on('center-snake', () => {this.center()})
     EventBus.$on('expes', (expes) => {this.expes = expes})
     EventBus.$on('boat', this.onBoat)
+
+    EventBus.$on('provider', () => {
+      if (this.progs & this.progs.length > 0)
+        this.startSnake(this.progs[0].startTime)
+      else
+        this.startSnake(this.params.startTime)
+    })
   },
   mounted: function() {
     const self = this
@@ -84,7 +91,7 @@ export default {
 
       var lineMarker = L.ExtraMarkers.icon({ icon: 'fa-route', markerColor: 'black', shape: 'star', prefix: 'fa' })
       L.marker(this.map.getCenter(),
-        {icon: lineMarker, draggable: true, zIndexOffset: 5000}
+        {icon: lineMarker, draggable: true, zIndexOffset: 10000}
       ).addTo(this.markerLayer).on('drag', function() {
         it.moveSnake(this.getLatLng())
         it.evalSnake()
@@ -348,7 +355,7 @@ export default {
         wl.date.setMinutes(wl.date.getMinutes() + wl.duration * 60)
 
         const pt = wl
-        L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: isTwa ? 75 : 50, wl: pt})
+        L.marker([wl.lat, wl.lon], {icon: icon, zIndexOffset: isTwa ? 7500 : 6000, wl: pt})
           .bindTooltip(this.getTooltip, {permanent: false, opacity: 0.9, offset: L.point(0, 30), className: 'draw-tooltip', direction: 'right'})
           .on('click', () => {
             if (pt.nbProgToKeep !== undefined) {

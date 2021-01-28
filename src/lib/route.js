@@ -128,7 +128,10 @@ class Route {
   }
 
   async init(params) {
-    if (!windService.forecasts) {
+    if (!windService.providers) {
+      await windService.loadProviders()
+    }
+    if (!windService.winds) {
       await windService.loadWinds()
     }
 

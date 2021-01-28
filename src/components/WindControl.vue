@@ -1,25 +1,28 @@
 <template>
   <div class="leaflet-control-layers leaflet-control forecast-times" :class="{expanded: !colapsed}">
-    <div v-show="!colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
-      <i class="fas fa-caret-up"></i>
-    </div>
-    <div class="button is-small is-fullwidth is-white p-0" :class="windStatus"><i class="fas fa-wind"></i><span v-if="progress > 0">{{ Math.round(progress * 100 / (forecasts.length - 2)) }}%</span></div>
-    <div class="columns m-0 is-clickable is-unselectable" v-for="(forecast, index) in mergedForecasts" :key="forecast.hour">
-      <div v-show="!colapsed || index == 0 || forecast.hour == selectedForecast" class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadMergedWind(forecast)">
-        {{ forecast.display }}
+    <div v-if="winds">
+      <div v-show="!colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
+        <i class="fas fa-caret-up"></i>
       </div>
-    </div>
-    <div v-show="colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
-      <i class="fas fa-caret-down"></i>
+      <div class="button is-small is-fullwidth is-white p-0" :class="windStatus"><i class="fas fa-wind"></i><span v-if="progress > 0">{{ progress }}%</span></div>
+      <div class="columns m-0 is-clickable is-unselectable" v-for="(forecast, index) in mergedForecasts" :key="forecast.hour">
+        <div v-show="!colapsed || index == 0 || forecast.hour == selectedForecast" class="column p-0 has-text-centered px-1" v-bind:class="forecastClass(forecast)" @click="loadMergedWind(forecast)">
+          {{ forecast.display }}
+        </div>
+      </div>
+      <div v-show="colapsed" class="has-text-centered is-clickable" @click="colapsed = !colapsed">
+        <i class="fas fa-caret-down"></i>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import windService from '../lib/wind.js';
+import windService from '../lib/wind.js'
 import L from 'leaflet'
-import {EventBus} from '../event-bus.js';
+import {EventBus} from '../event-bus.js'
 import 'leaflet-velocity'
+const moment = require('moment')
 
 export default {
   name: 'WindControl',
@@ -29,8 +32,6 @@ export default {
     layerControl: Object
   },
   data: function () {
-
-    const now = new Date()
 
     const whiteColorScale = ["rgb(255, 255, 255)"]
     const gradientColorScale = [
@@ -51,6 +52,8 @@ export default {
       "rgb(180,0,35)"
     ]
 
+    let now = new Date()
+
     return {
       windIsOnTime: undefined,
       options: {
@@ -60,18 +63,50 @@ export default {
       velocityLayer: null,
       windTileLayerControl: null,
       windTileLayer: null,
+      provider: null,
+      providers: null,
+      winds: null,
       forecasts: [],
       selectedForecast: "",
       lastForecast: now,
       lastStamp: this.initLastStamp(now),
       progress: 0,
       colapsed: true,
-      mergedForecasts: this.initMergedForecasts(now),
+      mergedForecasts: [],
       atDate: null,
       loading: false,
       whiteColorScale: whiteColorScale,
       gradientColorScale: gradientColorScale
     }
+  },
+  created: function() {
+    EventBus.$on('provider', () => {
+      this.loadWinds().then(() => {
+        // this.mergedForecasts = this.initMergedForecasts(new Date())
+        // this.loadMergedWind(this.mergedForecasts[0])
+        var dateToLoad
+        if (this.atDate) {
+          dateToLoad = this.mergedForecasts[this.atDate].date
+          this.atDate = null
+        } else if (this.selectedForecast > 0) {
+          for (var i=0;i<this.mergedForecasts.length;i++) {
+            if (this.mergedForecasts[i].hour === this.selectedForecast) {
+              dateToLoad = this.mergedForecasts[i].date
+              break
+            }
+          }
+        }
+
+        const now = new Date()
+        this.lastStamp = this.initLastStamp(now)
+        this.mergedForecasts = this.initMergedForecasts(now)
+        if (this.selectedForecast === 0) {
+          this.loadMergedWind(this.mergedForecasts[0])
+        } else if (dateToLoad) {
+          this.loadWindAt(dateToLoad, false)
+        }
+      })
+    })
   },
   mounted: function() {
     const self = this
@@ -120,8 +155,12 @@ export default {
             colorScale: colorScale
     }).addTo(this.velocityLayerControl)
 
-    this.loadWinds().then(() => {
-      this.loadMergedWind(this.mergedForecasts[0])
+    windService.loadProviders().then(providers => {
+      this.providers = providers
+      this.loadWinds().then(() => {
+        this.mergedForecasts = this.initMergedForecasts(new Date())
+        this.loadMergedWind(this.mergedForecasts[0])
+      })
     })
 
     var date1 = new Date()
@@ -225,6 +264,8 @@ export default {
       now.setUTCSeconds(0)
       now.setUTCMilliseconds(0)
 
+      let lastForecast = windService.winds.maxForecastTime
+
       const mergedForecasts = []
       mergedForecasts.push({
         hour: 0,
@@ -234,24 +275,30 @@ export default {
       for(var i = 1 ; i <= 24 ; i++) {
         var date = new Date(now.getTime())
         date.setHours(date.getHours() + i)
+        if (date > lastForecast)
+          break
         mergedForecasts.push({
           hour: i,
           display: "+ " + i + "h",
           date: date
         })
       }
-      for(i = 30 ; i <= 48 ; i+=6) {
+      for(i = 30 ; i <= 66 ; i+=6) {
         date = new Date(now.getTime())
         date.setHours(date.getHours() + i)
+        if (date > lastForecast)
+          break
         mergedForecasts.push({
           hour: i,
           display: "+ " + i + "h",
           date: date
         })
       }
-      for(i = 72 ; i <= 360 ; i+=24) {
+      for(i = 72 ; i <= 384 ; i+=24) {
         date = new Date(now.getTime())
         date.setHours(date.getHours() + i)
+        if (date > lastForecast)
+          break
         mergedForecasts.push({
           hour: i,
           display: i % 24 == 0 ? "+ " + Math.round(i/24) + "j" : "+ " + i + "h",
@@ -307,33 +354,32 @@ export default {
 
       const it = this
       return new Promise(function(resolve, reject) {
-        windService.loadWinds().then(forecasts => {
-          it.forecasts = forecasts
+        windService.loadWinds().then(winds => {
+          it.winds = winds
 
           var d = new Date()
-          d.setUTCFullYear(it.forecasts[0].forecast.substr(0, 4))
-          d.setUTCMonth(it.forecasts[0].forecast.substr(4, 2) - 1)
-          d.setUTCDate(it.forecasts[0].forecast.substr(6, 2))
-          d.setUTCHours(it.forecasts[0].forecast.substr(8, 2))
+          d.setUTCFullYear(it.winds.forecasts[0].forecast.substr(0, 4))
+          d.setUTCMonth(it.winds.forecasts[0].forecast.substr(4, 2) - 1)
+          d.setUTCDate(it.winds.forecasts[0].forecast.substr(6, 2))
+          d.setUTCHours(it.winds.forecasts[0].forecast.substr(8, 2))
           d.setUTCMinutes(0)
           d.setUTCSeconds(0)
           d.setUTCMilliseconds(0)
 
-          it.forecasts[0].time = d.getHours()
+          it.winds.forecasts[0].time = d.getHours()
 
-          it.progress = 0
+          it.progress = windService.winds.progress
           var maxForecast
-          for(var i = 2 ; i < it.forecasts.length ; i++) {
-            var forecast = it.forecasts[i]
-            if (forecast.stamp == it.lastStamp) {
+          for(var i = 2 ; i < it.winds.forecasts.length ; i++) {
+            var forecast = it.winds.forecasts[i]
+            if (forecast.stamps[0].refTime == it.winds.lastRefTime || forecast.stamps.length > 1 && forecast.stamps[1].refTime == it.winds.lastRefTime) {
               maxForecast = forecast.forecast
-              it.progress++
             }
           }
           if(maxForecast) {
             it.lastForecast = it.getDateFromForecast(maxForecast)
           }
-          it.windIsOnTime = it.progress > 0
+          it.windIsOnTime = moment(it.winds.lastRefTime).isSame(it.winds.nextRefTime) || moment().isBefore(moment(it.winds.nextUpdateTime))
 
           it.loading = false
           resolve()
@@ -376,6 +422,7 @@ export default {
     },
     refreshWinds: function() {
       this.loadWinds()
+      this.mergedForecasts = this.initMergedForecasts(new Date())
       window.setTimeout(() => { this.refreshWinds()}, 300000)
     },
     mergeWinds: function(w1, w2, h) {
@@ -448,6 +495,7 @@ export default {
       })
     },
     loadMergedWind: function(mergedForecast, doNotLoadWinds) {
+      console.log("loadMergedWind", mergedForecast, doNotLoadWinds)
       const it = this
 
       if (it.loading) {
@@ -457,11 +505,20 @@ export default {
       if (doNotLoadWinds !== true) {
         const timestamp = mergedForecast.date.getUTCFullYear() + ("00" + (mergedForecast.date.getUTCMonth() + 1)).slice(-2) + ("00" + mergedForecast.date.getUTCDate()).slice(-2) + ("00" + mergedForecast.date.getUTCHours()).slice(-2) + ("00" + mergedForecast.date.getUTCMinutes()).slice(-2)
 
-        this.windTileLayerControl.clearLayers()
-        this.windTileLayer = L.tileLayer('/tiles/wind/' + timestamp + '/{z}/{x}/{y}', {
-          opacity: 0.7,
-          zIndex: 10
-        }).addTo(this.windTileLayerControl)
+        let load = (e) => {
+          e.target.off('load', load)
+          setTimeout(() => {
+            e.target.setOpacity(0.7)
+            e.target.setZIndex(10)
+            this.windTileLayerControl.removeLayer(this.windTileLayer)
+            this.windTileLayer = e.target
+          }, 150)
+        }
+
+        L.tileLayer('/tiles/wind/' + windService.provider + '/' + timestamp + '/{z}/{x}/{y}', {
+          opacity: 0,
+          zIndex: 11
+        }).on('load', load).addTo(this.windTileLayerControl)
       }
 
       it.loading = true
@@ -482,21 +539,21 @@ export default {
           resolve()
         } else {
           var i = 0
-          for(i = 0 ; i < it.forecasts.length - 1 ; i++) {
-            var d1 = it.getDateFromForecast(it.forecasts[i].forecast)
-            var d2 = it.getDateFromForecast(it.forecasts[i + 1].forecast)
+          for(i = 0 ; i < it.winds.forecasts.length - 1 ; i++) {
+            var d1 = it.getDateFromForecast(it.winds.forecasts[i].forecast)
+            var d2 = it.getDateFromForecast(it.winds.forecasts[i + 1].forecast)
 
             if(mergedForecast.date >= d1 && mergedForecast.date < d2) {
-              mergedForecast.w1 = {forecast: it.forecasts[i].forecast, stamp: it.forecasts[i].stamp, stamp2: it.forecasts[i].stamp2}
-              mergedForecast.w2 = {forecast: it.forecasts[i + 1].forecast, stamp: it.forecasts[i + 1].stamp, stamp2: it.forecasts[i + 1].stamp2}
+              mergedForecast.w1 = {forecast: it.winds.forecasts[i].forecast, stamp: it.winds.forecasts[i].stamp, stamp2: it.winds.forecasts[i].stamp2}
+              mergedForecast.w2 = {forecast: it.winds.forecasts[i + 1].forecast, stamp: it.winds.forecasts[i + 1].stamp, stamp2: it.winds.forecasts[i + 1].stamp2}
               mergedForecast.h = (mergedForecast.date.getTime() - d1.getTime()) / (d2.getTime() - d1.getTime())
               break
             }
           }
 
           if(!mergedForecast.w1) {
-            mergedForecast.w1 = {forecast: it.forecasts[it.forecasts.length - 1].forecast, stamp: it.forecasts[it.forecasts.length - 1].stamp, stamp2: it.forecasts[it.forecasts.length - 1].stamp2}
-            mergedForecast.w2 = {forecast: it.forecasts[it.forecasts.length - 1].forecast, stamp: it.forecasts[it.forecasts.length - 1].stamp, stamp2: it.forecasts[it.forecasts.length - 1].stamp2}
+            mergedForecast.w1 = {forecast: it.winds.forecasts[it.winds.forecasts.length - 1].forecast, stamp: it.winds.forecasts[it.winds.forecasts.length - 1].stamp, stamp2: it.winds.forecasts[it.winds.forecasts.length - 1].stamp2}
+            mergedForecast.w2 = {forecast: it.winds.forecasts[it.winds.forecasts.length - 1].forecast, stamp: it.winds.forecasts[it.winds.forecasts.length - 1].stamp, stamp2: it.winds.forecasts[it.winds.forecasts.length - 1].stamp2}
             mergedForecast.h = 1
           }
 
