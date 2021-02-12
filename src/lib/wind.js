@@ -20,7 +20,7 @@ class Wind {
     const self = this
     this.loadingForecasts = new Promise(function(resolve, reject) {
 
-      fetch('/winds')
+      fetch('/winds/api/v1/winds')
         .then(response => response.json())
         .then(forecasts => {
           self.forecasts = forecasts
