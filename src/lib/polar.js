@@ -95,13 +95,13 @@ class Polar {
     var maxS = null
     this.polar.sail.forEach((sail, s) => {
 
-      if((sail.name == "LightJib" || sail.name == "LightGnk") && (options.sail & 1) != 1) {
+      if((sail.name == "LIGHT_JIB" || sail.name == "LIGHT_GNK" || sail.name == "LightJib" || sail.name == "LightGnk") && (options.sail & 1) != 1) {
         return
       }
-      if((sail.name == "Staysail" || sail.name == "HeavyGnk") && (options.sail & 4) != 4) {
+      if((sail.name == "STAYSAIL" || sail.name == "HEAVY_GNK" || sail.name == "Staysail" || sail.name == "HeavyGnk") && (options.sail & 4) != 4) {
         return
       }
-      if(sail.name == "Code0" && (options.sail & 2) != 2) {
+      if((sail.name == "CODE_0" || sail.name == "Code0") && (options.sail & 2) != 2) {
         return
       }
 
