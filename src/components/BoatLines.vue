@@ -297,13 +297,18 @@ export default {
       }
 
       var primary = ""
-      if (wl.bearing && wl.twa && wl.sail) {
-        primary += "<i class='fa fa-compass'></i> " + wl.bearing.toFixed(1) + "° <i class='fa fa-location-arrow'></i> " + wl.twa.toFixed(1) + "° <span class='sail'>" + sails[wl.sail] + "</span>"
+      if (wl.bearing) {
+        primary += "<i class='fa fa-compass'></i> " + wl.bearing.toFixed(1) + "° "
+      }
+      if (wl.twa) {
+        primary += "<i class='fa fa-location-arrow'></i> " + wl.twa.toFixed(1) + "° "
+      }
+      if (wl.sail) {
+        primary += "<span class='sail'>" + sails[wl.sail] + "</span>"
       }
       if(wl.ice === true) {
         primary += "<span class='ice'><i class='fas fa-igloo'></i></span>"
       } else if(wl.foil > 0) {
-        //primary += "<span class='foil' style='color:rgb(255," + 255 * (wl.foil / 100) + "," + 255 * (wl.foil / 100) + ");'><i class='fa fa-fighter-jet'></i></span>"
         primary += "<span class='foil' style='opacity:" + (wl.foil) + "%;'><i class='fa fa-fighter-jet'></i></span>"
       }
       var secondary = ""
