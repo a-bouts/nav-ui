@@ -297,13 +297,13 @@ export default {
       }
 
       var primary = ""
-      if (wl.bearing) {
+      if (wl.bearing !== undefined) {
         primary += "<i class='fa fa-compass'></i> " + wl.bearing.toFixed(1) + "° "
       }
-      if (wl.twa) {
+      if (wl.twa !== undefined) {
         primary += "<i class='fa fa-location-arrow'></i> " + wl.twa.toFixed(1) + "° "
       }
-      if (wl.sail) {
+      if (wl.sail !== undefined) {
         primary += "<span class='sail'>" + sails[wl.sail] + "</span>"
       }
       if(wl.ice === true) {
