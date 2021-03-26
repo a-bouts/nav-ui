@@ -259,6 +259,10 @@ class Wind {
     }
     let d = Math.sqrt(u*u + v*v)
 
+    if (d < 1.028888888888891) {
+      d = 1.028888888888891
+    }
+
     return [this.vectorToDegrees(u, v, d), d]
   }
 
