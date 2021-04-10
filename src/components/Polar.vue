@@ -135,13 +135,13 @@ export default {
         var maxS = null
         this.polar.sail.forEach((sail) => {
 
-          if((sail.name == "LightJib" || sail.name == "LightGnk") && (this.current.sails & 1) != 1) {
+          if((sail.name == "LightJib" || sail.name == "LightGnk" || sail.name == "LIGHT_JIB" || sail.name == "LIGHT_GNK") && (this.current.sails & 1) != 1) {
             return
           }
-          if((sail.name == "Staysail" || sail.name == "HeavyGnk") && (this.current.sails & 4) != 4) {
+          if((sail.name == "Staysail" || sail.name == "HeavyGnk" || sail.name == "STAYSAIL" || sail.name == "HEAVY_GNK") && (this.current.sails & 4) != 4) {
             return
           }
-          if(sail.name == "Code0" && (this.current.sails & 2) != 2) {
+          if((sail.name == "Code0" || sail.name == "CODE_0") && (this.current.sails & 2) != 2) {
             return
           }
 
@@ -357,7 +357,14 @@ export default {
         "LightJib"    : "#f67876",
         "Code0"    : "#00a000",
         "HeavyGnk"    : "#b00000",
-        "LightGnk"    : "#d77900"
+        "LightGnk"    : "#d77900",
+        "JIB"      : "#cd0342",
+        "SPI"      : "#00ff00",
+        "STAYSAIL"    : "#0000ff",
+        "LIGHT_JIB"    : "#f67876",
+        "CODE_0"    : "#00a000",
+        "HEAVY_GNK"    : "#b00000",
+        "LIGHT_GNK"    : "#d77900"
       }
 
       polar.append("path")
