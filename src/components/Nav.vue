@@ -185,11 +185,11 @@ export default {
       var position = this.getLatLng();
 
       var startTime = new Date()
-      startTime.setMinutes(startTime.getMinutes() - 3 + it.current.delay*60)
+      startTime.setMinutes(startTime.getMinutes() - 1 + it.current.delay*60)
       if (it.settings && it.settings.routeLastUpdate === true) {
         startTime.setMilliseconds(0)
         startTime.setSeconds(0)
-        startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%10)
+        startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%5)
       }
 
       EventBus.$emit("boat", {lat: position.lat, lon: position.lng, startTime: startTime})

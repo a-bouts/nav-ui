@@ -479,11 +479,11 @@ export default {
             this.current.position.startTime = new Date(this.current.position.startTime)
         } else {
           var startTime = new Date()
-          startTime.setMinutes(startTime.getMinutes() - 3 + this.current.delay*60)
+          startTime.setMinutes(startTime.getMinutes() - 1 + this.current.delay*60)
           if (this.settings && this.settings.routeLastUpdate === true) {
             startTime.setMilliseconds(0)
             startTime.setSeconds(0)
-            startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%10)
+            startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%5)
           }
 
           this.current = {
@@ -534,11 +534,11 @@ export default {
 
       if (keepStartTime !== true || !this.current.position.startTime) {
         var startTime = new Date()
-        startTime.setMinutes(startTime.getMinutes() - 3 + this.current.delay*60)
+        startTime.setMinutes(startTime.getMinutes() - 1 + this.current.delay*60)
         if (this.settings && this.settings.routeLastUpdate === true) {
           startTime.setMilliseconds(0)
           startTime.setSeconds(0)
-          startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%10)
+          startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%5)
         }
 
         this.current.position.startTime = startTime
