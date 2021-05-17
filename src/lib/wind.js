@@ -211,18 +211,23 @@ class Wind {
 
     const fi = Math.floor(i)
     const fj = Math.floor(j)
+    const fi_plus_1 = fi + 1
+    var fj_plus_1 = fj + 1
+    if (fj_plus_1 == 360) {
+      fj_plus_1 = 0
+    }
 
     const u00 = w.U[fi * w.NLon + fj]
     const v00 = w.V[fi * w.NLon + fj]
 
-    const u01 = w.U[(fi + 1) * w.NLon + fj]
-    const v01 = w.V[(fi + 1) * w.NLon + fj]
+    const u01 = w.U[fi_plus_1 * w.NLon + fj]
+    const v01 = w.V[fi_plus_1 * w.NLon + fj]
 
-    const u10 = w.U[fi * w.NLon + fj + 1]
-    const v10 = w.V[fi * w.NLon + fj + 1]
+    const u10 = w.U[fi * w.NLon + fj_plus_1]
+    const v10 = w.V[fi * w.NLon + fj_plus_1]
 
-    const u11 = w.U[(fi + 1) * w.NLon + fj + 1]
-    const v11 = w.V[(fi + 1) * w.NLon + fj + 1]
+    const u11 = w.U[fi_plus_1 * w.NLon + fj_plus_1]
+    const v11 = w.V[fi_plus_1 * w.NLon + fj_plus_1]
 
     return this.bilinearInterpolate(j-fj, i-fi, [u00, v00], [u10, v10], [u01, v01], [u11, v11])
   }
