@@ -99,21 +99,21 @@
           <td v-if="eta" class="has-text-right">{{ l.eta }}</td>
           <td v-else class="has-text-right">{{ l.duration }}</td>
           <td class="has-text-right">{{ l.date }}</td>
-          <td class="has-text-right" :class="{'has-background-warning-light': !l.outdated && !l.isTwa}">{{ l.bearing }}°</td>
-          <td class="has-text-right" :class="{'has-background-warning-light': !l.outdated && l.isTwa, 'has-text-danger': l.twa < 0, 'has-text-success': l.twa > 0}">{{ l.twa }}°</td>
+          <td class="has-text-right" :class="{'has-background-warning-light': !l.outdated && !l.isTwa}">{{ parseFloat(l.bearing).toFixed(1) }}°</td>
+          <td class="has-text-right" :class="{'has-background-warning-light': !l.outdated && l.isTwa, 'has-text-danger': l.twa < 0, 'has-text-success': l.twa > 0}">{{ parseFloat(l.twa).toFixed(1) }}°</td>
           <td :class="sailClass(l.sail)">{{ l.sail }}</td>
           <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
-          <td class="has-text-right">{{ l.wind }}°</td>
-          <td class="has-text-right">{{ l.windSpeed }} kt</td>
-          <td class="has-text-right">{{ l.boatSpeed }} kt</td>
+          <td class="has-text-right">{{ parseFloat(l.wind).toFixed(1) }}°</td>
+          <td class="has-text-right">{{ parseFloat(l.windSpeed).toFixed(1) }} kt</td>
+          <td class="has-text-right">{{ parseFloat(l.boatSpeed).toFixed(1) }} kt</td>
           <td>{{ l.lat }}</td>
           <td>{{ l.lon }}</td>
         </tr>
       </table>
 
       <download-csv :data="lines" name="phtheirichthys.csv" delimiter=";"
-          :fields="['date', 'lat', 'lon', 'bearing', 'twa', 'wind', 'windSpeed', 'boatSpeed', 'sail']"
-          :labels="{date: 'Date', lon: 'Longitude', lat: 'Latitude', bearing: 'HDG', twa: 'TWA', wind: 'TWD', windSpeed: 'TWS', boatSpeed: 'Speed', sail: 'Sail'}"
+          :fields="['date', 'dlat', 'dlon', 'bearing', 'twa', 'wind', 'windSpeed', 'boatSpeed', 'sail']"
+          :labels="{date: 'Date', dlat: 'Latitude', dlon: 'Longitude', bearing: 'HDG', twa: 'TWA', wind: 'TWD', windSpeed: 'TWS', boatSpeed: 'Speed', sail: 'Sail'}"
           >
         <button class="button">
           <span class="icon">
@@ -252,6 +252,8 @@ export default {
           date: year + "-" + month + "-" + day + " " + hrs + ":" + min,
           bearing: wl.bearing.toFixed(4),
           twa: wl.twa.toFixed(4),
+          dlat: wl.lat,
+          dlon: wl.lon,
           lat: pad(lat.d, 2) + "°" + (lat.p < 0 ? "S" : "N") + " " + pad(lat.m, 2) + "'" + pad(lat.s, 2) + "\"",
           lon: pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s, 2) + "\"",
           sail: sails[wl.sail],
