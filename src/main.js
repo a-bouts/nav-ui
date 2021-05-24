@@ -5,6 +5,7 @@ import Boats from './Boats.vue'
 import Nav from './components/Nav.vue'
 import VueResource from 'vue-resource'
 import VueRouter from 'vue-router'
+import JsonCSV from 'vue-json-csv'
 
 import 'bulma/css/bulma.css'
 import 'bulma-slider/dist/css/bulma-slider.min.css'
@@ -18,8 +19,10 @@ import 'leaflet-velocity/dist/leaflet-velocity.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 import '@fortawesome/fontawesome-free/js/all.js'
 
+
 Vue.use(VueResource)
 Vue.use(VueRouter)
+Vue.component('downloadCsv', JsonCSV)
 
 Vue.config.productionTip = false
 
