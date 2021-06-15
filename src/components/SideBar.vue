@@ -38,7 +38,7 @@
                 <label class="label">Cap</label>
                 <div class="field has-addons">
                   <p class="control">
-                    <input v-model.number="current.bearing" class="input is-small" type="text" placeholder="41" style="width:60px">
+                    <input v-model.number="current.bearing" class="input is-small" :class="{'is-success': bearingPasteStatus === 1, 'is-danger': bearingPasteStatus === -1}" type="text" placeholder="41" style="width:60px">
                   </p>
                   <p class="control">
                     <a class="button is-static is-small">°</a>
@@ -343,7 +343,8 @@ export default {
       displayed: null,
       info: false,
       latPasteStatus: 0,
-      lonPasteStatus: 0
+      lonPasteStatus: 0,
+      bearingPasteStatus: 0
     }
   },
   computed: {
@@ -618,6 +619,14 @@ export default {
         this.lonPasteStatus = 1
       }
 
+      let headingRe = /Hdg:([0-3]?[0-9]{2})"/
+      const heading = clipboard.match(headingRe);
+      if(heading) {
+        this.current.bearing = heading[1]
+        this.bearingPasteStatus = 1
+      }
+
+
       let latReDash = /([0-1]?[0-9]?[0-9])°([0-9]{2})'([0-9]{2}(\.[0-9]{2})?)"(N|S)/
       const latDash = clipboard.match(latReDash);
       if(latDash) {
@@ -642,6 +651,7 @@ export default {
       setTimeout(() => {
         it.latPasteStatus = 0
         it.lonPasteStatus = 0
+        it.bearingPasteStatus = 0
       }, 30000)
       this.enablePaste = false
 
