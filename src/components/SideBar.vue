@@ -619,7 +619,7 @@ export default {
         this.lonPasteStatus = 1
       }
 
-      let headingRe = /Hdg:([0-3]?[0-9]{2})"/
+      let headingRe = /Hdg:([0-3]?[0-9]{2})/
       const heading = clipboard.match(headingRe);
       if(heading) {
         this.current.bearing = heading[1]
