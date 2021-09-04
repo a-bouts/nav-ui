@@ -54,6 +54,7 @@
             <th></th>
             <th class="has-text-centered" colspan="2"><i class='fa fa-wind'></i></th>
             <th class="has-text-centered"><i class='fa fa-ship'></i></th>
+            <th class="has-text-centered"><i class='fa fa-clock'></i></th>
             <th class="has-text-centered">Latitude</th>
             <th class="has-text-centered">Longitude</th>
           </tr>
@@ -74,6 +75,7 @@
           <td class="has-text-right">{{ parseFloat(l.wind).toFixed(1) }}°</td>
           <td class="has-text-right">{{ parseFloat(l.windSpeed).toFixed(1) }} kt</td>
           <td class="has-text-right">{{ parseFloat(l.boatSpeed).toFixed(1) }} kt</td>
+          <td>{{ l.penalty }}</td>
           <td>{{ l.lat }}</td>
           <td>{{ l.lon }}</td>
         </tr>
@@ -220,6 +222,15 @@ export default {
 
       return d
     },
+    formatPenalties: function(penalties) {
+      if (!penalties || penalties.length == 0) {
+        return ""
+      }
+
+      const minutes = (penalties[0].DurationSec / 60).toFixed(0)
+      const secondes = String(penalties[0].DurationSec % 60).padStart(2, '0')
+      return minutes+"'"+secondes+"\" " + penalties[0].Ratio
+    },
     addLines: function(route, lines, isTwa) {
       this.loading = true
       const pad = (num, places) => String(num).padStart(places, '0')
@@ -261,6 +272,7 @@ export default {
           wind: wl.wind.toFixed(4),
           windSpeed: wl.windSpeed.toFixed(4),
           boatSpeed: wl.boatSpeed.toFixed(4),
+          penalty: this.formatPenalties(wl.penalties),
           isTwa: isTwa,
           wl: wl
         })
