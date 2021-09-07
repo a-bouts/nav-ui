@@ -227,9 +227,20 @@ export default {
         return ""
       }
 
-      const minutes = (penalties[0].DurationSec / 60).toFixed(0)
-      const secondes = String(penalties[0].DurationSec % 60).padStart(2, '0')
-      return minutes+"'"+secondes+"\" " + penalties[0].Ratio
+      var res = ""
+
+      for (var p in penalties) {
+        const minutes = (penalties[p].DurationSec / 60).toFixed(0)
+        const secondes = String(penalties[p].DurationSec % 60).padStart(2, '0')
+
+        if (res.length > 0) {
+          res += " - "
+        }
+
+        res += minutes+"'"+secondes+"\" " + (penalties[p].Ratio * 100).toFixed(0) + "%"
+      }
+
+      return res
     },
     addLines: function(route, lines, isTwa) {
       this.loading = true
