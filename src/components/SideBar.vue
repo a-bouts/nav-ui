@@ -203,13 +203,7 @@
               </a>
             </p>
             <p class="control has-icons-left">
-              <input v-model.number="current.delta" class="input is-small" type="text" placeholder="3" style="width:60px">
-              <span class="icon is-left">
-                <i class="fas fa-expand-alt"></i>
-              </span>
-            </p>
-            <p class="control has-icons-left">
-              <input v-model.number="current.delay" class="input is-small" type="text" placeholder="0" style="width:60px">
+              <input v-model.number="current.delay" class="input is-small" type="text" placeholder="0" style="width:130px">
               <span class="icon is-left">
                 <i class="fas fa-clock"></i>
               </span>
