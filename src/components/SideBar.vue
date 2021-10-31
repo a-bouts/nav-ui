@@ -396,11 +396,9 @@ export default {
     },
     wrap: {
       get: function() {
-        console.log("wrap", this.current.position.lng.wrap)
         return this.current.position.lng.wrap === true
       },
       set: function(wrap) {
-        console.log("wrap", this.current.position.lng.wrap, "->", wrap)
         this.current.position.lng.wrap = wrap
       }
     }
@@ -466,7 +464,7 @@ export default {
     },
     convertDMSToDD: function(p, d, m, s, wrap) {
       var res = Number(p) * (Number(d) + Number(m)/60 + Number(s)/3600)
-      if (wrap === true && res < 0) {
+      if (wrap === true) {// && res < 0) {
         res += 360
       }
       return res
