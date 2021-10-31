@@ -4,7 +4,7 @@ COPY package*.json ./
 RUN yarn config set network-timeout 300000
 RUN yarn install
 COPY ./ .
-RUN yarn build
+RUN export NODE_OPTIONS=--openssl-legacy-provider && yarn build
 
 FROM nginx:1.19 as production-stage
 RUN mkdir /app
