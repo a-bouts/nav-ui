@@ -129,11 +129,24 @@
                   <a class="button is-small" :class="{'is-static': lonPasteStatus === 0, 'is-success': lonPasteStatus === 1, 'is-danger': lonPasteStatus === -1}">''</a>
                 </p>
               </div>
-              <div class="field">
-                <input class="is-checkradio is-info" id="wrap-longitude" type="checkbox" name="wrap-longitude" v-model="current.position.lng.wrap" >
-                <label for="wrap-longitude">+360</label>
+            </div>
+            <p class="help">
+            <div class="field is-grouped">
+              <div class="field has-addons">
+
+                <p class="control">
+                  <button class="button is-small" disabled><i class="fas fa-globe-europe"></i><i class="fas fa-globe-europe has-text-grey-lighter"></i><i class="fas fa-globe-europe has-text-grey-lighter"></i></button>
+                </p>
+                <p class="control">
+                  <button class="button is-small" :class="{'is-info': wrap !== true}" @click="wrap = false"><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe"></i><i class="fas fa-globe-europe" style="opacity: 20%"></i></button>
+                </p>
+                <p class="control">
+                  <button class="button is-small" :class="{'is-info': wrap === true}" @click="wrap = true"><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe"></i></button>
+                </p>
               </div>
             </div>
+            </p>
+            <label class="label">Options</label>
             <div class="columns is-gapless is-multiline is-mobile">
               <div class="column is-one-third">
                 <div class="control">
@@ -383,6 +396,16 @@ export default {
       if (this.boat && this.boat != "-")
         title = this.boat + " - " + title
       return title
+    },
+    wrap: {
+      get: function() {
+        console.log("wrap", this.current.position.lng.wrap)
+        return this.current.position.lng.wrap === true
+      },
+      set: function(wrap) {
+        console.log("wrap", this.current.position.lng.wrap, "->", wrap)
+        this.current.position.lng.wrap = wrap
+      }
     }
   },
   mounted: function() {
@@ -456,6 +479,8 @@ export default {
       if (D > 180) {
         res.wrap = true
         D -= 360
+      } else {
+        res.wrap = false
       }
 
       res.p = D<0?-1:1
