@@ -130,10 +130,8 @@
                 </p>
               </div>
             </div>
-            <p class="help">
-            <div class="field is-grouped">
+            <div class="help field is-grouped">
               <div class="field has-addons">
-
                 <p class="control">
                   <button class="button is-small" disabled><i class="fas fa-globe-europe"></i><i class="fas fa-globe-europe has-text-grey-lighter"></i><i class="fas fa-globe-europe has-text-grey-lighter"></i></button>
                 </p>
@@ -145,7 +143,6 @@
                 </p>
               </div>
             </div>
-            </p>
             <label class="label">Options</label>
             <div class="columns is-gapless is-multiline is-mobile">
               <div class="column is-one-third">
