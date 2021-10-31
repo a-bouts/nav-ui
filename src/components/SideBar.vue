@@ -136,10 +136,10 @@
                   <button class="button is-small" disabled><i class="fas fa-globe-europe"></i><i class="fas fa-globe-europe has-text-grey-lighter"></i><i class="fas fa-globe-europe has-text-grey-lighter"></i></button>
                 </p>
                 <p class="control">
-                  <button class="button is-small" :class="{'is-info': wrap !== true}" @click="wrap = false"><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe"></i><i class="fas fa-globe-europe" style="opacity: 20%"></i></button>
+                  <button class="button is-small" :class="{'is-info': !wrap}" @click="wrap = false"><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe"></i><i class="fas fa-globe-europe" style="opacity: 20%"></i></button>
                 </p>
                 <p class="control">
-                  <button class="button is-small" :class="{'is-info': wrap === true}" @click="wrap = true"><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe"></i></button>
+                  <button class="button is-small" :class="{'is-info': wrap}" @click="wrap = true"><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe" style="opacity: 20%"></i><i class="fas fa-globe-europe"></i></button>
                 </p>
               </div>
             </div>
