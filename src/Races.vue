@@ -54,11 +54,14 @@ export default {
     }
   },
   beforeRouteEnter (to, from, next) {
-    fetch('races/races.json', {headers: {'Cache-Control': 'no-cache'}})
+    fetch('races/api/v1/races', {headers: {'Cache-Control': 'no-cache'}})
       .then(response => response.json())
       .then(response => {
         next(vm => {
-          vm.races = response
+          vm.races = {}
+          for (var race of response) {
+            vm.races[race.id] = race
+          }
         })
       })
   },
