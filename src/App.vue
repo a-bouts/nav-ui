@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import {EventBus} from './event-bus.js';
 import VConsole from 'vconsole'
 
 export default {
@@ -49,6 +50,9 @@ export default {
         });
       }
     }
+  },
+  mounted() {
+    setTimeout(() => { EventBus.$emit("started") }, 500)
   }
 }
 </script>

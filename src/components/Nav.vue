@@ -12,6 +12,7 @@
     <Route ref="route" v-if="map != null" v-bind:priv="priv" v-bind:debug="debug" v-bind:settings="settings" v-bind:race="race" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
     <BoatLines v-if="map != null" v-bind:settings="settings" v-bind:map="map" v-bind:race="race" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv" v-on:move="onSnakeMove" v-on:select="selectPoint"></BoatLines>
     <Geodesic v-if="map != null" v-bind:map="map"></Geodesic>
+    <Fleet v-if="dash && map != null" v-bind:map="map" v-bind:layerControl="layerControl"></Fleet>
   </div>
 </template>
 
@@ -22,6 +23,8 @@ import {EventBus} from '../event-bus.js'
 import L from 'leaflet'
 import * as esri from "esri-leaflet"
 import 'leaflet-extra-markers'
+import 'leaflet-rotatedmarker'
+import 'leaflet-search'
 import TitleControl from './TitleControl.vue'
 import WindControl from './WindControl.vue'
 import SideBar from './SideBar.vue'
@@ -30,6 +33,7 @@ import Geodesic from './Geodesic.vue'
 import Race from './Race.vue'
 import Route from './Route.vue'
 import BoatLines from './BoatLines.vue'
+import Fleet from './fleet/Fleet.vue'
 import VConsole from 'vconsole'
 
 export default {
@@ -44,12 +48,14 @@ export default {
     Geodesic,
     Race,
     Route,
-    BoatLines
+    BoatLines,
+    Fleet
   },
   data: function() {
     return {
       debug: this.boat === 'Stoub',
       priv: this.boat === 'Stoub',
+      dash: false,
       settings: null,
       notification: {
         active: false,
@@ -84,6 +90,17 @@ export default {
           }
         })
       })
+  },
+  beforeRouteUpdate (to, from, next) {
+    if (to.query && to.query.lat && to.query.lon) {
+      let goto = {lat: to.query.lat, lon: to.query.lon, startTime: to.query.time, heading: this.current.bearing}
+      EventBus.$emit("boat", goto)
+      delete to.query.lat
+      delete to.query.lon
+      delete to.query.time
+      next({replace: true, path: `/${this.boat}/${this.race}/`, query: to.query})
+    }
+    next()
   },
   watch: {
     boat: function() {
@@ -120,6 +137,18 @@ export default {
       new VConsole()
     }
     this.settings = dataService.getSettings()
+
+    EventBus.$on("dash-boat", (boat) => {
+      EventBus.$emit("boat", {lat: boat.pos.lat, lon: boat.pos.lon, startTime: boat.ts, heading: boat.heading})
+      EventBus.$emit("current", {bearing: boat.heading, sail: boat.sail})
+    })
+    EventBus.$on("dash-options", (options) => {
+      EventBus.$emit("options", options)
+    })
+    EventBus.$on("dash-connection-confirmed", () => {
+      console.log("Connected to dash")
+      this.dash = true
+    })
   },
   mounted: function() {
     dataService.clean(this.races)
@@ -130,8 +159,8 @@ export default {
 
     EventBus.$on('settings', (settings) => {it.settings = settings})
     EventBus.$on('boat', (latlon) => {
-      console.log([latlon.lat, latlon.lon, latlon.startTime])
-      this.boatMarker.setLatLng(latlon)
+      console.log([latlon.lat, latlon.lon, latlon.startTime, latlon.heading])
+      this.drawBoat(latlon, latlon.heading)
     })
 
     this.map = L.map('map', {zoomControl: true, worldCopyJump: false}).setView([51.505, -0.09], 13)
@@ -179,24 +208,6 @@ export default {
     this.initTitle()
 
     this.map.on("mousemove", this.onMouseMove, this)
-
-    var boatMarkerIcon = L.ExtraMarkers.icon({ icon: 'fa-anchor', markerColor: 'red', shape: 'square', prefix: 'fa' })
-
-    this.boatMarker = L.marker(pan,
-      {icon: boatMarkerIcon, draggable: true, zIndexOffset: 5000}
-    ).addTo(this.map).on('dragend', function() {
-      var position = this.getLatLng();
-
-      var startTime = new Date()
-      startTime.setMinutes(startTime.getMinutes() - 1 + it.current.delay*60)
-      if (it.settings && it.settings.routeLastUpdate === true) {
-        startTime.setMilliseconds(0)
-        startTime.setSeconds(0)
-        startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%5)
-      }
-
-      EventBus.$emit("boat", {lat: position.lat, lon: position.lng, startTime: startTime})
-    })
 
   },
   computed: {
@@ -369,6 +380,31 @@ export default {
     selectPoint(point) {
       this.$refs.sidebar.selectPoint(point)
       this.windControl.loadWindAt(point.date)
+    },
+    drawBoat(pos, heading) {
+      const it = this
+      if (this.boatMarker) {
+        this.map.removeLayer(this.boatMarker)
+      }
+      var boatMarkerIcon = L.ExtraMarkers.icon({ icon: 'fa-anchor', markerColor: 'red', shape: 'square', prefix: 'fa' })
+      // let boatMarkerIcon = new L.DivIcon({
+      //   iconSize: [13, 40],
+      //   iconAnchor: [7, 27],
+      //   className: 'leaflet-boat-icon small'
+      // })
+      this.boatMarker = L.marker(pos,
+        {icon: boatMarkerIcon, draggable: true, zIndexOffset: 5000}
+      ).addTo(this.map).on('dragend', function() {
+        var position = this.getLatLng();
+        var startTime = new Date()
+        startTime.setMinutes(startTime.getMinutes() - 3 + it.current.delay*60)
+        if (it.settings && it.settings.routeLastUpdate === true) {
+          startTime.setMilliseconds(0)
+          startTime.setSeconds(0)
+          startTime.setMinutes(startTime.getMinutes() - startTime.getMinutes()%10)
+        }
+        EventBus.$emit("boat", {lat: position.lat, lon: position.lng, startTime: startTime, heading: heading})
+      })
     }
   }
 }

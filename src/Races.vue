@@ -57,16 +57,44 @@ export default {
     fetch('races/api/v1/races', {headers: {'Cache-Control': 'no-cache'}})
       .then(response => response.json())
       .then(response => {
-        next(vm => {
-          vm.races = {}
-          for (var race of response) {
-            vm.races[race.id] = race
+        var races = {}
+        for (var race of response) {
+          races[race.id] = race
+        }
+        if (to.params.race && !races[to.params.race]) {
+          for(var r in races) {
+            if(to.params.race == races[r].id) {
+              next({path: `/${to.params.boat}/${r}`, query: to.query})
+              return
+            }
           }
+        }
+        if (to.params.race) {
+          setTimeout(() => { EventBus.$emit("race-selected", {boat: {name: to.params.boat}, race: races[to.params.race].id}) }, 3000)
+        }
+        next(vm => {
+          vm.races = races
         })
       })
   },
+  beforeRouteUpdate (to, from, next) {
+    console.log("before update", to.params)
+    if (to.params.race && !this.races[to.params.race]) {
+      for(var r in this.races) {
+        if(to.params.race == this.races[r].id) {
+          next({path: `/${to.params.boat}/${r}`, query: to.query})
+          return
+        }
+      }
+    }
+    if (to.params.race) {
+      setTimeout(() => { EventBus.$emit("race-selected", {boat: {name: to.params.boat}, race: this.races[to.params.race].id}) }, 3000)
+    }
+    next()
+  },
   mounted: function() {
     EventBus.$on("select-race", () => {
+      console.log("select race")
       this.active = true
     })
   },
@@ -76,6 +104,7 @@ export default {
       if (this.race == race)
         return
 
+      console.log(this.boat, race)
       this.$router.push({ path: `/${this.boat}/${race}` })
     },
     checkRace() {
@@ -83,7 +112,8 @@ export default {
     }
   },
   watch: {
-    race() {
+    race: function() {
+      console.log("race changed", this.race)
       if (!this.checkRace())
         this.active = true
       else

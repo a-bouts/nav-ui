@@ -15,10 +15,13 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet-sidebar-v2/css/leaflet-sidebar.css'
 import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
 import 'leaflet-velocity/dist/leaflet-velocity.css'
+import 'leaflet.fullscreen/Control.FullScreen.css'
+import 'leaflet-search/dist/leaflet-search.min.css'
 
 import '@fortawesome/fontawesome-free/css/all.css'
 import '@fortawesome/fontawesome-free/js/all.js'
 
+import {EventBus} from './event-bus.js'
 
 Vue.use(VueResource)
 Vue.use(VueRouter)
@@ -37,6 +40,17 @@ const routes = [
 const router = new VueRouter({
   routes
 })
+
+window.addEventListener("message", function(e)
+{
+  if (e.data.type === "from-dash") {
+    console.log("emit message ", e.data.detail.type, e.data.detail.message)
+    EventBus.$emit(e.data.detail.type, e.data.detail.message)
+  }
+})
+EventBus.$on("started", () => { window.postMessage({type: "to-dash", detail: {type: "connect"}}, "*") })
+EventBus.$on("race-selected", (message) => { window.postMessage({type: "to-dash", detail: {type: "race-selected", message: message}}, "*") })
+
 
 new Vue({
   render: h => h(App),

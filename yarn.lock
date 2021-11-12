@@ -5746,6 +5746,18 @@ leaflet-graticule@^0.0.1:
   resolved "https://registry.yarnpkg.com/leaflet-graticule/-/leaflet-graticule-0.0.1.tgz#44b3ed93328d6ec075723f8804dd3c4a72bb219c"
   integrity sha512-nyOHBwCSOtz3kbfoDkmRcHkZoe6UjNuJn62B9P31jvvN1iYQy3henF3G+CrBDZ3duDucPThzowJNg/adoo/JIA==
 
+leaflet-rotatedmarker@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/leaflet-rotatedmarker/-/leaflet-rotatedmarker-0.2.0.tgz#4467f49f98d1bfd56959bd9c6705203dd2601277"
+  integrity sha1-RGf0n5jRv9VpWb2cZwUgPdJgEnc=
+
+leaflet-search@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/leaflet-search/-/leaflet-search-3.0.2.tgz#a70099c6d738f2403f0fb45e64de75ca5e762cfc"
+  integrity sha512-DtI8LTthhjRzxfNQTgYNuvrk+5hLTISFdemSVrtvnyPA31/a8NGE3GInS19eLGZIgHAYtbUFOHO1/OLbxhi6Yw==
+  dependencies:
+    leaflet "*"
+
 leaflet-sidebar-v2@^3.2.3:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/leaflet-sidebar-v2/-/leaflet-sidebar-v2-3.2.3.tgz#73bb949d7d4f51f22cbda875806b9aa804d31717"
@@ -5756,12 +5768,17 @@ leaflet-velocity@^1.7.0:
   resolved "https://registry.yarnpkg.com/leaflet-velocity/-/leaflet-velocity-1.9.2.tgz#4e13fddf5400a5099117e3ed03c4694a00efc89f"
   integrity sha512-4U2mRc2QxO1jNegeJHGWrMKmA01LvRELt5+eCVHTl4CCZ6ILr7zNJrP+++bt/bV171h1wbLZyfq1byiUDmaSXg==
 
+leaflet.fullscreen@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/leaflet.fullscreen/-/leaflet.fullscreen-2.0.0.tgz#ef60c291dccde6508ce690561b2c3a5d933e0384"
+  integrity sha512-MCgTKmdEF9Twh8nWI7SVBiEFvDmxS78Y+k63SwjNiFRzp3T4b9G7HmR69sdSKr0yOhCiDEssLw1RUoswMxD21Q==
+
 leaflet.geodesic@^2.5.5-0:
   version "2.5.5-0"
   resolved "https://registry.yarnpkg.com/leaflet.geodesic/-/leaflet.geodesic-2.5.5-0.tgz#56e78c12683bfb4f69f3998dd04a53ec199841fa"
   integrity sha512-kuftcyl12byXTtmNTYPiF+hVS4dWVNpXKXIXiaok8vT4n4nGnMFs6DWHM1Xq5HJevbanWmLJrVW4ljgNTqTpLQ==
 
-leaflet@^1.6.0:
+leaflet@*, leaflet@^1.6.0:
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.7.1.tgz#10d684916edfe1bf41d688a3b97127c0322a2a19"
   integrity sha512-/xwPEBidtg69Q3HlqPdU3DnrXQOvQU/CCHA1tcDQVzOwm91YMYaILjNp7L4Eaw5Z4sOYdbBz6koWyibppd8Zqw==
