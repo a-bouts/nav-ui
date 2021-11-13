@@ -17,7 +17,7 @@ class Polar {
       }
 
       self.boat = boat
-      fetch('/polars/' + boat + '.json')
+      fetch('/polars/api/v1/polars/' + boat)
         .then(response => response.json())
         .then(polar => {
           self.polar = polar
