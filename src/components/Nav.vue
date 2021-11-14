@@ -180,7 +180,7 @@ export default {
 
     this.map.on("mousemove", this.onMouseMove, this)
 
-    var boatMarkerIcon = L.ExtraMarkers.icon({ icon: 'fa-anchor', markerColor: 'red', shape: 'square', prefix: 'fa' })
+    var boatMarkerIcon = L.ExtraMarkers.icon({ icon: 'fa-anchor', markerColor: 'pink', shape: 'square', prefix: 'fa' })
 
     this.boatMarker = L.marker(pan,
       {icon: boatMarkerIcon, draggable: true, zIndexOffset: 5000}

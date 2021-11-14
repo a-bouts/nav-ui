@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Buoy v-for="(buoy, index) in buoys" :key="race + buoy.id" v-bind:raceLayer="raceLayer" v-bind:buoy="buoy" v-bind:editable="buoy.custom" v-bind:validated="isValidated(buoy.id)" v-on:move-buoy="onMoveBuoy(index, $event)" v-on:validate="onValidate(buoy, $event)"></Buoy>
+    <Buoy v-for="(buoy, index) in buoys" :key="race + buoy.id" v-bind:raceLayer="raceLayer" v-bind:buoy="buoy" v-bind:editable="true" :edit="edit" v-bind:validated="isValidated(buoy.id)" v-on:move-buoy="onMoveBuoy(index, $event)" v-on:validate="onValidate(buoy, $event)"></Buoy>
   </div>
 </template>
 
@@ -28,16 +28,17 @@ export default {
       raceLayer: null,
       iceLimitsLayer: null,
       customBuoys: [],
-      validated: []
+      validated: [],
+      edit: false,
     }
   },
   created() {
     this.raceLayer = L.layerGroup()
     this.iceLimitsLayer = L.layerGroup().addTo(this.raceLayer)
+    EventBus.$on('edit-mode', this.onEditMode)
     EventBus.$on('add-buoy', this.onAddBuoy)
     EventBus.$on('clear-buoy', this.onClearBuoy)
-    EventBus.$on('up-buoy', this.onUpBuoy)
-    EventBus.$on('down-buoy', this.onDownBuoy)
+    EventBus.$on('order-buoy', this.onOrderBuoy)
     EventBus.$on('remove-buoy', this.onRemoveBuoy)
     EventBus.$on('edit-buoy', this.onEditBuoy)
     EventBus.$on('pan', this.onPan)
@@ -169,6 +170,13 @@ export default {
       dataService.cleanBuoys(this.race)
       EventBus.$emit('buoys', this.buoys)
     },
+    onEditMode(edit) {
+      if(!this.customBuoys || this.customBuoys.length == 0) {
+          this.customBuoys = this.buoys
+      }
+
+      this.edit = edit
+    },
     onAddBuoy() {
       if(!this.customBuoys || this.customBuoys.length == 0) {
           this.customBuoys = this.buoys
@@ -186,18 +194,18 @@ export default {
       })
       this.saveBuoys()
     },
-    onUpBuoy(index) {
-      var elt = this.customBuoys[index]
-      this.customBuoys[index] = this.customBuoys[index - 1]
-      this.customBuoys[index - 1] = elt
+    onOrderBuoy(event) {
+      if(!this.customBuoys || this.customBuoys.length == 0) {
+          this.customBuoys = this.buoys
+      }
 
-      this.customBuoys = [...this.customBuoys]
-      this.saveBuoys()
-    },
-    onDownBuoy(index) {
-      var elt = this.customBuoys[index]
-      this.customBuoys[index] = this.customBuoys[index + 1]
-      this.customBuoys[index + 1] = elt
+      var elt = this.customBuoys[event.from]
+      this.customBuoys.splice(event.to, 0, elt)
+      if (event.from > event.to) {
+        this.customBuoys.splice(event.from + 1, 1)
+      } else {
+        this.customBuoys.splice(event.from, 1)
+      }
 
       this.customBuoys = [...this.customBuoys]
       this.saveBuoys()
@@ -232,18 +240,23 @@ export default {
     },
     onEditBuoy(buoy) {
       const it = this
+      if(!this.customBuoys || this.customBuoys.length == 0) {
+          this.customBuoys = this.buoys
+      }
+
       this.customBuoys.forEach(b => {
         if(b.id == buoy.id) {
           b.name = buoy.name
-          if(buoy.type === "DOOR" && b.latlons.length < 2) {
+          b.type = buoy.type
+          b.latlons = buoy.latlons
+          if(b.type === "DOOR" && b.latlons.length < 2) {
             b.latlons.push({
               lat: it.map.getCenter().lat,
               lon: it.map.getCenter().lng
             })
-          } else if(buoy.type === "WAYPOINT" && b.latlons.length == 2) {
+          } else if(b.type === "WAYPOINT" && b.latlons.length == 2) {
             b.latlons.pop()
           }
-          b.type = buoy.type
         }
       });
       this.saveBuoys()
