@@ -19,6 +19,7 @@
           <li class="bottom"><a href="#buoys" role="tab"><i class="fas fa-map-marked"></i></a></li>
           <li class="bottom"><a href="#boats" role="tab"><i class="fa fa-ship"></i></a></li>
           <li class="bottom"><a href="#settings" role="tab"><i class="fas fa-cog"></i></a></li>
+          <li class="bottom"><a href="#admin" role="tab"><i class="fab fa-jedi-order"></i></a></li>
           <li class="bottom"><a href="#info" role="tab" class="p-2">
             <img src="/images/phtheirichthys-2-512x512.png" alt="Placeholder image">
           </a></li>
@@ -244,6 +245,9 @@
         <div class="leaflet-sidebar-pane" id="settings">
           <Expes v-bind:priv="priv" v-bind:debug="debug"></Expes>
         </div>
+        <div class="leaflet-sidebar-pane" id="admin">
+          <Admin></Admin>
+        </div>
         <div class="leaflet-sidebar-pane" id="info">
           <div class="card">
             <div class="card-image">
@@ -288,6 +292,7 @@ import Expes from './Expes.vue'
 import Boats from './Boats.vue'
 import Table from './Table.vue'
 import Status from './Status.vue'
+import Admin from './admin/Admin.vue'
 import {EventBus} from '../event-bus.js';
 
 import { Capacitor , Plugins } from '@capacitor/core';
@@ -314,7 +319,8 @@ export default {
     Boats,
     Table,
     Expes,
-    Status
+    Status,
+    Admin,
   },
   data: function() {
     return {
