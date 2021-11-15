@@ -239,7 +239,7 @@
           <Polar ref="polars" v-bind:race="race" v-bind:races="races" v-bind:current="current"></Polar>
         </div>
         <div class="leaflet-sidebar-pane" id="buoys">
-          <Buoys v-bind:races="races" v-bind:current="current"></Buoys>
+          <Buoys v-if="race && races" v-bind:raceInit="races[race]"></Buoys>
         </div>
         <div class="leaflet-sidebar-pane" id="settings">
           <Expes v-bind:priv="priv" v-bind:debug="debug"></Expes>

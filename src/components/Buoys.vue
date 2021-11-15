@@ -4,14 +4,7 @@
       <div class="card-content p-2">
         <div class="media mb-1">
           <div class="media-content">
-            <div class="columns is-gapless is-vcentered">
-              <div class="column">
-                <div class="subtitle is-6">race</div>
-              </div>
-              <div class="column">
-                <div class="title is-4">race</div>
-              </div>
-            </div>
+            <div class="title is-4 mb-3">{{ race.name }}</div>
           </div>
           <div class="media-right">
             <button v-show="!edit" class="button is-small is-white" @click="editMode(true)">
@@ -38,6 +31,69 @@
         </div>
 
         <div class="content">
+          <fieldset disabled>
+            <div class="field is-horizontal">
+              <div class="field-label is-normal">
+                <label class="label" style="white-space: nowrap;">Id</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <p class="control is-expanded">
+                    <input class="input is-small" type="text" v-model="race.id">
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="field is-horizontal">
+              <div class="field-label is-normal">
+                <label class="label" style="white-space: nowrap;">Short</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <p class="control is-expanded">
+                    <input class="input is-small" type="text" v-model="race.shortName">
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="field is-horizontal">
+              <div class="field-label is-normal">
+                <label class="label" style="white-space: nowrap;">Polar</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="control is-expanded">
+                    <div class="select is-fullwidth is-small">
+                      <select v-model="race.boat">
+                        <option v-for="polar in polars" :key="polar.id" :value="polar.id">{{ polar.id }}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="field is-horizontal">
+              <div class="field-body">
+                <div class="field has-addons">
+                  <p class="control">
+                    <a class="button is-small is-static"><i class="far fa-calendar-alt"></i></a>
+                  </p>
+                  <p class="control">
+                    <input class="input is-small" type="text" :value="startTime">
+                  </p>
+                  <p class="control">
+                    <a class="button is-small is-static"><i class="fas fa-angle-right"></i></a>
+                  </p>
+                  <p class="control">
+                    <input class="input is-small" type="text" :value="endTime">
+                  </p>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- <bulma_calendar v-if="dates" type="datetime" v-model="dates" :options="calendarOptions" dialog range /> -->
+          <div class="is-4">départ {{ fromNow(race.start_time) }}</div>
         </div>
       </div>
     </div>
@@ -46,7 +102,7 @@
         <div class="card-content p-2">
           <div class="media mb-1">
             <div class="media-content">
-              <div class="columns is-gapless is-vcentered">
+              <div class="columns is-gapless is-vcentered is-mobile">
                 <div class="column">
                   <div v-if="!edit || buoy.type === 'START'" class="subtitle is-6">{{ buoy.type }}</div>
                   <div v-if="edit && buoy.type !== 'START' && buoy.type !== 'END'" class="select is-small">
@@ -78,7 +134,7 @@
           </div>
 
           <div class="content">
-            <div class="columns is-gapless is-vcentered">
+            <div class="columns is-gapless is-vcentered is-mobile">
               <div class="column">
                 <div v-for="(b, index) in buoy.latlons" :key="index">
                   <span class="icon-text"><span class="icon">
@@ -127,30 +183,66 @@
 </template>
 
 <script>
+const moment = require('moment');
 import {EventBus} from '../event-bus.js';
+//import bulma_calendar from "bulma-calendar/dist/components/vue/bulma_calendar.vue";
+import polarService from '../lib/polar.js';
 
 export default {
   name: 'Buoys',
   props: {
-    races: Object,
-    current: Object,
+    raceInit: Object,
   },
   data: function() {
     return {
+      race: null,
       edit: false,
+      dates: null,
+      polars: null,
       buoys: [],
       dragBuoy: null,
       dropTarget: null,
+      calendarOptions: {
+        type: "datetime",
+        lang: navigator.language || "fr-FR",
+        color: "info",
+        dateFormat: "dd/MM/yyyy",
+        displayMode: "default",
+        showFooter: true,
+        weekStart: 1
+      }
     }
   },
-  mounted: function() {
+  created: function() {
+    this.race = this.raceInit
     EventBus.$on('buoys', this.onBuoys)
+
+    if (!this.polars)
+      polarService.loadAll().then(polars => { this.polars = polars })
+
+    this.dates = [new Date(this.race.start_time), new Date(this.race.end_time)]
+  },
+  watch: {
+    raceInit: function() {
+      this.race = this.raceInit
+      this.dates = [new Date(this.race.start_time), new Date(this.race.end_time)]
+    }
+  },
+  computed: {
+    startTime: function() {
+      return moment.utc(this.race.start_time).local().format('L LT')
+    },
+    endTime: function() {
+      return moment.utc(this.race.end_time).local().format('L LT')
+    },
   },
   methods: {
+    fromNow(date) {
+      return moment.utc(date).fromNow()
+    },
     findDropTarget(target) {
       while (!target.classList || !target.classList.contains("droptarget")) {
         if(!target.parentElement) {
-          console.log("OUPSSS")
           return null
         }
         target = target.parentElement
@@ -322,5 +414,18 @@ export default {
   position: relative;
   margin-bottom: 0.75rem;
   opacity: 50%;
+}
+</style>
+
+<style>
+.datetimepicker-clear-button {
+  display: none;
+}
+.datetimepicker-dummy .datetimepicker-dummy-wrapper .datetimepicker-dummy-input:first-child {
+  text-indent: 1.75rem !important;
+}
+
+.datetimepicker-dummy .datetimepicker-dummy-wrapper .datetimepicker-dummy-input {
+  text-indent: 0.5rem !important;
 }
 </style>

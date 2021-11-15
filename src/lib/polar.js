@@ -30,6 +30,20 @@ class Polar {
     })
   }
 
+  loadAll() {
+    return new Promise(function(resolve, reject) {
+      fetch('/polars/api/v1/polars')
+        .then(response => response.json())
+        .then(polars => {
+          resolve(polars)
+        })
+        .catch((error) => {
+          console.error('Error:', error)
+          reject()
+        })
+    })
+  }
+
   interpolationIndex(values, value) {
     var i = 0
     while(values[i] < value) {
