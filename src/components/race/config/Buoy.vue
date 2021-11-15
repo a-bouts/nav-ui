@@ -44,11 +44,11 @@
           <div class="column">
             <div>
               <span class="icon-text" :class="colorClassLeft"><span class="icon"><i class="fas fa-square-full" :class="{'start': edit, 'waypoint': !edit}"></i></span>
-              <span>{{ buoy.latlons[0].lat }} - {{ buoy.latlons[0].lon }}</span></span>
+              <span>{{ coord(buoy.latlons[0]) }}</span></span>
             </div>
             <div v-if="buoy.latlons.length > 1">
               <span class="icon-text" :class="colorClassRight"><span class="icon"><i class="fas fa-square-full"></i></span>
-              <span>{{ buoy.latlons[1].lat }} - {{ buoy.latlons[1].lon }}</span></span>
+              <span>{{ coord(buoy.latlons[1]) }}</span></span>
             </div>
 
             <div v-if="buoy.type === 'END' && buoy.latlons.length == 1">
@@ -88,6 +88,7 @@
 
 <script>
 import {EventBus} from '../../../event-bus.js';
+import utils from '../../../lib/utils.js';
 
 export default {
   name: 'Buoy',
@@ -139,6 +140,12 @@ export default {
     },
   },
   methods: {
+    coord(latlon) {
+      var lat = utils.dd2dms(latlon.lat)
+      var lon = utils.dd2dms(latlon.lon)
+
+      return utils.lat2string(lat) + " - " + utils.lon2string(lon)
+    },
     remove(index) {
       EventBus.$emit('remove-buoy', index)
     },
