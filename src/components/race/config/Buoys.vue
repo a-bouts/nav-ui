@@ -78,13 +78,13 @@
                   <p class="control">
                     <a class="button is-small is-static"><i class="far fa-calendar-alt"></i></a>
                   </p>
-                  <p class="control">
+                  <p class="control is-expanded">
                     <input class="input is-small" type="text" :value="startTime">
                   </p>
                   <p class="control">
                     <a class="button is-small is-static"><i class="fas fa-angle-right"></i></a>
                   </p>
-                  <p class="control">
+                  <p class="control is-expanded">
                     <input class="input is-small" type="text" :value="endTime">
                   </p>
                 </div>
@@ -97,99 +97,30 @@
         </div>
       </div>
     </div>
-    <div class="droptarget" v-for="(buoy, index) in buoys" :key="index" :draggable="edit && buoy.type !=='START' && buoy.type !== 'END'" @dragstart="dragstart(index)" @dragenter="dragenter(buoy, $event)" @dragover="dragover(buoy, $event)" @dragleave="dragleave(buoy, $event)" @dragend="dragend" @drop="drop(index, $event)">
-      <div class="card mb-3">
-        <div class="card-content p-2">
-          <div class="media mb-1">
-            <div class="media-content">
-              <div class="columns is-gapless is-vcentered is-mobile">
-                <div class="column">
-                  <div v-if="!edit || buoy.type === 'START'" class="subtitle is-6">{{ buoy.type }}</div>
-                  <div v-if="edit && buoy.type !== 'START' && buoy.type !== 'END'" class="select is-small">
-                    <select v-model="buoy.type" @change="onEdit(buoy)">
-                      <option value="DOOR">DOOR</option>
-                      <option value="WAYPOINT">WAYPOINT</option>
-                    </select>
-                  </div>
-                  <div v-if="edit && buoy.type === 'END'" class="is-small">
-                    <label class="checkbox">
-                      <input type="checkbox" :checked="buoy.latlons.length > 1" @change="endIsADoor(buoy)">
-                      Door
-                    </label>
-                  </div>
-                </div>
-                <div class="column">
-                  <div v-if="!edit || buoy.type === 'START' || buoy.type === 'END'" class="title is-4">{{ buoy.name }}</div>
-                  <input v-if="edit && buoy.type !== 'START' && buoy.type !== 'END'" v-model="buoy.name" @change="onEdit(buoy)" class="input is-small" type="text">
-                </div>
-              </div>
-            </div>
-            <div class="media-right">
-              <button v-show="edit && buoy.type !== 'START' && buoy.type !== 'END'" class="button is-small is-white" @click="remove(index)">
-                <span class="icon is-small">
-                  <i class="fas fa-trash"></i>
-                </span>
-              </button>
-            </div>
-          </div>
+    <!-- <div class="droptarget" v-for="(buoy, index) in buoys" :key="index" :draggable="edit && buoy.type !=='START' && buoy.type !== 'END'" @dragstart="dragstart(index)" @dragenter="dragenter(buoy, $event)" @dragover="dragover(buoy, $event)" @dragleave="dragleave(buoy, $event)" @dragend="dragend" @drop="drop(index, $event)">
+      <Buoy :buoyInit="buoy" :index="index" :edit="edit"></Buoy>
+    </div> -->
 
-          <div class="content">
-            <div class="columns is-gapless is-vcentered is-mobile">
-              <div class="column">
-                <div v-for="(b, index) in buoy.latlons" :key="index">
-                  <span class="icon-text"><span class="icon">
-                    <i v-show="buoy.type === 'START'" class="fas fa-square-full start"></i>
-                    <i v-show="buoy.type === 'END'" class="fas fa-square-full end" :class="{'end-left': buoy.latlons.length > 1 && index == 0, 'end-right': buoy.latlons.length > 1 && index == 1}"></i>
-                    <i v-show="buoy.type === 'WAYPOINT'" class="fas fa-square-full buoy"></i>
-                    <i v-show="buoy.type === 'DOOR'" class="fas fa-square-full" :class="{'door-left': index == 0, 'door-right': index == 1}"></i>
-                  </span>
-                  <span>{{ b.lat }} - {{ b.lon }}</span></span>
-                </div>
-                <div v-if="buoy.type === 'END' && buoy.latlons.length == 1">
-                  <span class="icon-text">
-                    <span class="icon">
-                      <i class="far fa-circle"></i>
-                    </span>
-                    <span v-show="!edit">{{ buoy.radius }} milles</span>
-                    <span v-show="edit">
-                      <div class="field has-addons">
-                        <p class="control">
-                          <a class="button  is-small is-static">
-                            NM
-                          </a>
-                        </p>
-                        <p class="control">
-                          <input v-model="buoy.radius" @change="onEdit(buoy)" class="input is-small" type="text">
-                        </p>
-                      </div>
-                    </span>
-                  </span>
-                </div>
-              </div>
-              <div class="column is-narrow">
-                <button v-show="edit && buoy.type == 'DOOR'" class="button is-small is-white" @click="reverse(buoy)">
-                  <span class="icon is-small">
-                    <i class="fas fa-random"></i>
-                  </span>
-                </button>
-                <!-- <span class="icon"><i v-if="buoy.latlons.length > 1" class="fas fa-lg fa-random"></i></span> -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <draggable v-model="buoys" draggable=".draggable" @change="moveBuoy">
+      <Buoy :class="{draggable: edit && buoy.type !=='START' && buoy.type !== 'END'}" v-for="(buoy, index) in buoys" :key="index" :buoyInit="buoy" :index="index" :edit="edit"></Buoy>
+    </draggable>
   </div>
 </template>
 
 <script>
 const moment = require('moment');
-import {EventBus} from '../event-bus.js';
+import Buoy from './Buoy.vue'
+import {EventBus} from '../../../event-bus.js';
 //import bulma_calendar from "bulma-calendar/dist/components/vue/bulma_calendar.vue";
-import polarService from '../lib/polar.js';
+import polarService from '../../../lib/polar.js';
+import draggable from 'vuedraggable'
 
 export default {
   name: 'Buoys',
+  components: {
+    Buoy,
+    draggable
+  },
   props: {
     raceInit: Object,
   },
@@ -297,11 +228,11 @@ export default {
       // if (!target)
       //   return
 
-      if (this.dropTarget.classList.contains("insert-before"))
-        this.dropTarget.classList.remove("insert-before")
-      if (this.dropTarget.classList.contains("insert-after"))
-        this.dropTarget.classList.remove("insert-after")
-      this.dropTarget = null
+      // if (this.dropTarget.classList.contains("insert-before"))
+      //   this.dropTarget.classList.remove("insert-before")
+      // if (this.dropTarget.classList.contains("insert-after"))
+      //   this.dropTarget.classList.remove("insert-after")
+      // this.dropTarget = null
     },
     dragend() {
       this.dragBuoy = null
@@ -315,6 +246,12 @@ export default {
       if (buoyIndex > 0)
         EventBus.$emit('order-buoy', {from: this.dragBuoy, to: buoyIndex});
       return false;
+    },
+    moveBuoy(event) {
+      if (event.moved) {
+        console.log({from: event.moved.oldIndex, to: event.moved.newIndex})
+        EventBus.$emit('order-buoy', {from: event.moved.oldIndex, to: event.moved.newIndex});
+      }
     },
     onBuoys(buoys) {
       this.buoys = buoys
@@ -330,70 +267,11 @@ export default {
       this.editMode(false)
       EventBus.$emit('clear-buoy')
     },
-    remove(index) {
-      EventBus.$emit('remove-buoy', index)
-    },
-    onEdit(buoy) {
-      EventBus.$emit('edit-buoy', buoy)
-    },
-    reverse(buoy) {
-      console.log("reverse", buoy.name)
-      buoy.latlons = [
-        buoy.latlons[1],
-        buoy.latlons[0]
-      ]
-      this.onEdit(buoy)
-    },
-    save() {
-      this.$emit('buoys', this.buoys)
-    },
-    setBuoy(index, buoy) {
-      this.customBuoys[index] = buoy
-    },
-    editBuoy(buoy) {
-      if(this.edit == buoy.id) {
-        this.edit = null
-      } else {
-        this.edit = buoy.id
-      }
-    },
-    endIsADoor(buoy) {
-      if (buoy.latlons.length == 1) {
-        buoy.latlons.push({
-          lat: 0,
-          lon: 0
-        })
-      } else {
-        buoy.latlons.pop()
-      }
-      this.onEdit(buoy)
-    }
   }
 }
 </script>
 
 <style scoped>
-.start {
-  color: #008c38;
-}
-.buoy {
-  color: #f5b72f;
-}
-.door-left {
-  color: #9c272b;
-}
-.door-right {
-  color: #008c38;
-}
-.end {
-  color: #ee8b1c;
-}
-.end-left {
-  color: #9c272b;
-}
-.end-right {
-  color: #008c38;
-}
 
 .droptarget * {
   /* pointer-events: none; */

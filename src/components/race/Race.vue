@@ -5,11 +5,11 @@
 </template>
 
 <script>
-import dataService from '../lib/data.js'
+import dataService from '../../lib/data.js'
 import L from 'leaflet'
 import 'leaflet-extra-markers'
 import Buoy from './Buoy.vue'
-import {EventBus} from '../event-bus.js'
+import {EventBus} from '../../event-bus.js'
 import { v4 as uuidv4 } from 'uuid'
 
 export default {
@@ -200,12 +200,8 @@ export default {
       }
 
       var elt = this.customBuoys[event.from]
+      this.customBuoys.splice(event.from, 1)
       this.customBuoys.splice(event.to, 0, elt)
-      if (event.from > event.to) {
-        this.customBuoys.splice(event.from + 1, 1)
-      } else {
-        this.customBuoys.splice(event.from, 1)
-      }
 
       this.customBuoys = [...this.customBuoys]
       this.saveBuoys()
@@ -219,6 +215,7 @@ export default {
         lat: event.position.lat,
         lon: event.position.lng
       }
+      this.customBuoys[index].latlons = [...this.customBuoys[index].latlons]
       this.saveBuoys()
     },
     saveBuoys() {
@@ -248,7 +245,7 @@ export default {
         if(b.id == buoy.id) {
           b.name = buoy.name
           b.type = buoy.type
-          b.latlons = buoy.latlons
+          b.latlons = [...buoy.latlons]
           if(b.type === "DOOR" && b.latlons.length < 2) {
             b.latlons.push({
               lat: it.map.getCenter().lat,

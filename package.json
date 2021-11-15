@@ -34,7 +34,8 @@
     "vue-json-csv": "^1.2.12",
     "vue-resource": "^1.5.1",
     "vue-router": "^3.4.9",
-    "vue2-leaflet": "^2.5.2"
+    "vue2-leaflet": "^2.5.2",
+    "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.6",
