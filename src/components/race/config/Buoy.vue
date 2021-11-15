@@ -1,6 +1,11 @@
 <template>
   <div class="card mb-3">
-    <div class="card-content p-2">
+    <div v-show="edit" class="dragger has-text-grey-lighter">
+      <span v-if="buoy.type !=='START' && buoy.type !== 'END'" class="icon">
+        <i class="fas fa-grip-vertical"></i>
+      </span>
+    </div>
+    <div class="card-content p-2" :class="{'with-dragger': edit}">
       <div class="media mb-1">
         <div class="media-content">
           <div class="columns is-gapless is-vcentered is-mobile">
@@ -186,5 +191,22 @@ export default {
 }
 .end-right span :first-of-type  {
   color: #008c38;
+}
+
+.dragger {
+  height: 100%;
+  width: 20px;
+  position: absolute;
+  display: block;
+}
+
+.dragger span {
+  height: 100%;
+  width: 100%;
+  cursor: grab;
+}
+
+.with-dragger {
+  margin-left: 20px
 }
 </style>

@@ -97,11 +97,8 @@
         </div>
       </div>
     </div>
-    <!-- <div class="droptarget" v-for="(buoy, index) in buoys" :key="index" :draggable="edit && buoy.type !=='START' && buoy.type !== 'END'" @dragstart="dragstart(index)" @dragenter="dragenter(buoy, $event)" @dragover="dragover(buoy, $event)" @dragleave="dragleave(buoy, $event)" @dragend="dragend" @drop="drop(index, $event)">
-      <Buoy :buoyInit="buoy" :index="index" :edit="edit"></Buoy>
-    </div> -->
 
-    <draggable v-model="buoys" draggable=".draggable" @change="moveBuoy">
+    <draggable v-model="buoys" draggable=".draggable" handle=".dragger" @change="moveBuoy">
       <Buoy :class="{draggable: edit && buoy.type !=='START' && buoy.type !== 'END'}" v-for="(buoy, index) in buoys" :key="index" :buoyInit="buoy" :index="index" :edit="edit"></Buoy>
     </draggable>
   </div>
@@ -272,27 +269,6 @@ export default {
 </script>
 
 <style scoped>
-
-.droptarget * {
-  /* pointer-events: none; */
-}
-
-.insert-before::before,
-.insert-after::after {
-  content: "";
-
-  background-color: white;
-  height: 75px;
-  display: block;
-  border-radius: 0.25rem;
-  border-style: dashed;
-  box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
-  color: #4a4a4a;
-  max-width: 100%;
-  position: relative;
-  margin-bottom: 0.75rem;
-  opacity: 50%;
-}
 </style>
 
 <style>
