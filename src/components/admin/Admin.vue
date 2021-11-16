@@ -1,9 +1,35 @@
 <template>
   <div>
-    Cette section est protégée. Y accéder sans permission vous expose au supplice de la planche.
+    <section v-if="!display_name" class="hero is-danger">
+      <div class="hero-head">
+        <nav class="navbar">
+          <div class="container">
+            <div id="navbarMenuHeroA" class="navbar-menu">
+              <div class="navbar-end">
+                <span class="navbar-item">
+                  <a class="button is-danger is-inverted mr-2" @click="login">
+                    <span class="icon">
+                      <i class="fab fa-mandalorian"></i>
+                    </span>
+                    <span>Login</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+      <div class="hero-body p-5" style="margin-top: -60px">
+        <p class="subtitle">
+          Cabine du capitaine
+        </p>
+        <p>
+          Accès interdit aux femmes et aux lapins. Y accéder sans permission vous expose au supplice de la planche.
+        </p>
+      </div>
+    </section>
 
-    <div v-if="display_name">{{ display_name }}</div>
-    <div v-else><button class="button" @click="login">Login</button></div>
+    <div v-else>{{ display_name }}</div>
   </div>
 </template>
 
@@ -13,10 +39,11 @@ export default {
   props: {
   },
   mounted() {
+    console.log("mounted")
     fetch('/api/user/info')
       .then(response => {
         if(response.ok) {
-          return response.json().then(json => this.display_name = json.display_name)
+          return response.json().then(json => this.display_name = json.data.display_name)
         }
       })
       .catch((error) => {

@@ -246,7 +246,7 @@
           <Expes v-bind:priv="priv" v-bind:debug="debug"></Expes>
         </div>
         <div class="leaflet-sidebar-pane" id="admin">
-          <Admin></Admin>
+          <Admin v-bind:display="displayed == 'admin'"></Admin>
         </div>
         <div class="leaflet-sidebar-pane" id="info">
           <div class="card">

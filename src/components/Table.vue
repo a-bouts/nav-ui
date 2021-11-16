@@ -113,7 +113,20 @@
         </tr>
       </table>
 
-      <download-csv :data="lines" name="phtheirichthys.csv" delimiter=";"
+      <download-csv v-show="table == 'route'" :data="lines" name="phtheirichthys-route.csv" delimiter=";"
+          :fields="['date', 'dlat', 'dlon', 'bearing', 'twa', 'wind', 'windSpeed', 'boatSpeed', 'sail']"
+          :labels="{date: 'Date', dlat: 'Latitude', dlon: 'Longitude', bearing: 'HDG', twa: 'TWA', wind: 'TWD', windSpeed: 'TWS', boatSpeed: 'Speed', sail: 'Sail'}"
+          >
+        <button class="button">
+          <span class="icon">
+            <i class="fas fa-file-download"></i>
+          </span>
+          <span>csv</span>
+        </button>
+        <!--<img src="download_icon.png">-->
+      </download-csv>
+
+      <download-csv v-show="table == 'progs'" :data="progsLine" name="phtheirichthys-progs.csv" delimiter=";"
           :fields="['date', 'dlat', 'dlon', 'bearing', 'twa', 'wind', 'windSpeed', 'boatSpeed', 'sail']"
           :labels="{date: 'Date', dlat: 'Latitude', dlon: 'Longitude', bearing: 'HDG', twa: 'TWA', wind: 'TWD', windSpeed: 'TWS', boatSpeed: 'Speed', sail: 'Sail'}"
           >
