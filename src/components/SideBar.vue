@@ -439,6 +439,10 @@ export default {
           L.DomUtil.addClass(this._container, 'extended');
           it.$refs.table.refresh()
         }
+      } else if(e.id == "admin") {
+        if (!L.DomUtil.hasClass(this._container, 'extended')) {
+          L.DomUtil.addClass(this._container, 'extended');
+        }
       } else {
         if (L.DomUtil.hasClass(this._container, 'extended')) {
           L.DomUtil.removeClass(this._container, 'extended');
