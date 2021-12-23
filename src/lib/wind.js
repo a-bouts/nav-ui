@@ -116,7 +116,7 @@ class Wind {
 
       self.loadingForecastsData[stamp.id()] = this
       //fetch('/winds/api/v2/winds/'+stamp.forecast_time.format("YYYYMMDDHH")+'/'+stamp.ref_time.format("YYYYMMDDHH"))
-      fetch('http://winds.phtheirichthys.fr/'+stamp.fileName())
+      fetch('https://winds.phtheirichthys.fr/'+stamp.fileName())
         .then(response => response.json())
         .then(response => {
           self.forecastsData[stamp.id()] = response

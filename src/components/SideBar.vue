@@ -246,7 +246,7 @@
           <Expes v-bind:priv="priv" v-bind:debug="debug"></Expes>
         </div>
         <div class="leaflet-sidebar-pane" id="admin">
-          <Admin v-bind:display="displayed == 'admin'"></Admin>
+          <Admin ref="admin" v-bind:display="displayed == 'admin'"></Admin>
         </div>
         <div class="leaflet-sidebar-pane" id="info">
           <div class="card">
@@ -442,6 +442,7 @@ export default {
       } else if(e.id == "admin") {
         if (!L.DomUtil.hasClass(this._container, 'extended')) {
           L.DomUtil.addClass(this._container, 'extended');
+          it.$refs.admin.refresh()
         }
       } else {
         if (L.DomUtil.hasClass(this._container, 'extended')) {

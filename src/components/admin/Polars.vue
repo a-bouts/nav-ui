@@ -9,6 +9,11 @@ export default {
   name: 'Polars',
   props: {
   },
+  methods: {
+    refresh() {
+      
+    }
+  }
 }
 </script>
 

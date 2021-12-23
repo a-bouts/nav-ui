@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <section v-if="!connected" class="hero is-danger">
+    <section v-if="connected" class="hero is-danger">
       <div class="hero-body p-5">
         <div class="columns is-vcentered is-mobile">
           <div class="column">
@@ -24,17 +24,17 @@
     </section>
 
     <div v-else>
-      <div class="tabs is-toggle">
+      <div class="tabs is-boxed is-centered">
         <ul>
           <li :class="{'is-active': tab == 'races'}"><a @click="displayRaces">Races</a></li>
           <li :class="{'is-active': tab == 'polars'}"><a @click="displayPolars">Polars</a></li>
         </ul>
       </div>
-      <div v-show="tab == 'races'" style="overflow-x:scroll;">
-        <Races v-on:disconnected="disconnected" />
+      <div v-show="tab == 'races'">
+        <Races ref="races" v-on:disconnected="disconnected" />
       </div>
       <div v-show="tab == 'polars'" style="overflow-x:scroll;">
-        <Polars v-on:disconnected="disconnected" />
+        <Polars ref="polars" v-on:disconnected="disconnected" />
       </div>
     </div>
   </div>
@@ -75,6 +75,10 @@ export default {
     }
   },
   methods: {
+    refresh() {
+      this.$refs.races.refresh()
+      this.$refs.polars.refresh()
+    },
     login() {
       window.location = "https://login.phtheirichthys.fr/?rd=" + encodeURIComponent(window.location) + "&rm=GET"
     },
