@@ -1,7 +1,32 @@
 const moment = require('moment');
 
+class Stamp {
+  constructor(ref_time, forecast_time) {
+    this.ref_time = moment.utc(ref_time)
+    this.forecast_time = moment.utc(forecast_time)
+  }
+
+  id() {
+    return this.ref_time.format("YYYYMMDDHH") + "-" + this.forecast_time.format("YYYYMMDDHH")
+  }
+
+  fromNow() {
+    return moment.duration(this.forecast_time - moment().utc()).asSeconds() / 3600
+  }
+
+  forecastHour() {
+    return moment.duration(this.forecast_time.diff(this.ref_time)).asHours()
+  }
+
+  fileName() {
+    return this.ref_time.format("YYYYMMDDHH") + ".f" + String(this.forecastHour()).padStart(3, '0')
+  }
+}
+
+
 class Wind {
   constructor() {
+    this.infos = null
     this.forecasts = null
     this.forecastsData = []
     this.loadingForecasts = null
@@ -20,21 +45,43 @@ class Wind {
     const self = this
     this.loadingForecasts = new Promise(function(resolve, reject) {
 
-      fetch('/winds/api/v1/winds')
+      fetch('/winds/api/v2/winds?provider=noaa')
         .then(response => response.json())
-        .then(forecasts => {
-          self.forecasts = forecasts
-          self.forecasts.sort((a, b) => a.hour - b.hour)
+        .then(response => {
+
+          self.infos = {
+            provider: response.provider,
+            provider_name: response.provider_name,
+            current_ref_time: moment.utc(response.current_ref_time),
+            last: {
+              forecast_time: moment.utc(response.last.forecast_time),
+              ref_time: moment.utc(response.last.ref_time)
+            },
+            progress: response.progress
+          }
+
+          self.forecasts = []
+          for (var forecast of response.forecasts) {
+            var stamp = new Stamp(forecast.ref_times[0], forecast.forecast_time)
+            self.forecasts.push({
+              from_now: stamp.fromNow(),
+              forecast_time: moment.utc(forecast.forecast_time).format("YYYYMMDDHH"),
+              stamp: stamp,
+              stamp2: forecast.ref_times.length > 1 ? new Stamp(forecast.ref_times[1], forecast.forecast_time) : null
+            })
+          }
+
+          self.forecasts.sort((a, b) => a.from_now - b.from_now)
 
           var forecastsData = {}
-          for (var i= 0 ; i < self.forecasts.length ; i++) {
-            if (self.forecastsData[self.forecasts[i].stamp + "-" + self.forecasts[i].forecast]) {
-              forecastsData[self.forecasts[i].stamp + "-" + self.forecasts[i].forecast] = self.forecastsData[self.forecasts[i].stamp + "-" + self.forecasts[i].forecast]
+          for (forecast of self.forecasts) {
+            if (self.forecastsData[forecast.stamp.id()]) {
+              forecastsData[forecast.stamp.id()] = self.forecastsData[forecast.stamp.id()]
             }
           }
           self.forecastsData = forecastsData
 
-          resolve(self.forecasts)
+          resolve({infos: self.infos, forecasts: self.forecasts})
         })
         .catch((error) => {
           console.error('Error:', error)
@@ -55,34 +102,35 @@ class Wind {
       stamp = w.stamp2
     }
 
-    if (this.loadingForecastsData[stamp + "-" + w.forecast]) {
-      return this.loadingForecastsData[stamp + "-" + w.forecast]
+    if (this.loadingForecastsData[stamp.id()]) {
+      return this.loadingForecastsData[stamp.id()]
     }
 
-    if(self.forecastsData[stamp + "-" + w.forecast]) {
+    if(self.forecastsData[stamp.id()]) {
       return new Promise(function(resolve) {
-        resolve(self.forecastsData[stamp + "-" + w.forecast])
+        resolve(self.forecastsData[stamp.id()])
       })
     }
 
-    this.loadingForecastsData[stamp + "-" + w.forecast] = new Promise(function(resolve, reject) {
+    this.loadingForecastsData[stamp.id()] = new Promise(function(resolve, reject) {
 
-      self.loadingForecastsData[stamp + "-" + w.forecast] = this
-      fetch('/winds/api/v1/winds/'+w.forecast+'/'+stamp)
+      self.loadingForecastsData[stamp.id()] = this
+      //fetch('/winds/api/v2/winds/'+stamp.forecast_time.format("YYYYMMDDHH")+'/'+stamp.ref_time.format("YYYYMMDDHH"))
+      fetch('http://winds.phtheirichthys.fr/'+stamp.fileName())
         .then(response => response.json())
         .then(response => {
-          self.forecastsData[stamp + "-" + w.forecast] = response
+          self.forecastsData[stamp.id()] = response
           resolve(response)
-          delete self.loadingForecastsData[stamp + "-" + w.forecast]
+          delete self.loadingForecastsData[stamp.id()]
         })
         .catch(error => {
           console.log("Error loading winds", error)
           reject()
-          delete self.loadingForecastsData[stamp + "-" + w.forecast]
+          delete self.loadingForecastsData[stamp.id()]
         })
     })
 
-    return this.loadingForecastsData[stamp + "-" + w.forecast]
+    return this.loadingForecastsData[stamp.id()]
   }
 
   async loadWindAsync2(w) {
@@ -126,16 +174,16 @@ class Wind {
 
     return new Promise(function(resolve) {
 
-      if (self.forecasts[0].forecast > stamp) {
+      if (self.forecasts[0].forecast_time > stamp) {
         self.loadWindAsync2(self.forecasts[0]).then(() => {
           resolve([self.getWinds(self.forecasts[0]), null, 0])
         })
         return
       }
       for (var i in self.forecasts) {
-        if (self.forecasts[i].forecast > stamp) {
-          const m_i_1 = moment.utc(self.forecasts[i-1].forecast, "YYYYMMDDHH")
-          const m_i = moment.utc(self.forecasts[i].forecast, "YYYYMMDDHH")
+        if (self.forecasts[i].forecast_time > stamp) {
+          const m_i_1 = moment.utc(self.forecasts[i-1].forecast_time, "YYYYMMDDHH")
+          const m_i = moment.utc(self.forecasts[i].forecast_time, "YYYYMMDDHH")
           const h = moment.duration(now.diff(m_i_1)).asMinutes();
           const delta = moment.duration(m_i.diff(m_i_1)).asMinutes();
           self.loadWindAsync2(self.forecasts[i-1]).then(() => {
@@ -164,10 +212,10 @@ class Wind {
   }
 
   getWind(forecast, n) {
-    var key = forecast.stamp + "-" + forecast.forecast
+    var key = forecast.stamp.id()
 
     if (n === true && forecast.stamp2) {
-      key = forecast.stamp2 + "-" + forecast.forecast
+      key = forecast.stamp2.id()
     }
 
     var w = {}
