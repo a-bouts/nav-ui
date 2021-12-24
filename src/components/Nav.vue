@@ -21,6 +21,7 @@ import Vue from 'vue'
 import {EventBus} from '../event-bus.js'
 import L from 'leaflet'
 import * as esri from "esri-leaflet"
+import 'leaflet-providers'
 import 'leaflet-extra-markers'
 import TitleControl from './TitleControl.vue'
 import WindControl from './WindControl.vue'
@@ -136,15 +137,29 @@ export default {
 
     this.map = L.map('map', {zoomControl: true, worldCopyJump: false}).setView([51.505, -0.09], 13)
 
-    var imagery = esri.basemapLayer('Imagery').addTo(this.map)
+    //var imagery = esri.basemapLayer('Imagery').addTo(this.map)
+    var imagery = L.tileLayer.provider('GeoportailFrance.orthos').addTo(this.map)
     var darkGray = esri.basemapLayer('DarkGray')
+
+    var lightGrey = L.tileLayer.provider('Stamen.TonerLite')
+    var stamen1 = L.tileLayer.provider('Stamen.Watercolor')
+    var stamen2 = L.tileLayer.provider('Stamen.Terrain')
+    var night = L.tileLayer.provider('NASAGIBS.ViirsEarthAtNight2012')
 
     var baseLayers = {
       "Satellite": imagery,
-      "Dark Gray": darkGray
+      "Dark Gray": darkGray,
+      "Light Grey": lightGrey,
+      "Stamen 1": stamen1,
+      "Stamen 2": stamen2,
+      "Night": night,
     }
 
     this.layerControl = L.control.layers(baseLayers).addTo(this.map)
+
+    this.layerControl.addOverlay(L.tileLayer.provider('OpenSeaMap'), "Sea Markers");
+    this.layerControl.addOverlay(L.tileLayer.provider('OpenRailwayMap'), "Railways");
+
 
     this.boatLineLayer = L.layerGroup().addTo(this.map)
 
