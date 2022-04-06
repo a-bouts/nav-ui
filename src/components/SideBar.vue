@@ -62,6 +62,12 @@
                   </div>
                 </div>
               </div>
+              <div class="field">
+                <label class="label">Auto</label>
+                <div class="control">
+                  <input v-model="current.autoSail" type="checkbox">
+                </div>
+              </div>
             </div>
             <label class="label">Copier - coller</label>
             <div class="field is-grouped">
@@ -333,6 +339,7 @@ export default {
         id: "",
         bearing: 180,
         sail: 0,
+        auto: false,
         position: {
           lat: {
             d: 0, p: 1, m: 0, s: 0
@@ -514,6 +521,7 @@ export default {
           this.current = {
             bearing: 180,
             sail: 0,
+            auto: false,
             position: {
               lat: this.convertDDToDMS(this.races[this.race].start.lat),
               lng: this.convertDDToDMS(this.races[this.race].start.lon),

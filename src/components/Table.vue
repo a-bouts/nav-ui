@@ -52,6 +52,7 @@
             <th class="has-text-centered"><i class='fa fa-location-arrow'></i></th>
             <th></th>
             <th></th>
+            <th>Boost</th>
             <th class="has-text-centered" colspan="2"><i class='fa fa-wind'></i></th>
             <th class="has-text-centered"><i class='fa fa-ship'></i></th>
             <th class="has-text-centered"><i class='fa fa-clock'></i></th>
@@ -72,6 +73,7 @@
           <td class="has-text-right" :class="{'has-text-danger': l.twa < 0, 'has-text-success': l.twa > 0}">{{ parseFloat(l.twa).toFixed(1) }}°</td>
           <td :class="sailClass(l.sail)">{{ l.sail }}</td>
           <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
+          <td><span v-if="l.boost > 0">{{ l.boost }}%</span></td>
           <td class="has-text-right">{{ parseFloat(l.wind).toFixed(1) }}°</td>
           <td class="has-text-right">{{ parseFloat(l.windSpeed).toFixed(1) }} kt</td>
           <td class="has-text-right">{{ parseFloat(l.boatSpeed).toFixed(1) }} kt</td>
@@ -91,6 +93,7 @@
             <th class="has-text-centered"><i class='fa fa-location-arrow'></i></th>
             <th></th>
             <th></th>
+            <th>Boost</th>
             <th class="has-text-centered" colspan="2"><i class='fa fa-wind'></i></th>
             <th class="has-text-centered"><i class='fa fa-ship'></i></th>
             <th class="has-text-centered">Latitude</th>
@@ -105,6 +108,7 @@
           <td class="has-text-right" :class="{'has-background-warning-light': !l.outdated && l.isTwa, 'has-text-danger': l.twa < 0, 'has-text-success': l.twa > 0}">{{ parseFloat(l.twa).toFixed(1) }}°</td>
           <td :class="sailClass(l.sail)">{{ l.sail }}</td>
           <td><span v-if="l.foil > 0" class='foil' v-bind:style="{opacity: l.foil + '%'}"><i class='fa fa-fighter-jet'></i></span></td>
+          <td><span v-if="l.boost > 0">{{ l.boost }}%</span></td>
           <td class="has-text-right">{{ parseFloat(l.wind).toFixed(1) }}°</td>
           <td class="has-text-right">{{ parseFloat(l.windSpeed).toFixed(1) }} kt</td>
           <td class="has-text-right">{{ parseFloat(l.boatSpeed).toFixed(1) }} kt</td>
@@ -293,6 +297,7 @@ export default {
           lon: pad(lon.d, 2) + "°" + (lon.p < 0 ? "W" : "E") + " " + pad(lon.m, 2) + "'" + pad(lon.s, 2) + "\"",
           sail: sails[wl.sail],
           foil: wl.foil,
+          boost: wl.boost,
           wind: wl.wind.toFixed(4),
           windSpeed: wl.windSpeed.toFixed(4),
           boatSpeed: wl.boatSpeed.toFixed(4),

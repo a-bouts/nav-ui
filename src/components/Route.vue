@@ -184,7 +184,8 @@ export default {
           sail: this.current.sails,
           foil: this.current.foil,
           hull: this.current.hull,
-          winch: this.current.winch
+          winch: this.current.winch,
+          autoSail: this.current.autoSail
         }
       }
 
