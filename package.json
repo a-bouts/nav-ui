@@ -28,7 +28,7 @@
     "leaflet-velocity": "^1.7.0",
     "leaflet.geodesic": "^2.5.5-0",
     "lz-string": "^1.4.4",
-    "moment": "^2.29.0",
+    "moment": "^2.29.2",
     "uuid": "^8.3.1",
     "vconsole": "3.3.4",
     "vue": "^2.6.11",
