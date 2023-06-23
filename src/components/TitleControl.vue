@@ -7,19 +7,20 @@
     </span>
     <i class="fas fa-exchange-alt"></i>
     <span class="is-clickable" @click="selectRace()">
-      {{ this.races[this.race].name }}
+      {{ name }}
     </span>
   </div>
 </template>
 
 <script>
+import dataService from '../lib/data.js';
 import {EventBus} from '../event-bus.js';
+
 
 export default {
   name: 'TitleControl',
   props: {
     race: String,
-    races: null,
     boat: String
   },
   data: function () {
@@ -28,6 +29,9 @@ export default {
   mounted: function() {
   },
   computed: {
+    name() {
+      return dataService.getRace(this.race).name
+    }
   },
   methods: {
     selectRace() {

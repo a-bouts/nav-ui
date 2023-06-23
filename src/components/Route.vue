@@ -19,7 +19,6 @@ export default {
     map: Object,
     layerControl: Object,
     current: Object,
-    races: Object
   },
   data: function() {
     const squareSize = 20
@@ -179,7 +178,7 @@ export default {
         },
         bearing: this.current.bearing,
         currentSail: this.current.sail,
-        race: {...this.races[this.race]},
+        race: {...dataService.getRace(this.race)},
         options: {
           sail: this.current.sails,
           foil: this.current.foil,

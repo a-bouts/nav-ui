@@ -5,6 +5,7 @@ class Data {
     this.SETTINGS = "_settings_"
     this.EXPES = "_expes_"
     this.BOATS = "_boats_"
+    this.RACES = "_races_"
 
     this.EMPTY = ""
     this.LAST_ISOCHRONES = "_last_isochrones_"
@@ -21,6 +22,7 @@ class Data {
       {model: this.SETTINGS, context: {boat: false, race: false}},
       {model: this.EXPES, context: {boat: false, race: false}},
       {model: this.BOATS, context: {boat: false, race: false}},
+      {model: this.RACES, context: {boat: false, race: false}},
       {model: this.LAST_ISOCHRONES, context: {boat: true, race: true}},
       {model: this.LAST, context: {boat: true, race: true}},
       {model: this.PREVIOUS, context: {boat: true, race: true}},
@@ -30,6 +32,8 @@ class Data {
       {model: this.ZOOM, context: {boat: true, race: true}},
       {model: this.EMPTY, context: {boat: true, race: true}},
     ]
+
+    this.races = {}
   }
 
   static get instance() {
@@ -151,6 +155,64 @@ class Data {
 
   saveBoats(boats) {
     localStorage.setItem(this.BOATS, JSON.stringify(boats))
+  }
+
+  // ***************
+  // ** RACES
+  // ***************
+
+  loadRaces() {
+    let it = this
+    return new Promise(function(resolve, reject) {
+      fetch('races/api/v1/races', {headers: {'Cache-Control': 'no-cache'}})
+        .then(response => response.json())
+        .then(races => {
+          it.races = JSON.parse(localStorage.getItem(it.RACES))
+          if (!it.races)
+            it.races = {}
+          for (var race of races) {
+            if (!(race.id in it.races))
+              it.races[race.id] = race
+          }
+
+          resolve()
+        })
+        .catch((error) => {
+          console.error('Error:', error)
+          reject()
+        })
+    })
+  
+  }
+
+  removeRace(race) {
+    let races = JSON.parse(localStorage.getItem(this.RACES))
+    if (!races)
+      races = {}
+    delete races[race]
+    this.saveRaces(races)
+    delete this.races[race]
+  }
+
+  addRace(race) {
+    let races = JSON.parse(localStorage.getItem(this.RACES))
+    if (!races)
+      races = {}
+    races[race.id] = race
+    this.saveRaces(races)
+    this.races[race.id] = race
+  }
+
+  getRaces() {
+    return this.races
+  }
+
+  getRace(race) {
+    return this.races[race]
+  }
+
+  saveRaces(races) {
+    localStorage.setItem(this.RACES, JSON.stringify(races))
   }
 
   // ***************

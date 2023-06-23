@@ -1,5 +1,6 @@
 <template>
   <div>
+    <label id="label" class="label" v-if="polar">{{ polar.label }}</label>
     <svg id="polar" :width="width" :height="height" v-on:click="setTwa" @mousedown="startDragTwa" @mouseup="stopDragTwa" @mousemove="dragTwa">
       <g id="degrees"></g>
       <g id="speed"></g>
@@ -17,6 +18,7 @@
 import * as d3 from 'd3';
 import bulmaSlider from 'bulma-slider/dist/js/bulma-slider.min.js'
 import polarService from '../lib/polar.js';
+import dataService from '../lib/data.js';
 
 export default {
   name: 'Polar',
@@ -31,7 +33,6 @@ export default {
       }),
     },
     race: String,
-    races: Object,
     current: Object,
   },
   data: function() {
@@ -46,7 +47,7 @@ export default {
     }
   },
   created: function() {
-    polarService.load(this.races[this.race].boat).then(polar => {
+    polarService.load(dataService.getRace(this.race).boat).then(polar => {
       this.polar = polar
       this.onResize()
     })
@@ -67,7 +68,7 @@ export default {
       this.update()
     },
     race: function() {
-      polarService.load(this.races[this.race].boat).then(polar => {
+      polarService.load(dataService.getRace(this.race).boat).then(polar => {
         this.polar = polar
         this.onResize()
       })
@@ -479,6 +480,12 @@ export default {
 </script>
 
 <style scoped>
+
+#label {
+  margin-bottom: -25px;
+  text-align: right;
+  padding-right: 10px;
+}
 
 input[type="range"].slider:not([orient="vertical"]).has-output + output {
   padding-left: 3px;

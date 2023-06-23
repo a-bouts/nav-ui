@@ -243,10 +243,10 @@
           <Boats></Boats>
         </div>
         <div class="leaflet-sidebar-pane polars" id="polars">
-          <Polar ref="polars" v-bind:race="race" v-bind:races="races" v-bind:current="current"></Polar>
+          <Polar ref="polars" v-bind:race="race" v-bind:current="current"></Polar>
         </div>
         <div class="leaflet-sidebar-pane" id="buoys">
-          <Buoys v-if="race && races" v-bind:raceInit="races[race]"></Buoys>
+          <Buoys v-if="race" v-bind:raceInit="race"></Buoys>
         </div>
         <div class="leaflet-sidebar-pane" id="settings">
           <Expes v-bind:priv="priv" v-bind:debug="debug"></Expes>
@@ -313,7 +313,6 @@ export default {
     race: String,
     boat: String,
     map: Object,
-    races: Object,
     position: Object,
     loading: Boolean,
     debug: Boolean,
@@ -330,7 +329,6 @@ export default {
   },
   data: function() {
     return {
-      //races: [],
       sidebar: null,
       selectRaceActive: false,
       polarsLoading: false,
@@ -402,7 +400,7 @@ export default {
       }
     },
     title() {
-      var title = this.races[this.race].name
+      var title = dataService.getRace(this.race).name
       if (this.boat && this.boat != "-")
         title = this.boat + " - " + title
       return title
@@ -503,8 +501,12 @@ export default {
       return res
     },
     load() {
+
+      console.log("RELOAD", this.boat, this.race)
+
       try {
         var current = dataService.getOptions(this.boat, this.race)
+        console.log(current)
         if(current) {
           this.current = current
           if (this.current.position.startTime)
@@ -523,8 +525,8 @@ export default {
             sail: 0,
             auto: false,
             position: {
-              lat: this.convertDDToDMS(this.races[this.race].start.lat),
-              lng: this.convertDDToDMS(this.races[this.race].start.lon),
+              lat: this.convertDDToDMS(dataService.getRace(this.race).start.lat),
+              lng: this.convertDDToDMS(dataService.getRace(this.race).start.lon),
               startTime: startTime
             },
             winch: false,
@@ -610,7 +612,7 @@ export default {
     },
     refreshPolars: function() {
       this.polarsLoading = true
-      this.$http.get('/polars/' + this.races[this.race].polars).then(() => {
+      this.$http.get('/polars/' + dataService.getRace(this.race).polars).then(() => {
         this.polarsLoading = false
       }, () => {
         this.polarsLoading = false

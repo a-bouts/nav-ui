@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import dataService from '../lib/data.js';
 import routeService from '../lib/route.js';
 import L from 'leaflet'
 import {EventBus} from '../event-bus.js';
@@ -15,7 +16,6 @@ export default {
     map: Object,
     layerControl: Object,
     current: Object,
-    races: Object,
     priv: Boolean
   },
   data: function() {
@@ -182,7 +182,7 @@ export default {
           start: this.start,
           bearing: this.current.bearing,
           currentSail: this.current.sail,
-          race: this.races[this.race],
+          race: dataService.getRace(this.race),
           options: {
             sail: this.current.sails,
             foil: this.current.foil,
@@ -243,7 +243,7 @@ export default {
           start: this.start,
           bearing: from.bearing,
           currentSail: from.sail,
-          race: this.races[this.race],
+          race: dataService.getRace(this.race),
           options: {
             sail: this.current.sails,
             foil: this.current.foil,

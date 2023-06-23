@@ -18,7 +18,6 @@ export default {
     race: String,
     boat: String,
     map: Object,
-    races: Object
   },
   components: {
     Buoy,
@@ -51,7 +50,7 @@ export default {
     buoys: function() {
       const it = this
 
-      if(!this.races || !this.race)  return
+      if(!this.race)  return
 
       if(this.customBuoys && this.customBuoys.length > 0) {
         this.customBuoys.forEach(b => {
@@ -62,23 +61,25 @@ export default {
       }
 
       var buoys = []
-      buoys.push({id: "start", name: "start", type: "START", wrap: 0, latlons: [this.races[this.race].start], custom: false})
+      buoys.push({id: "start", name: "start", type: "START", wrap: 0, latlons: [dataService.getRace(this.race).start], custom: false})
 
-      this.races[this.race].waypoints.forEach(w => {
-        var type = "WAYPOINT"
-        if (w.latlons.length > 1)
-          type = "DOOR"
-        if (w.name == "end")
-          type = "END"
+      if (dataService.getRace(this.race).waypoints) {
+        dataService.getRace(this.race).waypoints.forEach(w => {
+          var type = "WAYPOINT"
+          if (w.latlons.length > 1)
+            type = "DOOR"
+          if (w.name == "end")
+            type = "END"
 
-        let latlons = []
-        for(var l in w.latlons) {
-          let lat = w.latlons[l].lat
-          let lon = w.latlons[l].lon + (w.wrap ? w.wrap * 360 : 0)
-          latlons.push({lat: lat, lon: lon})
-        }
-        buoys.push({id: w.name, name: w.name, type: type, wrap: 0, latlons: latlons, toAvoid: w.toAvoid, radius: w.radius, custom: false, validated: it.isValidated(w.name)})
-      });
+          let latlons = []
+          for(var l in w.latlons) {
+            let lat = w.latlons[l].lat
+            let lon = w.latlons[l].lon + (w.wrap ? w.wrap * 360 : 0)
+            latlons.push({lat: lat, lon: lon})
+          }
+          buoys.push({id: w.name, name: w.name, type: type, wrap: 0, latlons: latlons, toAvoid: w.toAvoid, radius: w.radius, custom: false, validated: it.isValidated(w.name)})
+        });
+      }
 
       return buoys
     }
@@ -95,6 +96,7 @@ export default {
     load() {
       this.customBuoys = dataService.getBuoys(this.race)
       this.validated = dataService.getValidated(this.boat, this.race)
+
       EventBus.$emit('buoys', this.buoys)
       this.drawRace()
       this.drawIceLimits()
@@ -108,18 +110,18 @@ export default {
     drawIceLimits() {
       this.iceLimitsLayer.clearLayers()
 
-      if(!this.races[this.race].ice_limits) {
+      if(!dataService.getRace(this.race).ice_limits) {
         return
       }
 
       var latlngs = []
       for(var n = -1 ; n <= 1 ; n++) {
-        this.races[this.race].ice_limits.south.forEach((item, i) => {
+        dataService.getRace(this.race).ice_limits.south.forEach((item, i) => {
           if (n == -1 && i == 0) {
             latlngs.push([-90, item.lon + n * 360])
           }
           latlngs.push([item.lat, item.lon + n * 360])
-          if (n == 1 && i == this.races[this.race].ice_limits.south.length - 1) {
+          if (n == 1 && i == dataService.getRace(this.race).ice_limits.south.length - 1) {
             latlngs.push([-90, item.lon + n * 360])
           }
         })
@@ -128,12 +130,12 @@ export default {
 
       latlngs = []
       for(n = -1 ; n <= 1 ; n++) {
-        this.races[this.race].ice_limits.north.forEach((item, i) => {
+        dataService.getRace(this.race).ice_limits.north.forEach((item, i) => {
           if (n == -1 && i == 0) {
             latlngs.push([90, item.lon + n * 360])
           }
           latlngs.push([item.lat, item.lon + n * 360])
-          if (n == 1 && i == this.races[this.race].ice_limits.north.length - 1) {
+          if (n == 1 && i == dataService.getRace(this.race).ice_limits.north.length - 1) {
             latlngs.push([90, item.lon + n * 360])
           }
         })
@@ -181,6 +183,8 @@ export default {
       if(!this.customBuoys || this.customBuoys.length == 0) {
           this.customBuoys = this.buoys
       }
+
+      console.log(this.customBuoys)
 
       this.customBuoys.splice(this.customBuoys.length - 1, 0, {
         id: uuidv4(),

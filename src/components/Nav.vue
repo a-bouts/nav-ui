@@ -5,12 +5,12 @@
         <button class="delete" @click="notification.active = false"></button>
         {{ notification.message }}
       </div>
-      <SideBar ref="sidebar" v-bind:settings="settings" v-if="map != null" v-bind:boat="boat" v-bind:race="race" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:races="races" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
+      <SideBar ref="sidebar" v-bind:settings="settings" v-if="map != null" v-bind:boat="boat" v-bind:race="race" v-bind:priv="priv" v-bind:debug="debug" v-bind:map="map" v-bind:loading="loading" v-bind:position="current.position" v-on:configure="configure" v-on:center="center" v-on:run="go" v-on:show-tooltip="showTooltip" v-on:error="error"></SideBar>
     </div>
     <Graticule v-if="map != null" v-bind:map="map"></Graticule>
-    <Race v-if="map != null" v-bind:boat="boat" v-bind:race="race" v-bind:map="map" v-bind:races="races" v-on:nextdoor="onNextDoor"></Race>
-    <Route ref="route" v-if="map != null" v-bind:priv="priv" v-bind:debug="debug" v-bind:settings="settings" v-bind:race="race" v-bind:boat="boat" v-bind:map="map" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
-    <BoatLines v-if="map != null" v-bind:settings="settings" v-bind:map="map" v-bind:race="race" v-bind:races="races" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv" v-on:move="onSnakeMove" v-on:select="selectPoint"></BoatLines>
+    <Race v-if="map != null" v-bind:boat="boat" v-bind:race="race" v-bind:map="map" v-on:nextdoor="onNextDoor"></Race>
+    <Route ref="route" v-if="map != null" v-bind:priv="priv" v-bind:debug="debug" v-bind:settings="settings" v-bind:race="race" v-bind:boat="boat" v-bind:map="map" v-bind:layerControl="layerControl" v-bind:current="current" v-on:loading="onLoading" v-on:error="error" v-on:select="selectPoint"></Route>
+    <BoatLines v-if="map != null" v-bind:settings="settings" v-bind:map="map" v-bind:race="race" v-bind:layerControl="layerControl" v-bind:current="current" v-bind:priv="priv" v-on:move="onSnakeMove" v-on:select="selectPoint"></BoatLines>
     <Geodesic v-if="map != null" v-bind:map="map"></Geodesic>
   </div>
 </template>
@@ -64,7 +64,6 @@ export default {
       boatLineLayer: null,
       layerControl: null,
       layers: [],
-      races: null,
       current: {},
       nextDoor: null,
       windControl: null,
@@ -73,18 +72,6 @@ export default {
       snake: null,
       wind: null
     }
-  },
-  beforeRouteEnter (to, from, next) {
-    fetch('races/api/v1/races', {headers: {'Cache-Control': 'no-cache'}})
-      .then(response => response.json())
-      .then(response => {
-        next(vm => {
-          vm.races = {}
-          for (var race of response) {
-            vm.races[race.id] = race
-          }
-        })
-      })
   },
   watch: {
     boat: function() {
@@ -123,17 +110,14 @@ export default {
     this.settings = dataService.getSettings()
   },
   mounted: function() {
-    dataService.clean(this.races)
+    dataService.clean(dataService.getRaces())
 
     this.setTitle()
 
-    const it = this
+    //const it = this
 
-    EventBus.$on('settings', (settings) => {it.settings = settings})
-    EventBus.$on('boat', (latlon) => {
-      console.log([latlon.lat, latlon.lon, latlon.startTime])
-      this.boatMarker.setLatLng(latlon)
-    })
+    EventBus.$on('settings', this.onSettings)
+    EventBus.$on('boat', this.onBoat)
 
     this.map = L.map('map', {zoomControl: true, worldCopyJump: false}).setView([51.505, -0.09], 13)
 
@@ -177,6 +161,8 @@ export default {
     this.map.on('moveend', this.zoomend);
 
     this.initWindControls()
+
+    let it = this
 
     L.Control.Legend = L.Control.extend({
       onAdd: function() {
@@ -224,8 +210,16 @@ export default {
     }
   },
   methods: {
+    onSettings(settings) {
+      console.log("on settings")
+      this.settings = settings
+    },
+    onBoat(latlon) {
+      console.log("boat", this.race, [latlon.lat, latlon.lon, latlon.startTime])
+      this.boatMarker.setLatLng(latlon)
+    },
     setTitle: function() {
-      var title = this.races[this.race].shortName ? this.races[this.race].shortName : this.race
+      var title = dataService.getRace(this.race).shortName ? dataService.getRace(this.race).shortName : this.race
       if (this.boat && this.boat != "-") {
         title += " - " + this.boat
       }
@@ -298,7 +292,8 @@ export default {
         onAdd: function() {
           const TitleControlConstructor = Vue.extend(TitleControl)
           it.titleControl = new TitleControlConstructor({
-            propsData: { races: it.races, race: it.race, boat: it.boat, map: map, debug: it.debug }
+            propsData: { race: it.race, boat: it.boat, map: map, debug: it.debug },
+            parent: it
           })
           it.titleControl.$mount()
 
@@ -345,9 +340,6 @@ export default {
       }
 
       L.control.windcontrol({ position: 'topright' }).addTo(map);
-    },
-    save: function() {
-      dataService.saveOptions(this.current)
     },
     configure: function(current) {
       this.current = current

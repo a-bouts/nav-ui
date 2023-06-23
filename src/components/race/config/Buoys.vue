@@ -109,6 +109,7 @@ const moment = require('moment');
 import Buoy from './Buoy.vue'
 import {EventBus} from '../../../event-bus.js';
 //import bulma_calendar from "bulma-calendar/dist/components/vue/bulma_calendar.vue";
+import dataService from '../../../lib/data.js'
 import polarService from '../../../lib/polar.js';
 import draggable from 'vuedraggable'
 
@@ -119,7 +120,7 @@ export default {
     draggable
   },
   props: {
-    raceInit: Object,
+    raceInit: String,
   },
   data: function() {
     return {
@@ -142,7 +143,7 @@ export default {
     }
   },
   created: function() {
-    this.race = this.raceInit
+    this.race = dataService.getRace(this.raceInit)
     EventBus.$on('buoys', this.onBuoys)
 
     if (!this.polars)
@@ -152,7 +153,7 @@ export default {
   },
   watch: {
     raceInit: function() {
-      this.race = this.raceInit
+      this.race = dataService.getRace(this.raceInit)
       this.dates = [new Date(this.race.start_time), new Date(this.race.end_time)]
     }
   },
