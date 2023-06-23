@@ -1,4 +1,4 @@
-FROM node:alpine as build-stage
+FROM node:17-alpine as build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN yarn config set network-timeout 300000
